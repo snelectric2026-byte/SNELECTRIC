@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>SN ELECTRIC - سامح النادي</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Cairo',sans-serif;
+}
+
+:root{
+--primary: #0b2b57;
+--secondary: #153f73;
+--accent: #ffd700;
+--dark: #081a33;
+--light-bg: #10335f;
+--hover-bg: #17457c;
+--border-radius: 15px;
+--transition: 0.3s ease;
+}
+
+html{
+scroll-behavior:smooth;
+}
+
+body{
+background:#081a33;
+color:#fff;
+overflow-x:hidden;
+}
+
+header{
+background:linear-gradient(135deg, var(--primary), var(--secondary));
+padding:50px 30px;
+text-align:center;
+border-bottom:4px solid var(--accent);
+position:relative;
+overflow:hidden;
+}
+
+header::before{
+content:"";
+position:absolute;
+top:-50%;
+right:-50%;
+width:300px;
+height:300px;
+background:radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+border-radius:50%;
+}
+
+.logo{
+width:130px;
+height:130px;
+margin:auto;
+border-radius:50%;
+background:linear-gradient(135deg, var(--accent), #ffed4e);
+color:var(--primary);
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:60px;
+font-weight:bold;
+box-shadow:0 8px 25px rgba(255,215,0,0.3);
+position:relative;
+z-index:1;
+animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse{
+0%, 100% { transform: scale(1); }
+50% { transform: scale(1.05); }
+}
+
+h1{
+margin-top:20px;
+font-size:42px;
+font-weight:900;
+position:relative;
+z-index:1;
+}
+
+h2{
+color:var(--accent);
+margin-top:10px;
+font-size:28px;
+position:relative;
+z-index:1;
+}
+
+.sub{
+margin-top:10px;
+font-size:18px;
+position:relative;
+z-index:1;
+color:#b0c4de;
+}
+
+.container{
+width:95%;
+max-width:1200px;
+margin:auto;
+padding:40px 25px;
+}
+
+.section-title{
+text-align:center;
+margin:50px 0 40px;
+font-size:32px;
+color:var(--accent);
+position:relative;
+padding-bottom:15px;
+}
+
+.section-title::after{
+content:"";
+position:absolute;
+bottom:0;
+right:50%;
+transform:translateX(50%);
+width:80px;
+height:3px;
+background:linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+gap:25px;
+margin-bottom:40px;
+}
+
+.service{
+background:linear-gradient(135deg, var(--light-bg), var(--primary));
+border:2px solid var(--accent);
+border-radius:var(--border-radius);
+padding:30px 25px;
+cursor:pointer;
+transition:var(--transition);
+text-align:center;
+position:relative;
+overflow:hidden;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.service::before{
+content:"";
+position:absolute;
+top:0;
+left:-100%;
+width:100%;
+height:100%;
+background:rgba(255,215,0,0.05);
+transition:var(--transition);
+}
+
+.service:hover{
+transform:translateY(-8px);
+background:linear-gradient(135deg, var(--hover-bg), var(--secondary));
+box-shadow:0 15px 40px rgba(255,215,0,0.2);
+}
+
+.service:hover::before{
+left:100%;
+}
+
+.service h3{
+color:var(--accent);
+margin-bottom:15px;
+font-size:22px;
+position:relative;
+z-index:1;
+}
+
+.service p{
+line-height:1.8;
+color:#b0c4de;
+position:relative;
+z-index:1;
+}
+
+.contact{
+margin-top:40px;
+background:linear-gradient(135deg, #0d2749, #0b2b57);
+padding:40px;
+border-radius:var(--border-radius);
+border:2px solid var(--accent);
+box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+.contact h2{
+margin-bottom:30px;
+text-align:center;
+}
+
+.contact-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+gap:20px;
+}
+
+.contact a{
+display:flex;
+align-items:center;
+gap:15px;
+color:white;
+font-size:18px;
+text-decoration:none;
+padding:15px 20px;
+background:rgba(255,215,0,0.05);
+border-radius:10px;
+border-right:3px solid var(--accent);
+transition:var(--transition);
+}
+
+.contact a:hover{
+color:var(--accent);
+background:rgba(255,215,0,0.15);
+transform:translateX(-5px);
+}
+
+.contact a i{
+font-size:24px;
+color:var(--accent);
+}
+
+.notice{
+margin-top:30px;
+padding:25px;
+background:linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05));
+border:2px solid var(--accent);
+border-radius:12px;
+line-height:2;
+backdrop-filter:blur(10px);
+}
+
+.notice b{
+color:var(--accent);
+font-size:20px;
+}
+
+.notice li{
+margin-right:20px;
+color:#b0c4de;
+}
+
+/* نافذة الفورم */
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.85);
+overflow:auto;
+padding:30px;
+z-index:999;
+backdrop-filter:blur(5px);
+animation:fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn{
+from { opacity: 0; }
+to { opacity: 1; }
+}
+
+.modal-content{
+background:linear-gradient(135deg, #0d2749, #0b2b57);
+max-width:700px;
+margin:auto;
+padding:35px;
+border-radius:20px;
+border:3px solid var(--accent);
+box-shadow:0 20px 60px rgba(0,0,0,0.7);
+animation:slideUp 0.4s ease;
+}
+
+@keyframes slideUp{
+from { transform: translateY(50px); opacity: 0; }
+to { transform: translateY(0); opacity: 1; }
+}
+
+.modal h2{
+margin-bottom:25px;
+color:var(--accent);
+font-size:26px;
+}
+
+label{
+display:block;
+margin-top:15px;
+margin-bottom:8px;
+color:var(--accent);
+font-weight:600;
+}
+
+input,select,textarea{
+width:100%;
+padding:12px 15px;
+margin-bottom:15px;
+border:2px solid var(--accent);
+border-radius:8px;
+font-size:16px;
+background:#0b2b57;
+color:#fff;
+font-family:inherit;
+transition:var(--transition);
+}
+
+input:focus,select:focus,textarea:focus{
+outline:none;
+border-color:var(--accent);
+box-shadow:0 0 10px rgba(255,215,0,0.3);
+background:#10335f;
+}
+
+textarea{
+resize:vertical;
+min-height:100px;
+}
+
+button{
+width:100%;
+padding:15px;
+background:linear-gradient(135deg, var(--accent), #ffed4e);
+border:none;
+font-size:18px;
+font-weight:bold;
+border-radius:10px;
+cursor:pointer;
+color:#0b2b57;
+transition:var(--transition);
+margin-top:10px;
+}
+
+button:hover{
+transform:scale(1.02);
+box-shadow:0 10px 25px rgba(255,215,0,0.4);
+}
+
+button:active{
+transform:scale(0.98);
+}
+
+.close{
+float:left;
+font-size:32px;
+cursor:pointer;
+color:var(--accent);
+transition:var(--transition);
+line-height:1;
+}
+
+.close:hover{
+color:#ffed4e;
+}
+
+.result{
+margin-top:20px;
+padding:15px;
+font-size:20px;
+color:var(--accent);
+font-weight:bold;
+background:rgba(255,215,0,0.1);
+border-right:4px solid var(--accent);
+border-radius:8px;
+}
+
+/* Responsive */
+
+@media (max-width:768px){
+
+header{
+padding:40px 20px;
+}
+
+.logo{
+width:100px;
+height:100px;
+font-size:50px;
+}
+
+h1{
+font-size:32px;
+}
+
+h2{
+font-size:22px;
+}
+
+.grid{
+grid-template-columns:1fr;
+gap:15px;
+}
+
+.contact-grid{
+grid-template-columns:1fr;
+}
+
+.contact{
+padding:25px;
+}
+
+.modal-content{
+padding:20px;
+border-radius:15px;
+}
+
+.section-title{
+font-size:24px;
+}
+
+}
+
+/* Loading animation */
+
+@keyframes spin{
+to { transform: rotate(360deg); }
+}
+
+.loading{
+display:inline-block;
+width:20px;
+height:20px;
+border:3px solid rgba(255,215,0,0.3);
+border-top-color:var(--accent);
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<div class="logo">SN</div>
+<h1>سامح النادي</h1>
+<h2>SN ELECTRIC</h2>
+<div class="sub">🔌 كهربائي محترف - Power & Control</div>
+</header>
+
+<div class="container">
+
+<div class="section-title">خدماتنا</div>
+
+<div class="grid">
+
+<div class="service" onclick="openForm('تأسيس كهرباء')">
+<h3>⚡ تأسيس كهرباء</h3>
+<p>تنفيذ جميع أعمال تأسيس الكهرباء للمنازل والشركات والمحلات التجارية بأحدث المعايير.</p>
+</div>
+
+<div class="service" onclick="openForm('تشطيب إكسسوارات')">
+<h3>💡 تشطيب إكسسوارات</h3>
+<p>مفاتيح - برايز - نجف - سبوتات - شرائط LED بأحدث التصاميم الحديثة.</p>
+</div>
+
+<div class="service" onclick="openForm('صيانة أعطال')">
+<h3>🔧 صيانة الأعطال</h3>
+<p>كشف وإصلاح سريع وفعال لجميع الأعطال الكهربائية بأسعار منافسة.</p>
+</div>
+
+<div class="service" onclick="openForm('كاميرات مراقبة')">
+<h3>📹 كاميرات مراقبة</h3>
+<p>تركيب كاميرات HD عالية الجودة داخلية وخارجية وربط آمن بالموبايل.</p>
+</div>
+
+<div class="service" onclick="openForm('إنتركم')">
+<h3>📞 إنتركم / فيديو إنتركم</h3>
+<p>تركيب وصيانة جميع أنواع الإنتركم الصوتي والفيديو بجودة عالية.</p>
+</div>
+
+<div class="service" onclick="openForm('Power & Control')">
+<h3>⚙️ Power & Control</h3>
+<p>تنفيذ لوحات الكهرباء والتحكم الآلي بأعلى معايير الأمان والجودة.</p>
+</div>
+
+</div>
+
+<div class="contact">
+<h2>📞 تواصل معنا</h2>
+<div class="contact-grid">
+<a href="tel:01287837118">
+<i class="fas fa-phone"></i>
+<span>01287837118</span>
+</a>
+<a href="tel:01558837118">
+<i class="fas fa-phone"></i>
+<span>01558837118</span>
+</a>
+<a href="mailto:SNelectric2026@gmail.com">
+<i class="fas fa-envelope"></i>
+<span>البريد الإلكتروني</span>
+</a>
+<a href="https://wa.me/201287837118" target="_blank">
+<i class="fab fa-whatsapp"></i>
+<span>واتساب</span>
+</a>
+</div>
+</div>
+
+<div class="notice">
+<b>⚠️ تنبيه هام</b><br><br>
+<ul style="list-style:none;">
+<li>✓ الأسعار التي تظهر داخل النماذج هي <b>أسعار مصنعية فقط</b></li>
+<li>✓ الأسعار <b>لا تشمل الخامات أو الأدوات</b></li>
+<li>✓ يتم اختيار نوع وماركة الخامات بواسطة العميل حسب رغبته وميزانيته</li>
+<li>✓ السعر النهائي قد يتغير بعد المعاينة في حالة وجود أعمال إضافية</li>
+</ul>
+</div>
+
+</div>
+
+<!-- نافذة الفورم -->
+<div id="formModal" class="modal">
+<div class="modal-content">
+<span class="close" onclick="closeForm()">&times;</span>
+<h2 id="formTitle"></h2>
+
+<form id="serviceForm">
+
+<label>اسم العميل</label>
+<input type="text" id="name" placeholder="أدخل اسمك الكامل" required>
+
+<label>رقم الهاتف</label>
+<input type="tel" id="phone" placeholder="مثال: 01287837118" required>
+
+<label>العنوان</label>
+<input type="text" id="address" placeholder="أدخل عنوانك بالتفصيل" required>
+
+<div id="dynamicFields"></div>
+
+<div class="result" id="totalPrice">
+السعر التقديري: 0 جنيه
+</div>
+
+<button type="button" onclick="sendWhatsApp()">
+<i class="fab fa-whatsapp"></i> إرسال عبر واتساب
+</button>
+
+</form>
+
+</div>
+</div>
+
+<script>
+
+let currentService = "";
+
+const prices = {
+point: 90,
+switch: 40,
+socket: 40,
+lamp: 35,
+chandelier: 120,
+spot: 45,
+camera: 250,
+intercom: 450
+};
+
+function openForm(service){
+currentService = service;
+document.getElementById("formTitle").innerHTML = service;
+
+let html="";
+
+switch(service){
+
+case "تأسيس كهرباء":
+html=`
+<label>مساحة الوحدة (م²)</label>
+<input type="number" id="area" placeholder="مثال: 100">
+
+<label>عدد الغرف</label>
+<input type="number" id="rooms" value="0" oninput="calcPrice()">
+
+<label>عدد الحمامات</label>
+<input type="number" id="bath" value="0" oninput="calcPrice()">
+
+<label>عدد المطابخ</label>
+<input type="number" id="kitchen" value="0" oninput="calcPrice()">
+
+<label>عدد الممرات</label>
+<input type="number" id="hall" value="0" oninput="calcPrice()">
+
+<label>موعد التسليم المتوقع</label>
+<input type="date" id="date">
+
+<label>ملاحظات إضافية</label>
+<textarea id="notes" placeholder="أي ملاحظات أو متطلبات خاصة..."></textarea>
+`;
+break;
+
+case "تشطيب إكسسوارات":
+html=`
+<label>عدد المفاتيح</label>
+<input type="number" id="switches" value="0" oninput="calcPrice()" placeholder="0">
+
+<label>عدد البرايز</label>
+<input type="number" id="sockets" value="0" oninput="calcPrice()" placeholder="0">
+
+<label>عدد اللمبات</label>
+<input type="number" id="lamps" value="0" oninput="calcPrice()" placeholder="0">
+
+<label>عدد النجف</label>
+<input type="number" id="chandeliers" value="0" oninput="calcPrice()" placeholder="0">
+
+<label>عدد السبوتات</label>
+<input type="number" id="spots" value="0" oninput="calcPrice()" placeholder="0">
+
+<label>ملاحظات إضافية</label>
+<textarea id="notes" placeholder="لون أو نوع محدد..."></textarea>
+`;
+break;
+
+case "كاميرات مراقبة":
+html=`
+<label>عدد الكاميرات</label>
+<input type="number" id="cams" value="0" oninput="calcPrice()" placeholder="0">
+
+<label>نوع المكان</label>
+<select id="place">
+<option>منزل</option>
+<option>محل</option>
+<option>شركة</option>
+<option>عمارة سكنية</option>
+</select>
+
+<label>
+<input type="checkbox" id="mobile">
+ربط بالموبايل (تطبيق خاص)
+</label>
+
+<label>ملاحظا�� إضافية</label>
+<textarea id="notes" placeholder="تفاصيل الموقع والمتطلبات..."></textarea>
+`;
+break;
+
+case "إنتركم":
+html=`
+<label>عدد الوحدات</label>
+<input type="number" id="units" value="1" oninput="calcPrice()" placeholder="1">
+
+<label>نوع الإنتركم</label>
+<select id="type">
+<option>صوت</option>
+<option>فيديو</option>
+</select>
+
+<label>ملاحظات إضافية</label>
+<textarea id="notes" placeholder="موقع التركيب والتفاصيل..."></textarea>
+`;
+break;
+
+default:
+html=`
+<label>وصف الطلب بالتفصيل</label>
+<textarea id="notes" placeholder="اشرح احتياجاتك بالتفصيل..."></textarea>
+`;
+}
+
+document.getElementById("dynamicFields").innerHTML=html;
+document.getElementById("formModal").style.display="block";
+calcPrice();
+}
+
+function closeForm(){
+document.getElementById("formModal").style.display="none";
+}
+
+function calcPrice(){
+let total=0;
+
+if(currentService==="تأسيس كهرباء"){
+let rooms=Number(document.getElementById("rooms")?.value||0);
+let bath=Number(document.getElementById("bath")?.value||0);
+let kitchen=Number(document.getElementById("kitchen")?.value||0);
+let hall=Number(document.getElementById("hall")?.value||0);
+
+let points=(rooms*8)+(bath*3)+(kitchen*6)+(hall*2);
+total=points*prices.point;
+}
+
+else if(currentService==="تشطيب إكسسوارات"){
+let sw=Number(document.getElementById("switches")?.value||0);
+let so=Number(document.getElementById("sockets")?.value||0);
+let la=Number(document.getElementById("lamps")?.value||0);
+let ch=Number(document.getElementById("chandeliers")?.value||0);
+let sp=Number(document.getElementById("spots")?.value||0);
+
+total=
+(sw*prices.switch)+
+(so*prices.socket)+
+(la*prices.lamp)+
+(ch*prices.chandelier)+
+(sp*prices.spot);
+}
+
+else if(currentService==="كاميرات مراقبة"){
+let cams=Number(document.getElementById("cams")?.value||0);
+total=cams*prices.camera;
+}
+
+else if(currentService==="إنتركم"){
+let units=Number(document.getElementById("units")?.value||1);
+total=units*prices.intercom;
+}
+
+document.getElementById("totalPrice").innerHTML=
+"💰 السعر التقديري (مصنعية فقط): "+total.toLocaleString()+" جنيه";
+}
+
+function sendWhatsApp(){
+let name = document.getElementById("name").value.trim();
+let phone = document.getElementById("phone").value.trim();
+let address = document.getElementById("address").value.trim();
+
+if(!name || !phone || !address){
+alert("يرجى ملء جميع الحقول المطلوبة");
+return;
+}
+
+let msg="";
+msg+="*طلب خدمة جديد* ✨%0A";
+msg+="━━━━━━━━━��━━━━━━%0A%0A";
+msg+="📌 *نوع الخدمة:* "+currentService+"%0A";
+msg+="👤 *الاسم:* "+name+"%0A";
+msg+="📱 *الهاتف:* "+phone+"%0A";
+msg+="📍 *العنوان:* "+address+"%0A%0A";
+
+msg+="💰 "+document.getElementById("totalPrice").innerText+"%0A%0A";
+
+msg+="━━━━━━━━━━━━━━━━%0A";
+msg+="⚠️ *ملاحظات هامة:*%0A";
+msg+="• السعر مصنعية فقط%0A";
+msg+="• لا يشمل الخامات والأدوات%0A";
+msg+="• السعر النهائي بعد المعاينة%0A%0A";
+
+let notes=document.getElementById("notes");
+if(notes && notes.value.trim()){
+msg+="📝 *ملاحظات العميل:*%0A"+notes.value.trim();
+}
+
+window.open(
+"https://wa.me/201287837118?text="+msg,
+"_blank"
+);
+
+closeForm();
+}
+
+window.onclick=function(e){
+if(e.target==document.getElementById("formModal")){
+closeForm();
+}
+}
+
+</script>
+
+</body>
+
+</html>
