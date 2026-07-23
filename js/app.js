@@ -1,66 +1,70 @@
 /*==================================================
-    SN ELECTRIC | app.js
+        KHALSANA ES | App JavaScript Logic
 ==================================================*/
 
-let currentService = "";
-let totalPrice = 0;
-
-const prices = {
-    point: 90,
-    switch: 40,
-    socket: 40,
-    lamp: 35,
-    spot: 45,
-    camera: 250
-};
-
-function openForm(service) {
-    currentService = service;
-    document.getElementById("formTitle").innerText = service;
-    document.getElementById("formModal").style.display = "block";
+// فتح نموذج طلب الخدمة
+function openForm(serviceName) {
+    const modal = document.getElementById("formModal");
+    const title = document.getElementById("formTitle");
+    const dynamicFields = document.getElementById("dynamicFields");
     
-    let html = `<label>ملاحظات إضافية</label><textarea id="notes" placeholder="اكتب أي تفاصيل إضافية هنا..."></textarea>`;
-    document.getElementById("dynamicFields").innerHTML = html;
+    title.innerText = `طلب خدمة: ${serviceName}`;
+    dynamicFields.innerHTML = `<input type="hidden" id="serviceType" value="${serviceName}">`;
+    
+    modal.style.display = "flex";
+    
+    // زيادة عداد الطلبات أو الزيارات عند فتح النموذج
+    if (window.increaseCounter) {
+        window.increaseCounter("requests");
+    }
 }
 
+// إغلاق نموذج طلب الخدمة
 function closeForm() {
-    document.getElementById("formModal").style.display = "none";
-    document.getElementById("serviceForm").reset();
+    const modal = document.getElementById("formModal");
+    modal.style.display = "none";
 }
 
-function sendWhatsApp() {
+// إرسال طلب الخدمة عبر واتساب وحفظه في سوبابيس
+async function sendWhatsApp() {
     let name = document.getElementById("customerName").value.trim();
     let phone = document.getElementById("customerPhone").value.trim();
     let address = document.getElementById("customerAddress").value.trim();
-    let notes = document.getElementById("notes") ? document.getElementById("notes").value.trim() : "";
-
+    let service = document.getElementById("serviceType").value;
+    
     if (!name || !phone || !address) {
-        alert("يرجى استكمال البيانات الأساسية.");
+        alert("يرجى ملء جميع الحقول المطلوبة.");
         return;
     }
 
-    let message = "*طلب خدمة جديد*%0A--------------------%0A";
-    message += "👤 الاسم: " + name + "%0A";
-    message += "📱 الهاتف: " + phone + "%0A";
-    message += "📍 العنوان: " + address + "%0A";
-    message += "🛠 الخدمة: " + currentService + "%0A";
-    if (notes) message += "📝 ملاحظات: " + notes + "%0A";
+    // حفظ الطلب في قاعدة البيانات Supabase
+    if (window.saveServiceRequest) {
+        await window.saveServiceRequest({
+            name: name,
+            phone: phone,
+            address: address,
+            service: service,
+            price: 0,
+            notes: "طلب عبر الموقع الإلكتروني"
+        });
+    }
 
-    window.open("https://wa.me/201287837118?text=" + message, "_blank");
+    let adminPhone = "201287837118";
+    let message = `مرحباً، أرغب في طلب خدمة:%0A` +
+                  `⚡ الخدمة: ${service}%0A` +
+                  `👤 الاسم: ${name}%0A` +
+                  `📞 الهاتف: ${phone}%0A` +
+                  `📍 العنوان: ${address}`;
+
+    window.open(`https://wa.me/${adminPhone}?text=${message}`, "_blank");
     closeForm();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const menuBtn = document.querySelector(".menu");
-    const nav = document.querySelector("nav");
-    if (menuBtn && nav) {
-        menuBtn.addEventListener("click", () => {
-            nav.classList.toggle("active");
-        });
-    }
-});
+/*==================================================
+      إدارة تسجيل الفنيين وتعدد الخبرات
+==================================================*/
 
-// إضافة حقل جديد للخبرات المتعددة
+// إضافة حقل جديد للخبرات المتعددة وأماكن العمل
 function addExperienceField() {
     const container = document.getElementById("experiencesContainer");
     const div = document.createElement("div");
@@ -81,7 +85,7 @@ function addExperienceField() {
     container.appendChild(div);
 }
 
-// إرسال بيانات الفني وخبراته المتعددة
+// إرسال بيانات الفني وخبراته المتعددة لقاعدة البيانات ونسخة للواتساب
 async function submitTechWithExp() {
     let name = document.getElementById("tName").value.trim();
     let phone = document.getElementById("tPhone").value.trim();
@@ -95,14 +99,16 @@ async function submitTechWithExp() {
 
     let expGroups = document.querySelectorAll(".exp-group");
     let experiencesList = [];
+    let expTextForWhatsApp = "";
 
-    expGroups.forEach(group => {
+    expGroups.forEach((group, index) => {
         let jobTitle = group.querySelector(".exp-title").value.trim();
         let workplace = group.querySelector(".exp-workplace").value.trim();
         let duration = group.querySelector(".exp-duration").value.trim();
         
         if (jobTitle && workplace && duration) {
             experiencesList.push({ jobTitle, workplace, duration });
+            expTextForWhatsApp += `%0A- خبرة ${index + 1}: ${jobTitle} في (${workplace}) لمدة (${duration})`;
         }
     });
 
@@ -111,6 +117,7 @@ async function submitTechWithExp() {
         return;
     }
 
+    // 1. الحفظ في قاعدة البيانات عبر Supabase
     if (window.registerTechnicianWithExperiences) {
         let success = await window.registerTechnicianWithExperiences(
             { name, phone, specialty, area },
@@ -118,7 +125,21 @@ async function submitTechWithExp() {
         );
 
         if (success) {
+            // 2. تجهيز رسالة الواتساب للإرسال برقمك الخاص
+            let adminPhone = "201287837118";
+            let message = `طلب انضمام فني جديد:%0A` +
+                          `👤 الاسم: ${name}%0A` +
+                          `📞 الهاتف: ${phone}%0A` +
+                          `⚡ التخصص: ${specialty}%0A` +
+                          `📍 المنطقة: ${area}%0A` +
+                          `📋 سجل الخبرات:${expTextForWhatsApp}`;
+
+            // فتح واتساب تلقائياً بالرسالة
+            window.open(`https://wa.me/${adminPhone}?text=${message}`, "_blank");
+
             alert("تم إرسال طلب انضمامك وخبراتك بنجاح!");
+            
+            // تفريغ الحقول بعد الإرسال
             document.getElementById("tName").value = "";
             document.getElementById("tPhone").value = "";
             document.getElementById("tArea").value = "";
