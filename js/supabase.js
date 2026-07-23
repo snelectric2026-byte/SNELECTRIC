@@ -175,3 +175,50 @@ window.saveServiceRequest = saveServiceRequest;
 window.increaseCounter = increaseCounter;
 window.loadSiteStatistics = loadSiteStatistics;
 window.saveReview = saveReview;
+/*==============================
+      تسجيل فني مع تعدد الخبرات
+==============================*/
+async function registerTechnicianWithExperiences(techData, experiencesList) {
+    try {
+        // 1. تسجيل البيانات الأساسية للفني
+        const { data: newTech, error: techError } = await supabase
+            .from("technicians")
+            .insert({
+                name: techData.name,
+                phone: techData.phone,
+                specialty: techData.specialty,
+                area: techData.area,
+                status: "pending"
+            })
+            .select()
+            .single();
+
+        if (techError) throw techError;
+
+        const techId = newTech.id;
+
+        // 2. إدخال سجلات الخبرات والأماكن المتعددة
+        if (experiencesList && experiencesList.length > 0) {
+            const expFormatted = experiencesList.map(exp => ({
+                technician_id: techId,
+                job_title: exp.jobTitle,
+                workplace_name: exp.workplace,
+                duration: exp.duration,
+                description: ""
+            }));
+
+            const { error: expError } = await supabase
+                .from("technician_experiences")
+                .insert(expFormatted);
+
+            if (expError) throw expError;
+        }
+
+        return true;
+    } catch (err) {
+        console.error("Tech & Experience Registration Error:", err);
+        return false;
+    }
+}
+
+window.registerTechnicianWithExperiences = registerTechnicianWithExperiences;
