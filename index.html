@@ -24,56 +24,8 @@
             <nav>
                 <a href="#">الرئيسية</a>
                 <a href="#services">خدماتنا</a>
+                <a href="#join-tech">انضم كفني</a>
                 <a href="#contact">تواصل معنا</a>
-                <!-- قسم انضم كفني -->
-<section id="join-tech" style="background: var(--secondary); padding: 60px 0;">
-    <div class="container" style="max-width: 700px; background: var(--dark); padding: 35px; border-radius: 20px; border: 2px solid var(--accent);">
-        <div class="section-title">
-            <h2>انضم إلينا كفني كهرباء</h2>
-            <p>سجل خبراتك السابقة وتعدد الأماكن التي عملت بها لإبراز كفاءتك للعملاء</p>
-        </div>
-        <form onsubmit="event.preventDefault(); submitTechWithExp();">
-            <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">الاسم بالكامل</label>
-            <input type="text" id="tName" required placeholder="اسمك الكريم" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
-
-            <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">رقم الهاتف (واتساب)</label>
-            <input type="tel" id="tPhone" required placeholder="رقم هاتفك" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
-
-            <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">التخصص الأساسي</label>
-            <select id="tSpecialty" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
-                <option value="تأسيس كهرباء">تأسيس كهرباء</option>
-                <option value="تشطيب إكسسوارات">تشطيب إكسسوارات</option>
-                <option value="صيانة أعطال">صيانة أعطال</option>
-                <option value="كاميرات مراقبة">كاميرات مراقبة</option>
-            </select>
-
-            <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">منطقة التواجد الحالية</label>
-            <input type="text" id="tArea" required placeholder="مثال: الجيزة" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
-
-            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 25px 0;">
-
-            <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 20px;">سجل الخبرات وأماكن العمل السابقة</h3>
-            
-            <div id="experiencesContainer">
-                <div class="exp-group" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.08);">
-                    <label style="display:block; margin-bottom:5px; font-weight:700;">اسم الوظيفة / الدور</label>
-                    <input type="text" class="exp-title" required placeholder="مثال: فني تنفيذ رئيسي" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; margin-bottom:10px;">
-
-                    <label style="display:block; margin-bottom:5px; font-weight:700;">اسم المكان / الشركة / المشروع</label>
-                    <input type="text" class="exp-workplace" required placeholder="مثال: شركة النور" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; margin-bottom:10px;">
-
-                    <label style="display:block; margin-bottom:5px; font-weight:700;">المدة (الفترة الزمنية)</label>
-                    <input type="text" class="exp-duration" required placeholder="مثال: من 2021 إلى 2024" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff;">
-                </div>
-            </div>
-
-            <button type="button" onclick="addExperienceField()" style="background: transparent; color: var(--accent); border: 1px dashed var(--accent); padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px;">+ إضافة مكان عمل أو خبرة أخرى</button>
-
-            <button type="submit" style="width: 100%; padding: 15px; background: var(--accent); color: var(--dark); border: none; border-radius: 12px; font-weight: 800; font-size: 18px; cursor: pointer;">إرسال طلب الانضمام</button>
-        </form>
-    </div>
-</section>
-
             </nav>
             <div class="menu"><i class="fa-solid fa-bars"></i></div>
         </div>
@@ -125,8 +77,57 @@
         </div>
     </section>
 
+    <!-- قسم انضم كفني -->
+    <section id="join-tech" style="background: var(--secondary); padding: 90px 0;">
+        <div class="container" style="max-width: 700px; background: var(--dark); padding: 35px; border-radius: 20px; border: 2px solid var(--accent);">
+            <div class="section-title" style="margin-bottom: 30px;">
+                <h2>انضم إلينا كفني كهرباء</h2>
+                <p>سجل خبراتك السابقة وتعدد الأماكن التي عملت بها لإبراز كفاءتك للعملاء</p>
+            </div>
+            <form onsubmit="event.preventDefault(); submitTechWithExp();">
+                <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">الاسم بالكامل</label>
+                <input type="text" id="tName" required placeholder="اسمك الكريم" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
+
+                <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">رقم الهاتف (واتساب)</label>
+                <input type="tel" id="tPhone" required placeholder="رقم هاتفك" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
+
+                <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">التخصص الأساسي</label>
+                <select id="tSpecialty" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
+                    <option value="تأسيس كهرباء">تأسيس كهرباء</option>
+                    <option value="تشطيب إكسسوارات">تشطيب إكسسوارات</option>
+                    <option value="صيانة أعطال">صيانة أعطال</option>
+                    <option value="كاميرات مراقبة">كاميرات مراقبة</option>
+                </select>
+
+                <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">منطقة التواجد الحالية</label>
+                <input type="text" id="tArea" required placeholder="مثال: الجيزة" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
+
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 25px 0;">
+
+                <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 20px;">سجل الخبرات وأماكن العمل السابقة</h3>
+                
+                <div id="experiencesContainer">
+                    <div class="exp-group" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.08);">
+                        <label style="display:block; margin-bottom:5px; font-weight:700;">اسم الوظيفة / الدور</label>
+                        <input type="text" class="exp-title" required placeholder="مثال: فني تنفيذ رئيسي" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; margin-bottom:10px;">
+
+                        <label style="display:block; margin-bottom:5px; font-weight:700;">اسم المكان / الشركة / المشروع</label>
+                        <input type="text" class="exp-workplace" required placeholder="مثال: شركة النور" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; margin-bottom:10px;">
+
+                        <label style="display:block; margin-bottom:5px; font-weight:700;">المدة (الفترة الزمنية)</label>
+                        <input type="text" class="exp-duration" required placeholder="مثال: من 2021 إلى 2024" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff;">
+                    </div>
+                </div>
+
+                <button type="button" onclick="addExperienceField()" style="background: transparent; color: var(--accent); border: 1px dashed var(--accent); padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px;">+ إضافة مكان عمل أو خبرة أخرى</button>
+
+                <button type="submit" style="width: 100%; padding: 15px; background: var(--accent); color: var(--dark); border: none; border-radius: 12px; font-weight: 800; font-size: 18px; cursor: pointer;">إرسال طلب الانضمام</button>
+            </form>
+        </div>
+    </section>
+
     <!-- قسم التواصل -->
-    <section id="contact" style="background: #0d2749; padding: 60px 0; text-align: center;">
+    <section id="contact" style="background: #0d2749; padding: 90px 0; text-align: center;">
         <div class="container">
             <div class="section-title">
                 <h2>تواصل معنا</h2>
