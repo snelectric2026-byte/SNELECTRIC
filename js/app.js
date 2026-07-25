@@ -3,57 +3,242 @@ function openForm(serviceName) {
     document.getElementById('formTitle').innerText = 'طلب خدمة: ' + serviceName;
     
     const dynamicFields = document.getElementById('dynamicFields');
+    const calculatorSection = document.getElementById('calculatorSection');
     dynamicFields.innerHTML = '';
-    let basePrice = 300;
+    calculatorSection.innerHTML = '';
+    window.currentService = serviceName;
     
     if(serviceName === 'تأسيس كهرباء') {
-        basePrice = 1500;
-        dynamicFields.innerHTML = `
-            <label>مساحة المكان تقريبا (متر مربع)</label>
-            <input type="number" id="spaceArea" value="100" oninput="calculateTotal(${basePrice})" style="width:100%; padding:10px; margin-bottom:10px; background:#0d1729; color:#fff; border:1px solid var(--border); border-radius:8px;">
+        calculatorSection.innerHTML = `
+            <h4 style="color: var(--accent); margin-bottom: 12px;">حساب السعر التقديري</h4>
+            <div class="calc-item">
+                <label>عدد نقاط الكهرباء</label>
+                <input type="number" id="calcPoints" value="1" min="1" oninput="calculatePrice()">
+            </div>
+            <div class="calc-item">
+                <label>طول السلك (متر)</label>
+                <input type="number" id="calcWireLength" value="0" min="0" oninput="calculatePrice()">
+            </div>
+            <div class="calc-item">
+                <label>نوع الحفر</label>
+                <select id="calcDrillingType" oninput="calculatePrice()">
+                    <option value="بدون">بدون حفر (50 ج.م للنقطة)</option>
+                    <option value="بسيط">حفر بسيط (100 ج.م للنقطة)</option>
+                    <option value="عميق">حفر عميق (150 ج.م للنقطة)</option>
+                </select>
+            </div>
+            <div class="calc-total">
+                <div id="priceBreakdown"></div>
+                <div style="margin-top: 10px; font-size: 20px;">السعر التقديري: <span id="finalPrice">0</span> جنيه</div>
+            </div>
         `;
     } else if(serviceName === 'تشطيب إكسسوارات') {
-        basePrice = 600;
-        dynamicFields.innerHTML = `
-            <label>عدد نقاط المفاتيح والبرايز</label>
-            <input type="number" id="pointsCount" value="10" oninput="calculateTotal(${basePrice})" style="width:100%; padding:10px; margin-bottom:10px; background:#0d1729; color:#fff; border:1px solid var(--border); border-radius:8px;">
+        calculatorSection.innerHTML = `
+            <h4 style="color: var(--accent); margin-bottom: 12px;">حساب السعر التقديري</h4>
+            <div class="calc-item">
+                <label>عدد النقاط (نقطة واحدة = 50 ج.م)</label>
+                <input type="number" id="calcPoints" value="0" min="0" oninput="calculatePrice()">
+            </div>
+            <div class="calc-item">
+                <label>عدد العلب (علبة واحدة = 40 ج.م)</label>
+                <input type="number" id="calcBoxes" value="0" min="0" oninput="calculatePrice()">
+            </div>
+            <div class="calc-item">
+                <label>عدد اللوحات (لوحة واحدة = 200 ج.م)</label>
+                <input type="number" id="calcPanels" value="0" min="0" oninput="calculatePrice()">
+            </div>
+            <div class="calc-item">
+                <label>عدد المفاتيح الأوتوماتيك (مفتاح = 50 ج.م)</label>
+                <input type="number" id="calcAutomatic" value="0" min="0" oninput="calculatePrice()">
+            </div>
+            <div class="calc-total">
+                <div id="priceBreakdown"></div>
+                <div style="margin-top: 10px; font-size: 20px;">السعر التقديري: <span id="finalPrice">0</span> جنيه</div>
+            </div>
         `;
-    } else if(serviceName === 'صيانة الأعطال') {
-        basePrice = 250;
+    } else if(serviceName === 'صيانة أجهزة منزلية') {
+        calculatorSection.innerHTML = `
+            <h4 style="color: var(--accent); margin-bottom: 12px;">اختر الجهاز المراد إصلاحه</h4>
+            <div class="calc-item">
+                <label>نوع الجهاز</label>
+                <select id="calcAppliance" oninput="calculatePrice()">
+                    <option value="">-- اختر نوع الجهاز --</option>
+                    <option value="غسالة">غسالة (تقديري: 350 ج.م)</option>
+                    <option value="بوتاجاز">بوتاجاز (تقديري: 300 ج.م)</option>
+                    <option value="ثلاجة">ثلاجة (تقديري: 400 ج.م)</option>
+                    <option value="سخان">سخان (تقديري: 250 ج.م)</option>
+                    <option value="ميكروويف">ميكروويف (تقديري: 200 ج.م)</option>
+                    <option value="خلاط">خلاط (تقديري: 150 ج.م)</option>
+                </select>
+            </div>
+            <div class="calc-item">
+                <label>وصف المشكلة</label>
+                <input type="text" id="calcProblem" placeholder="مثال: لا يشتغل، به صوت غريب، الخ" oninput="calculatePrice()">
+            </div>
+            <div class="calc-total">
+                <div id="priceBreakdown"></div>
+                <div style="margin-top: 10px; font-size: 20px;">السعر التقديري: <span id="finalPrice">0</span> جنيه (قبل المعاينة)</div>
+            </div>
+        `;
     } else if(serviceName === 'كاميرات مراقبة') {
-        basePrice = 1200;
+        calculatorSection.innerHTML = `
+            <h4 style="color: var(--accent); margin-bottom: 12px;">حساب السعر التقديري</h4>
+            <div class="calc-item">
+                <label>عدد الكاميرات (كاميرا = 300 ج.م)</label>
+                <input type="number" id="calcCameras" value="1" min="1" oninput="calculatePrice()">
+            </div>
+            <div class="calc-item">
+                <label>طول الأسلاك المطلوبة (متر)</label>
+                <input type="number" id="calcCableLength" value="10" min="0" oninput="calculatePrice()">
+            </div>
+            <div class="calc-item">
+                <label>نوع التركيب</label>
+                <select id="calcInstallationType" oninput="calculatePrice()">
+                    <option value="عادي">تركيب عادي (بدون بضاعة)</option>
+                    <option value="متقدم">تركيب متقدم مع نظام تسجيل (+500 ج.م)</option>
+                </select>
+            </div>
+            <div class="calc-total">
+                <div id="priceBreakdown"></div>
+                <div style="margin-top: 10px; font-size: 20px;">السعر التقديري: <span id="finalPrice">0</span> جنيه</div>
+            </div>
+        `;
+    } else if(serviceName === 'المعاينة') {
+        calculatorSection.innerHTML = `
+            <h4 style="color: var(--accent); margin-bottom: 12px;">تفاصيل المعاينة</h4>
+            <div class="calc-item">
+                <label>نوع المشروع</label>
+                <select id="calcProjectType" oninput="calculatePrice()">
+                    <option value="">-- اختر نوع المشروع --</option>
+                    <option value="منزلي">منزلي</option>
+                    <option value="تجاري">تجاري</option>
+                    <option value="صناعي">صناعي</option>
+                </select>
+            </div>
+            <div class="calc-item">
+                <label>المحافظة</label>
+                <select id="calcGovernorate" oninput="calculatePrice()">
+                    <option value="">-- داخل المحافظة --</option>
+                </select>
+            </div>
+            <div class="calc-total">
+                <div id="priceBreakdown"></div>
+                <div style="margin-top: 10px; font-size: 20px;">سعر المعاينة: <span id="finalPrice">100</span> جنيه</div>
+            </div>
+        `;
     }
     
-    window.currentBasePrice = basePrice;
-    calculateTotal(basePrice);
+    calculatePrice();
 }
 
 function closeForm() {
     document.getElementById('formModal').style.display = 'none';
 }
 
-function calculateTotal(base) {
-    let total = base;
-    const spaceArea = document.getElementById('spaceArea');
-    const pointsCount = document.getElementById('pointsCount');
+function calculatePrice() {
+    let total = 0;
+    let breakdown = '';
+    const service = window.currentService;
     
-    if(spaceArea) {
-        total = spaceArea.value * 15;
-    } else if(pointsCount) {
-        total = pointsCount.value * 60;
+    if(service === 'تأسيس كهرباء') {
+        const points = parseInt(document.getElementById('calcPoints')?.value || 0);
+        const wireLength = parseInt(document.getElementById('calcWireLength')?.value || 0);
+        const drillingType = document.getElementById('calcDrillingType')?.value || 'بدون';
+        
+        let pointPrice = 50;
+        if(drillingType === 'بسيط') pointPrice = 100;
+        else if(drillingType === 'عميق') pointPrice = 150;
+        
+        const pointsTotal = points * pointPrice;
+        const wireTotal = wireLength * 10; // 10 ج.م للمتر
+        
+        total = pointsTotal + wireTotal;
+        breakdown = `
+            <small>
+                ${points} نقاط × ${pointPrice} ج.م = ${pointsTotal} ج.م<br>
+                ${wireLength} متر سلك × 10 ج.م = ${wireTotal} ج.م
+            </small>
+        `;
+    } else if(service === 'تشطيب إكسسوارات') {
+        const points = parseInt(document.getElementById('calcPoints')?.value || 0);
+        const boxes = parseInt(document.getElementById('calcBoxes')?.value || 0);
+        const panels = parseInt(document.getElementById('calcPanels')?.value || 0);
+        const automatic = parseInt(document.getElementById('calcAutomatic')?.value || 0);
+        
+        const pointsTotal = points * 50;
+        const boxesTotal = boxes * 40;
+        const panelsTotal = panels * 200;
+        const automaticTotal = automatic * 50;
+        
+        total = pointsTotal + boxesTotal + panelsTotal + automaticTotal;
+        breakdown = `
+            <small>
+                ${points} نقطة × 50 ج.م = ${pointsTotal} ج.م<br>
+                ${boxes} علبة × 40 ج.م = ${boxesTotal} ج.م<br>
+                ${panels} لوحة × 200 ج.م = ${panelsTotal} ج.م<br>
+                ${automatic} مفتاح أوتوماتيك × 50 ج.م = ${automaticTotal} ج.م
+            </small>
+        `;
+    } else if(service === 'صيانة أجهزة منزلية') {
+        const appliance = document.getElementById('calcAppliance')?.value;
+        
+        const prices = {
+            'غسالة': 350,
+            'بوتاجاز': 300,
+            'ثلاجة': 400,
+            'سخان': 250,
+            'ميكروويف': 200,
+            'خلاط': 150
+        };
+        
+        total = appliance && prices[appliance] ? prices[appliance] : 0;
+        breakdown = `<small>صيانة ${appliance}: ${total} ج.م (تقديري - قبل المعاينة)</small>`;
+    } else if(service === 'كاميرات مراقبة') {
+        const cameras = parseInt(document.getElementById('calcCameras')?.value || 1);
+        const cableLength = parseInt(document.getElementById('calcCableLength')?.value || 0);
+        const installationType = document.getElementById('calcInstallationType')?.value;
+        
+        const camerasTotal = cameras * 300;
+        const cableTotal = cableLength * 5; // 5 ج.م للمتر
+        const installationFee = installationType === 'متقدم' ? 500 : 0;
+        
+        total = camerasTotal + cableTotal + installationFee;
+        breakdown = `
+            <small>
+                ${cameras} كاميرا × 300 ج.م = ${camerasTotal} ج.م<br>
+                ${cableLength} متر أسلاك × 5 ج.م = ${cableTotal} ج.م
+                ${installationFee > 0 ? '<br>رسوم التركيب المتقدم = ' + installationFee + ' ج.م' : ''}
+            </small>
+        `;
+    } else if(service === 'المعاينة') {
+        total = 100;
+        breakdown = `<small>سعر المعاينة في المحافظة</small>`;
     }
     
+    // تطبيق خصم VIP
+    let finalTotal = total;
     if(window.isVipCustomer) {
-        total = total * 0.95;
-        const discountNotice = document.getElementById('vipDiscountNotice');
-        discountNotice.style.display = 'block';
-        discountNotice.innerText = 'تم تطبيق خصم 5% للعملاء المميزين (VIP)!';
-    } else {
-        document.getElementById('vipDiscountNotice').style.display = 'none';
+        finalTotal = Math.round(total * 0.95);
     }
     
-    window.finalCalculatedPrice = Math.round(total);
-    document.getElementById('totalPrice').innerText = 'السعر التقديري: ' + window.finalCalculatedPrice + ' جنيه';
+    // تحديث العناصر
+    if(document.getElementById('priceBreakdown')) {
+        document.getElementById('priceBreakdown').innerHTML = breakdown;
+    }
+    if(document.getElementById('finalPrice')) {
+        document.getElementById('finalPrice').innerText = finalTotal;
+    }
+    if(document.getElementById('totalPrice')) {
+        document.getElementById('totalPrice').innerText = 'السعر التقديري: ' + finalTotal + ' جنيه';
+    }
+    
+    window.finalCalculatedPrice = finalTotal;
+    
+    // إظهار إشعار الخصم
+    if(window.isVipCustomer && document.getElementById('vipDiscountNotice')) {
+        document.getElementById('vipDiscountNotice').style.display = 'block';
+        document.getElementById('vipDiscountNotice').innerText = '✓ تم تطبيق خصم 5% للعملاء المميزين (VIP)! السعر الأصلي: ' + total + ' ج.م';
+    }
 }
 
 async function checkCustomerStatus(name) {
@@ -70,9 +255,12 @@ async function checkCustomerStatus(name) {
             if(welcomeArea) {
                 welcomeArea.innerHTML = `<span class="vip-badge"><i class="fa-solid fa-crown"></i> عميل مميز VIP (إجمالي طلباتك السابقة: ${data.length})</span>`;
             }
-            calculateTotal(window.currentBasePrice || 300);
+            calculatePrice();
         } else {
             window.isVipCustomer = false;
+            if(document.getElementById('vipDiscountNotice')) {
+                document.getElementById('vipDiscountNotice').style.display = 'none';
+            }
         }
     } catch(err) {
         console.log('Error checking customer status:', err);
@@ -100,9 +288,9 @@ async function sendWhatsApp() {
         }
     }
     
-    let msg = `السلام عليكم، أطلب خدمة: ${serviceTitle}%0aالاسم: ${name}%0aالهاتف: ${phone}%0aالعنوان: ${address}%0aالسعر التقديري: ${finalPrice} جنيه`;
+    let msg = `السلام عليكم، أطلب خدمة: ${serviceTitle}%0aالاسم: ${name}%0aالهاتف: ${phone}%0aالعنوان: ${address}%0aالسعر التقديري: ${finalPrice} ج.م%0a(ملاحظة: هذا السعر تقديري ويتم تأكيده بعد المعاينة)`;
     if(window.isVipCustomer) {
-        msg += `%0a(ملاحظة: تم تطبيق خصم 5% للعميل المميز VIP)`;
+        msg += `%0a✓ تم تطبيق خصم 5% للعميل المميز VIP`;
     }
     window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
     closeForm();
@@ -115,13 +303,13 @@ function addExperienceField() {
     div.style.cssText = 'background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.08);';
     div.innerHTML = `
         <label style="display:block; margin-bottom:5px; font-weight:700;">اسم الوظيفة / الدور</label>
-        <input type="text" class="exp-title" required placeholder="مثال: فني تنفيذ رئيسي" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; margin-bottom:10px;">
+        <input type="text" class="exp-title" required placeholder="مثال: فني تنفيذ رئيسي" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
 
         <label style="display:block; margin-bottom:5px; font-weight:700;">اسم المكان / الشركة / المشروع</label>
-        <input type="text" class="exp-workplace" required placeholder="مثال: شركة النور" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; margin-bottom:10px;">
+        <input type="text" class="exp-workplace" required placeholder="مثال: شركة النور" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
 
         <label style="display:block; margin-bottom:5px; font-weight:700;">المدة (الفترة الزمنية)</label>
-        <input type="text" class="exp-duration" required placeholder="مثال: من 2021 إلى 2024" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff;">
+        <input type="text" class="exp-duration" required placeholder="مثال: من 2021 إلى 2024" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
     `;
     container.appendChild(div);
 }
@@ -238,13 +426,13 @@ function sendChatMessage() {
         let reply = "شكراً لتواصلك مع إدارة SN ELECTRIC. لقد تلقينا رسالتك وسنتابع طلبك فوراً.";
         
         const lower = text.toLowerCase();
-        if(lower.includes('طلب جديد') || lower.includes('أوردر ثالث') || lower.includes('أورد جديد') || lower.includes('كمان طلب') || lower.includes('خدمة كمان')) {
-            reply = "بصفتك عميلاً مميزاً (VIP)، يسعدنا إبلاغك بأنه تم تطبيق خصم إضافي بقيمة 5% على تكلفة طلبك الجديد تقديراً لثقتك المستمرة بنا!";
+        if(lower.includes('طلب جديد') || lower.includes('أوردر') || lower.includes('خدمة')) {
+            reply = "بصفتك عميلاً مميزاً (VIP)، يسعدنا إبلاغك بأنه تم تطبيق خصم إضافي بقيمة 5% على تكلفة طلبك الجديد. برجاء اختيار الخدمة المطلوبة من القسم المخصص.";
             window.isVipCustomer = true;
         } else if(lower.includes('أسعار') || lower.includes('تكلفة')) {
-            reply = "أسعارنا تنافسية للغاية مع خصم 5% تلقائي للعملاء المتكررين. يمكنك طلب الخدمة مباشرة من قسم الخدمات.";
+            reply = "أسعارنا تنافسية للغاية مع خصم 5% تلقائي للعملاء المتكررين. جميع الأسعار تقديرية وتتم مراجعتها بعد المعاينة. يمكنك طلب الخدمة مباشرة من قسم الخدمات.";
         } else if(lower.includes('موعد') || lower.includes('متى')) {
-            reply = "فريقنا الفني جاهز للتحرك الفوري بناءً على عنوانك ومواعيدك المفضلة.";
+            reply = "فريقنا الفني جاهز للتحرك الفوري بناءً على عنوانك ومواعيدك المفضلة. برجاء تقديم طلبك والاتفاق على التفاصيل عبر واتساب.";
         }
         
         appendMessage(reply, 'incoming');
@@ -262,4 +450,5 @@ function appendMessage(text, sender) {
 
 window.addEventListener('DOMContentLoaded', () => {
     loadTechnicians();
+    window.isVipCustomer = false;
 });
