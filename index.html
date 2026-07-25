@@ -144,7 +144,7 @@
             </a>
             <nav>
                 <a href="#">الرئيسية</a>
-                <a href="#services">خدماتنا</a>
+                <a href="#services">خدماتنا والأسعار</a>
                 <a href="#tech-list">الفنيين والتقييمات</a>
                 <a href="#join-tech">انضم كفني</a>
                 <a href="#contact">تواصل معنا</a>
@@ -160,7 +160,7 @@
                 <p><i class="fa-solid fa-plug"></i> كهربائي محترف - Power & Control</p>
                 <div id="customerWelcomeArea" style="margin-top: 15px;"></div>
                 <div class="hero-buttons" style="margin-top: 20px;">
-                    <a href="#services" class="btn-primary">خدماتنا</a>
+                    <a href="#services" class="btn-primary">خدماتنا والأسعار</a>
                     <a href="#contact" class="btn-secondary">تواصل معنا</a>
                 </div>
             </div>
@@ -170,29 +170,34 @@
     <section id="services">
         <div class="container">
             <div class="section-title">
-                <h2>خدماتنا</h2>
+                <h2>خدماتنا والأسعار المعتمدة</h2>
                 <p>نقدم أفضل خدمات التركيب والصيانة بأعلى معايير الجودة والأمان (خصم 5% تلقائي للعملاء المميزين VIP)</p>
             </div>
             <div class="services-grid">
                 <div class="card">
                     <h3>⚡ تأسيس كهرباء</h3>
-                    <p>تنفيذ جميع أعمال تأسيس الكهرباء للمنازل والشركات والمحلات التجارية بأحدث المعايير.</p>
+                    <p>بدون سلك (50 ج.م للنقطة) أو بسحب السلك (100 ج.م للنقطة).</p>
                     <button onclick="openForm('تأسيس كهرباء')">اطلب الخدمة</button>
                 </div>
                 <div class="card">
                     <h3>💡 تشطيب إكسسوارات</h3>
-                    <p>مفاتيح - برايز - نجف - سبوتات - شرائط LED بأحدث التصاميم الحديثة.</p>
+                    <p>نقطة (50 ج.م) - علبة (40 ج.م) - لوحة (200 ج.م) - مفتاح/لاتين (50 ج.م).</p>
                     <button onclick="openForm('تشطيب إكسسوارات')">اطلب الخدمة</button>
                 </div>
                 <div class="card">
-                    <h3>🔧 صيانة الأعطال</h3>
-                    <p>كشف وإصلاح سريع وفعال لجميع الأعطال الكهربائية بأسعار منافسة.</p>
-                    <button onclick="openForm('صيانة الأعطال')">اطلب الخدمة</button>
+                    <h3>🔧 صيانة أجهزة منزلية</h3>
+                    <p>غسالة - بوتاجاز - خلاط - ميكروويف - فرن - سخان - ثلاجة.</p>
+                    <button onclick="openForm('صيانة أجهزة منزلية')">اطلب الخدمة</button>
                 </div>
                 <div class="card">
                     <h3>📷 كاميرات مراقبة</h3>
-                    <p>تركيب وبرمجة كاميرات المراقبة لتأمين منزلك أو منشاتك بدقة عالية.</p>
+                    <p>تركيب الكاميرا بدون بضاعة (300 جنيه للكاميرا).</p>
                     <button onclick="openForm('كاميرات مراقبة')">اطلب الخدمة</button>
+                </div>
+                <div class="card" style="grid-column: 1 / -1; max-width: 450px; margin: 0 auto; border: 2px dashed var(--accent);">
+                    <h3>🔍 المعاينة</h3>
+                    <p>زيارة داخل المحافظة وتقدير الأعمال والاتفاق على العمل (100 جنيه).</p>
+                    <button onclick="openForm('المعاينة')">طلب معاينة</button>
                 </div>
             </div>
         </div>
@@ -226,12 +231,12 @@
                 <select id="tSpecialty" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
                     <option value="تأسيس كهرباء">تأسيس كهرباء</option>
                     <option value="تشطيب إكسسوارات">تشطيب إكسسوارات</option>
-                    <option value="صيانة أعطال">صيانة أعطال</option>
+                    <option value="صيانة أجهزة منزلية">صيانة أجهزة منزلية</option>
                     <option value="كاميرات مراقبة">كاميرات مراقبة</option>
                 </select>
 
                 <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">منطقة التواجد الحالية</label>
-                <input type="text" id="tArea" required placeholder="مثال: الجيزة" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
+                <input type="text" id="tArea" required placeholder="مثال: الإسكندرية" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
 
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 25px 0;">
 
@@ -300,7 +305,7 @@
             <span style="cursor: pointer; font-size: 18px;" onclick="toggleChat()">&times;</span>
         </div>
         <div class="chat-body" id="chatBody">
-            <div class="chat-message incoming">أهلاً بك! أنا المساعد الذكي للإدارة. كيف يمكننا مساعدتك اليوم؟ (إذا كنت عميلاً مميزاً، اكتب طلبك وسنقوم بتخفيض التكلفة 5% تلقائياً).</div>
+            <div class="chat-message incoming">أهلاً بك! أنا المساعد الذكي للإدارة. كيف يمكننا مساعدتك اليوم؟ (إذا كنت عميلاً مميـزاً، سنطبق خصم 5% تلقائياً).</div>
         </div>
         <div class="chat-footer">
             <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter') sendChatMessage()">
