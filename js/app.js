@@ -115,12 +115,6 @@ function openForm(serviceName) {
                     <option value="صناعي">صناعي</option>
                 </select>
             </div>
-            <div class="calc-item">
-                <label>المحافظة</label>
-                <select id="calcGovernorate" oninput="calculatePrice()">
-                    <option value="">-- داخل المحافظة --</option>
-                </select>
-            </div>
             <div class="calc-total">
                 <div id="priceBreakdown"></div>
                 <div style="margin-top: 10px; font-size: 20px;">سعر المعاينة: <span id="finalPrice">100</span> جنيه</div>
@@ -150,7 +144,7 @@ function calculatePrice() {
         else if(drillingType === 'عميق') pointPrice = 150;
         
         const pointsTotal = points * pointPrice;
-        const wireTotal = wireLength * 10; // 10 ج.م للمتر
+        const wireTotal = wireLength * 10;
         
         total = pointsTotal + wireTotal;
         breakdown = `
@@ -199,7 +193,7 @@ function calculatePrice() {
         const installationType = document.getElementById('calcInstallationType')?.value;
         
         const camerasTotal = cameras * 300;
-        const cableTotal = cableLength * 5; // 5 ج.م للمتر
+        const cableTotal = cableLength * 5;
         const installationFee = installationType === 'متقدم' ? 500 : 0;
         
         total = camerasTotal + cableTotal + installationFee;
@@ -215,13 +209,11 @@ function calculatePrice() {
         breakdown = `<small>سعر المعاينة في المحافظة</small>`;
     }
     
-    // تطبيق خصم VIP
     let finalTotal = total;
     if(window.isVipCustomer) {
         finalTotal = Math.round(total * 0.95);
     }
     
-    // تحديث العناصر
     if(document.getElementById('priceBreakdown')) {
         document.getElementById('priceBreakdown').innerHTML = breakdown;
     }
@@ -234,7 +226,6 @@ function calculatePrice() {
     
     window.finalCalculatedPrice = finalTotal;
     
-    // إظهار إشعار الخصم
     if(window.isVipCustomer && document.getElementById('vipDiscountNotice')) {
         document.getElementById('vipDiscountNotice').style.display = 'block';
         document.getElementById('vipDiscountNotice').innerText = '✓ تم تطبيق خصم 5% للعملاء المميزين (VIP)! السعر الأصلي: ' + total + ' ج.م';

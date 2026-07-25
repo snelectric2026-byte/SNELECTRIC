@@ -6,8 +6,6 @@
     <meta name="theme-color" content="#1e3a8a">
     <meta name="description" content="تطبيق خدمات كهربائية احترافية - تأسيس، تشطيب، صيانة وكاميرات مراقبة">
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e3a8a' width='192' height='192'/><text x='50%' y='50%' font-size='80' font-weight='bold' text-anchor='middle' dy='.3em' fill='%23ffd700' font-family='Arial'>⚡</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e3a8a' width='192' height='192' rx='45'/><text x='50%' y='50%' font-size='80' font-weight='bold' text-anchor='middle' dy='.3em' fill='%23ffd700' font-family='Arial'>⚡</text></svg>">
     <title>SN ELECTRIC</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -152,20 +150,23 @@
             background: rgba(0,0,0,0.3);
             padding: 12px;
             border-radius: 8px;
+            flex-direction: column;
+            align-items: flex-start;
         }
         .calc-item label {
-            flex: 1;
             font-weight: 600;
             font-size: 14px;
+            width: 100%;
+            margin-bottom: 8px;
         }
         .calc-item input, .calc-item select {
-            width: 80px;
+            width: 100%;
             padding: 8px;
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 6px;
             background: #0d1729;
             color: #fff;
-            text-align: center;
+            text-align: right;
             font-weight: bold;
         }
         .calc-total {
@@ -231,27 +232,27 @@
             <div class="services-grid">
                 <div class="card">
                     <h3>⚡ تأسيس كهرباء</h3>
-                    <p>بدون سلك (50 ج.م للنقطة) أو بسحب السلك (100 ج.م للنقطة).</p>
+                    <p>تأسيس الكهرباء في مختلف المساحات والمنازل والمتاجر</p>
                     <button onclick="openForm('تأسيس كهرباء')">اطلب الخدمة</button>
                 </div>
                 <div class="card">
                     <h3>💡 تشطيب إكسسوارات</h3>
-                    <p>نقطة (50 ج.م) - علبة (40 ج.م) - لوحة (200 ج.م) - مفتاح/لاتين (50 ج.م).</p>
+                    <p>تركيب نقاط المفاتيح والبرايز والأسلاك والمفاتيح الأوتوماتيك</p>
                     <button onclick="openForm('تشطيب إكسسوارات')">اطلب الخدمة</button>
                 </div>
                 <div class="card">
                     <h3>🔧 صيانة أجهزة منزلية</h3>
-                    <p>غسالة - بوتاجاز - خلاط - ميكروويف - فرن - سخان - ثلاجة.</p>
+                    <p>اصلاح الغسالة - البوتاجاز - الخلاط - السخان - الثلاجة والميكروويف</p>
                     <button onclick="openForm('صيانة أجهزة منزلية')">اطلب الخدمة</button>
                 </div>
                 <div class="card">
                     <h3>📷 كاميرات مراقبة</h3>
-                    <p>تركيب الكاميرا بدون بضاعة (300 جنيه للكاميرا).</p>
+                    <p>تركيب وتركيب أنظمة كاميرات المراقبة الحديثة والموثوقة</p>
                     <button onclick="openForm('كاميرات مراقبة')">اطلب الخدمة</button>
                 </div>
                 <div class="card" style="grid-column: 1 / -1; max-width: 450px; margin: 0 auto; border: 2px dashed var(--accent);">
                     <h3>🔍 المعاينة</h3>
-                    <p>زيارة داخل المحافظة وتقدير الأعمال والاتفاق على العمل (100 جنيه).</p>
+                    <p>زيارة داخل المحافظة وتقدير الأعمال والاتفاق على العمل</p>
                     <button onclick="openForm('المعاينة')">طلب معاينة</button>
                 </div>
             </div>
@@ -300,19 +301,19 @@
                 <div id="experiencesContainer">
                     <div class="exp-group" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.08);">
                         <label style="display:block; margin-bottom:5px; font-weight:700;">اسم الوظيفة / الدور</label>
-                        <input type="text" class="exp-title" required placeholder="مثال: فني تنفيذ رئيسي" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; margin-bottom:10px;">
+                        <input type="text" class="exp-title" required placeholder="مثال: فني تنفيذ رئيسي" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
 
                         <label style="display:block; margin-bottom:5px; font-weight:700;">اسم المكان / الشركة / المشروع</label>
-                        <input type="text" class="exp-workplace" required placeholder="مثال: شركة النور" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; margin-bottom:10px;">
+                        <input type="text" class="exp-workplace" required placeholder="مثال: شركة النور" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
 
                         <label style="display:block; margin-bottom:5px; font-weight:700;">المدة (الفترة الزمنية)</label>
-                        <input type="text" class="exp-duration" required placeholder="مثال: من 2021 إلى 2024" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff;">
+                        <input type="text" class="exp-duration" required placeholder="مثال: من 2021 إلى 2024" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
                     </div>
                 </div>
 
-                <button type="button" onclick="addExperienceField()" style="background: transparent; color: var(--accent); border: 1px dashed var(--accent); padding: 10px; width: 100%; border-radius: 8px; margin-bottom: 20px; font-weight: bold; cursor: pointer;">+ إضافة خبرة أخرى</button>
+                <button type="button" onclick="addExperienceField()" style="background: transparent; color: var(--accent); border: 1px dashed var(--accent); padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; font-weight: 700; cursor: pointer;">+ إضافة خبرة أخرى</button>
 
-                <button type="submit" style="width: 100%; padding: 15px; background: var(--accent); color: var(--dark); border: none; border-radius: 12px; font-weight: 800; font-size: 18px; cursor: pointer;">تسجيل</button>
+                <button type="submit" style="width: 100%; padding: 15px; background: var(--accent); color: var(--dark); border: none; border-radius: 12px; font-weight: 800; font-size: 18px; cursor: pointer; margin-top: 20px;">انضم الآن</button>
             </form>
         </div>
     </section>
@@ -345,10 +346,10 @@
 
                 <div class="calculator-section" id="calculatorSection"></div>
 
-                <div class="price-box" id="totalPrice">السعر التقديري: 0 جنيه</div>
-                <div id="vipDiscountNotice" style="color: #ffd700; font-weight: bold; margin-top: 5px; display: none;"></div>
+                <div class="price-box" id="totalPrice" style="background: rgba(255,215,0,0.1); padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 4px solid var(--accent); font-weight: bold; font-size: 16px;">السعر التقديري: سيتم حسابه بعد إدخال التفاصيل</div>
+                <div id="vipDiscountNotice" style="color: #ffd700; font-weight: bold; margin-top: 10px; display: none; background: rgba(255,215,0,0.1); padding: 10px; border-radius: 8px;"></div>
 
-                <button type="submit">إرسال الطلب عبر واتساب</button>
+                <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 15px;">إرسال الطلب عبر واتساب</button>
             </form>
         </div>
     </div>
@@ -362,7 +363,7 @@
             <span style="cursor: pointer; font-size: 18px;" onclick="toggleChat()">&times;</span>
         </div>
         <div class="chat-body" id="chatBody">
-            <div class="chat-message incoming">أهلاً بك! أنا المساعد الذكي للإدارة. كيف يمكننا مساعدتك اليوم؟</div>
+            <div class="chat-message incoming">أهلاً بك! أنا المساعد الذكي للإدارة. كيف يمكننا مساعدتك اليوم؟ (إذا كنت عميلاً مميزاً VIP يمكنك الاستفادة من خصم 5% على الخدمات)</div>
         </div>
         <div class="chat-footer">
             <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter') sendChatMessage()">
@@ -381,7 +382,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="js/supabase.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/calculator.js"></script>
-    <script src="js/register-sw.js"></script>
 </body>
 </html>
