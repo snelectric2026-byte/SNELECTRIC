@@ -349,6 +349,8 @@ async function loadTechnicians() {
     let techs = [
         { id: 1, name: 'محمد إبراهيم', specialty: 'تأسيس كهرباء وصيانة', area: 'القاهرة والجيزة', total_stars: 9 },
         { id: 2, name: 'محمود عبد الفتاح', specialty: 'كاميرات مراقبة وإكسسوارات', area: 'الإسكندرية', total_stars: 10 }
+        { id: 3, name: 'محمد على', specialty: ' صيانة اجهزة منزليه', area: 'اسكندرية /العجمى  ', total_stars:11 },
+        { id: 4, name: 'احمد رزق', specialty: 'كاميرات مراقبة وإكسسوارات', area: 'الحبزة', total_stars: 12}
     ];
     
     if(window.supabaseClient) {
