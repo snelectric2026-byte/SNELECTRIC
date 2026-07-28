@@ -1,4 +1,91 @@
-nts = parseInt(document.getElementById('calcPoints')?.value || 0);
+/*==================================================
+    SN ELECTRIC | app.js (المصحح وشامل الوظائف)
+==================================================*/
+
+function openForm(serviceName) {
+    const modal = document.getElementById('formModal');
+    const title = document.getElementById('formTitle');
+    const dynamicFields = document.getElementById('dynamicFields');
+    const calcSection = document.getElementById('calculatorSection');
+    
+    title.innerText = serviceName;
+    modal.style.display = 'block';
+    
+    let fieldsHTML = '';
+    let calcHTML = '';
+    
+    if (serviceName === 'تأسيس كهرباء') {
+        fieldsHTML = `
+            <label>عدد النقاط (المخارج)</label>
+            <input type="number" id="calcPoints" value="10" min="1" oninput="calculatePrice()">
+            <label>طول السلك التقريبي (متر)</label>
+            <input type="number" id="calcWireLength" value="50" min="0" oninput="calculatePrice()">
+            <label>نوع التكسير والحفر</label>
+            <select id="calcDrillingType" onchange="calculatePrice()">
+                <option value="بدون">بدون تكسير (خرطوم ظاهر)</option>
+                <option value="بسيط">بسيط (طوب أحمر)</option>
+                <option value="عميق">عميق (خرسانة / خرسانة مسلحة)</option>
+            </select>
+        `;
+    } else if (serviceName === 'تشطيب إكسسوارات') {
+        fieldsHTML = `
+            <label>عدد النقاط المراد تركيبها</label>
+            <input type="number" id="calcPoints" value="5" min="1" oninput="calculatePrice()">
+            <label>عدد العلب والبرايز</label>
+            <input type="number" id="calcBoxes" value="5" min="0" oninput="calculatePrice()">
+            <label>عدد اللوحات الرئيسية (لوحة مفاتيح)</label>
+            <input type="number" id="calcPanels" value="1" min="0" oninput="calculatePrice()">
+            <label>عدد المفاتيح الأوتوماتيكية</label>
+            <input type="number" id="calcAutomatic" value="3" min="0" oninput="calculatePrice()">
+        `;
+    } else if (serviceName === 'صيانة أجهزة منزلية') {
+        fieldsHTML = `
+            <label>نوع الجهاز المراد صيانته</label>
+            <select id="calcAppliance" onchange="calculatePrice()">
+                <option value="غسالة">غسالة أوتوماتيك</option>
+                <option value="بوتاجاز">بوتاجاز</option>
+                <option value="ثلاجة">ثلاجة / ديب فريزر</option>
+                <option value="سخان">سخان كهربائي</option>
+                <option value="ميكروويف">ميكروويف</option>
+                <option value="خلاط">خلاط أو جهاز صغير</option>
+            </select>
+        `;
+    } else if (serviceName === 'كاميرات مراقبة') {
+        fieldsHTML = `
+            <label>عدد الكاميرات المطلوب تركيبها</label>
+            <input type="number" id="calcCameras" value="2" min="1" oninput="calculatePrice()">
+            <label>طول كابلات التوصيل (متر)</label>
+            <input type="number" id="calcCableLength" value="30" min="0" oninput="calculatePrice()">
+            <label>نوع التمديد والتركيب</label>
+            <select id="calcInstallationType" onchange="calculatePrice()">
+                <option value="عادي">عادي (داخل قنوات بلاستيكية ظاهرة)</option>
+                <option value="متقدم">متقدم (دفن داخل الجدران / مسافات بعيدة)</option>
+            </select>
+        `;
+    } else if (serviceName === 'المعاينة') {
+        fieldsHTML = `<p style="color:var(--accent); font-weight:bold;">زيارة معايشة فنية لتقدير المتطلبات والأحمال بالمنزل أو موقع العمل.</p>`;
+    }
+    
+    dynamicFields.innerHTML = fieldsHTML;
+    calcHTML = `
+        <h4 style="color:var(--accent); margin-bottom:10px;"><i class="fa-solid fa-calculator"></i> حاسبة التكلفة التقديرية</h4>
+        <div id="priceBreakdown" class="calc-breakdown"></div>
+    `;
+    calcSection.innerHTML = calcHTML;
+    calculatePrice();
+}
+
+function closeForm() {
+    document.getElementById('formModal').style.display = 'none';
+}
+
+function calculatePrice() {
+    const title = document.getElementById('formTitle').innerText;
+    let total = 0;
+    let breakdown = '';
+    
+    if (title === 'تأسيس كهرباء') {
+        const points = parseInt(document.getElementById('calcPoints')?.value || 0);
         const wireLength = parseInt(document.getElementById('calcWireLength')?.value || 0);
         const drillingType = document.getElementById('calcDrillingType')?.value || 'بدون';
         
@@ -8,117 +95,62 @@ nts = parseInt(document.getElementById('calcPoints')?.value || 0);
         
         const pointsTotal = points * pointPrice;
         const wireTotal = wireLength * 10;
-        
         total = pointsTotal + wireTotal;
-        breakdown = `
-            <small>
-                ${points} نقاط × ${pointPrice} ج.م = ${pointsTotal} ج.م<br>
-                ${wireLength} متر سلك × 10 ج.م = ${wireTotal} ج.م
-            </small>
-        `;
-    } else if(service === 'تشطيب إكسسوارات') {
+        breakdown = `<small>${points} نقاط × ${pointPrice} ج.م = ${pointsTotal} ج.م<br>${wireLength} متر سلك × 10 ج.م = ${wireTotal} ج.م</small>`;
+    } else if (title === 'تشطيب إكسسوارات') {
         const points = parseInt(document.getElementById('calcPoints')?.value || 0);
         const boxes = parseInt(document.getElementById('calcBoxes')?.value || 0);
         const panels = parseInt(document.getElementById('calcPanels')?.value || 0);
         const automatic = parseInt(document.getElementById('calcAutomatic')?.value || 0);
         
-        const pointsTotal = points * 50;
-        const boxesTotal = boxes * 40;
-        const panelsTotal = panels * 200;
-        const automaticTotal = automatic * 50;
-        
-        total = pointsTotal + boxesTotal + panelsTotal + automaticTotal;
-        breakdown = `
-            <small>
-                ${points} نقطة × 50 ج.م = ${pointsTotal} ج.م<br>
-                ${boxes} علبة × 40 ج.م = ${boxesTotal} ج.م<br>
-                ${panels} لوحة × 200 ج.م = ${panelsTotal} ج.م<br>
-                ${automatic} مفتاح أوتوماتيك × 50 ج.م = ${automaticTotal} ج.م
-            </small>
-        `;
-    } else if(service === 'صيانة أجهزة منزلية') {
+        total = (points * 50) + (boxes * 40) + (panels * 200) + (automatic * 50);
+        breakdown = `<small>تجميع حساب النقاط واللوحات والإكسسوارات</small>`;
+    } else if (title === 'صيانة أجهزة منزلية') {
         const appliance = document.getElementById('calcAppliance')?.value;
-        
-        const prices = {
-            'غسالة': 350,
-            'بوتاجاز': 300,
-            'ثلاجة': 400,
-            'سخان': 250,
-            'ميكروويف': 200,
-            'خلاط': 150
-        };
-        
-        total = appliance && prices[appliance] ? prices[appliance] : 0;
-        breakdown = `<small>صيانة ${appliance}: ${total} ج.م (تقديري - قبل المعاينة)</small>`;
-    } else if(service === 'كاميرات مراقبة') {
+        const prices = { 'غسالة': 350, 'بوتاجاز': 300, 'ثلاجة': 400, 'سخان': 250, 'ميكروويف': 200, 'خلاط': 150 };
+        total = appliance && prices[appliance] ? prices[appliance] : 200;
+        breakdown = `<small>صيانة ${appliance}: ${total} ج.م (تقديري)</small>`;
+    } else if (title === 'كاميرات مراقبة') {
         const cameras = parseInt(document.getElementById('calcCameras')?.value || 1);
         const cableLength = parseInt(document.getElementById('calcCableLength')?.value || 0);
-        const installationType = document.getElementById('calcInstallationType')?.value;
-        
-        const camerasTotal = cameras * 300;
-        const cableTotal = cableLength * 5;
-        const installationFee = installationType === 'متقدم' ? 500 : 0;
-        
-        total = camerasTotal + cableTotal + installationFee;
-        breakdown = `
-            <small>
-                ${cameras} كاميرا × 300 ج.م = ${camerasTotal} ج.م<br>
-                ${cableLength} متر أسلاك × 5 ج.م = ${cableTotal} ج.م
-                ${installationFee > 0 ? '<br>رسوم التركيب المتقدم = ' + installationFee + ' ج.م' : ''}
-            </small>
-        `;
-    } else if(service === 'المعاينة') {
+        total = (cameras * 300) + (cableLength * 5);
+        breakdown = `<small>${cameras} كاميرات مع التمديدات</small>`;
+    } else if (title === 'المعاينة') {
         total = 100;
-        breakdown = `<small>سعر المعاينة في المحافظة</small>`;
+        breakdown = `<small>رسوم المعاينة الميدانية داخل النطاق</small>`;
     }
     
     let finalTotal = total;
-    if(window.isVipCustomer) {
+    if (window.isVipCustomer) {
         finalTotal = Math.round(total * 0.95);
     }
     
-    if(document.getElementById('priceBreakdown')) {
-        document.getElementById('priceBreakdown').innerHTML = breakdown;
-    }
-    if(document.getElementById('finalPrice')) {
-        document.getElementById('finalPrice').innerText = finalTotal;
-    }
-    if(document.getElementById('totalPrice')) {
-        document.getElementById('totalPrice').innerText = 'السعر التقديري: ' + finalTotal + ' جنيه';
-    }
-    
+    if (document.getElementById('priceBreakdown')) document.getElementById('priceBreakdown').innerHTML = breakdown;
+    if (document.getElementById('totalPrice')) document.getElementById('totalPrice').innerText = 'السعر التقديري: ' + finalTotal + ' جنيه';
     window.finalCalculatedPrice = finalTotal;
     
-    if(window.isVipCustomer && document.getElementById('vipDiscountNotice')) {
+    if (window.isVipCustomer && document.getElementById('vipDiscountNotice')) {
         document.getElementById('vipDiscountNotice').style.display = 'block';
         document.getElementById('vipDiscountNotice').innerText = '✓ تم تطبيق خصم 5% للعملاء المميزين (VIP)! السعر الأصلي: ' + total + ' ج.م';
     }
 }
 
 async function checkCustomerStatus(name) {
-    if(!name || !window.supabaseClient) return;
+    if (!name || !window.supabaseClient) return;
     try {
-        const { data, error } = await supabaseClient
-            .from('service_requests')
-            .select('*')
-            .eq('customer_name', name);
-            
-        if(data && data.length >= 1) {
+        const { data } = await supabaseClient.from('service_requests').select('*').eq('customer_name', name);
+        if (data && data.length >= 1) {
             window.isVipCustomer = true;
             const welcomeArea = document.getElementById('customerWelcomeArea');
-            if(welcomeArea) {
+            if (welcomeArea) {
                 welcomeArea.innerHTML = `<span class="vip-badge"><i class="fa-solid fa-crown"></i> عميل مميز VIP (إجمالي طلباتك السابقة: ${data.length})</span>`;
             }
             calculatePrice();
         } else {
             window.isVipCustomer = false;
-            if(document.getElementById('vipDiscountNotice')) {
-                document.getElementById('vipDiscountNotice').style.display = 'none';
-            }
+            if (document.getElementById('vipDiscountNotice')) document.getElementById('vipDiscountNotice').style.display = 'none';
         }
-    } catch(err) {
-        console.log('Error checking customer status:', err);
-    }
+    } catch(err) { console.log('Error checking customer:', err); }
 }
 
 async function sendWhatsApp() {
@@ -128,24 +160,16 @@ async function sendWhatsApp() {
     const serviceTitle = document.getElementById('formTitle').innerText;
     const finalPrice = window.finalCalculatedPrice || 0;
     
-    if(window.supabaseClient) {
+    if (window.supabaseClient) {
         try {
             await supabaseClient.from('service_requests').insert([
                 { customer_name: name, customer_phone: phone, address: address, service_name: serviceTitle, price: finalPrice, status: 'جديد' }
             ]);
-            
-            await supabaseClient.from('customers').upsert([
-                { name: name, phone: phone, total_orders: 1 }
-            ], { onConflict: 'phone' });
-        } catch(e) {
-            console.log('Supabase insert note:', e);
-        }
+        } catch(e) { console.log('Supabase insert note:', e); }
     }
     
     let msg = `السلام عليكم، أطلب خدمة: ${serviceTitle}%0aالاسم: ${name}%0aالهاتف: ${phone}%0aالعنوان: ${address}%0aالسعر التقديري: ${finalPrice} ج.م%0a(ملاحظة: هذا السعر تقديري ويتم تأكيده بعد المعاينة)`;
-    if(window.isVipCustomer) {
-        msg += `%0a✓ تم تطبيق خصم 5% للعميل المميز VIP`;
-    }
+    if (window.isVipCustomer) msg += `%0a✓ تم تطبيق خصم 5% للعميل المميز VIP`;
     window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
     closeForm();
 }
@@ -158,10 +182,8 @@ function addExperienceField() {
     div.innerHTML = `
         <label style="display:block; margin-bottom:5px; font-weight:700;">اسم الوظيفة / الدور</label>
         <input type="text" class="exp-title" required placeholder="مثال: فني تنفيذ رئيسي" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
-
         <label style="display:block; margin-bottom:5px; font-weight:700;">اسم المكان / الشركة / المشروع</label>
         <input type="text" class="exp-workplace" required placeholder="مثال: شركة النور" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
-
         <label style="display:block; margin-bottom:5px; font-weight:700;">المدة (الفترة الزمنية)</label>
         <input type="text" class="exp-duration" required placeholder="مثال: من 2021 إلى 2024" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
     `;
@@ -174,31 +196,25 @@ async function submitTechWithExp() {
     const specialty = document.getElementById('tSpecialty').value;
     const area = document.getElementById('tArea').value;
     
-    if(window.supabaseClient) {
+    if (window.supabaseClient) {
         try {
-            const { data: techData, error } = await supabaseClient.from('technicians').insert([
+            const { data: techData } = await supabaseClient.from('technicians').insert([
                 { name: name, phone: phone, specialty: specialty, area: area, total_stars: 0 }
             ]).select();
-            
-            if(techData && techData.length > 0) {
+            if (techData && techData.length > 0) {
                 const techId = techData[0].id;
-                const expGroups = document.querySelectorAll('.exp-group');
-                for(let group of expGroups) {
-                    const title = group.querySelector('.exp-title').value;
-                    const workplace = group.querySelector('.exp-workplace').value;
-                    const duration = group.querySelector('.exp-duration').value;
-                    
-                    await supabaseClient.from('technician_experiences').insert([
-                        { technician_id: techId, job_title: title, workplace: workplace, duration: duration }
-                    ]);
+                for (let group of document.querySelectorAll('.exp-group')) {
+                    await supabaseClient.from('technician_experiences').insert([{
+                        technician_id: techId,
+                        job_title: group.querySelector('.exp-title').value,
+                        workplace: group.querySelector('.exp-workplace').value,
+                        duration: group.querySelector('.exp-duration').value
+                    }]);
                 }
             }
-        } catch(e) {
-            console.log('Tech submit error:', e);
-        }
+        } catch(e) { console.log('Tech submit error:', e); }
     }
-    
-    alert('تم إرسال طلب انضمامك كفني بنجاح! سيتم مراجعة بياناتك وإضافتك للقائمة.');
+    alert('تم إرسال طلب انضمامك كفني بنجاح!');
     document.getElementById('tName').value = '';
     document.getElementById('tPhone').value = '';
     document.getElementById('tArea').value = '';
@@ -207,19 +223,19 @@ async function submitTechWithExp() {
 
 async function loadTechnicians() {
     const container = document.getElementById('techniciansContainer');
-    if(!container) return;
+    if (!container) return;
     
     let techs = [
         { id: 1, name: 'محمد إبراهيم', specialty: 'تأسيس كهرباء وصيانة', area: 'القاهرة والجيزة', total_stars: 9 },
-        { id: 2, name: 'محمود عبد الفتاح', specialty: 'كاميرات مراقبة وإكسسوارات', area: 'الإسكندرية', total_stars: 10 }
-        { id: 3, name: 'محمد على', specialty: ' صيانة اجهزة منزليه', area: ' اسكندرية /العجمى  ', total_stars:8 },
-        { id: 4, name: 'احمد رزق', specialty: 'كاميرات مراقبة وإكسسوارات', area: ' الحبزة ', total_stars: 8}
+        { id: 2, name: 'محمود عبد الفتاح', specialty: 'كاميرات مراقبة وإكسسوارات', area: 'الإسكندرية', total_stars: 10 },
+        { id: 3, name: 'محمد علي', specialty: 'صيانة أجهزة منزلية', area: 'الإسكندرية / العجمي', total_stars: 8 },
+        { id: 4, name: 'أحمد رزق', specialty: 'كاميرات مراقبة وإكسسوارات', area: 'الجيزة', total_stars: 8 }
     ];
     
-    if(window.supabaseClient) {
+    if (window.supabaseClient) {
         try {
             const { data } = await supabaseClient.from('technicians').select('*');
-            if(data && data.length > 0) techs = data;
+            if (data && data.length > 0) techs = data;
         } catch(e) {}
     }
     
@@ -234,13 +250,11 @@ async function loadTechnicians() {
             <h3 style="color: var(--accent); margin-bottom: 5px;">${tech.name}</h3>
             <p style="margin-bottom: 5px;"><strong>التخصص:</strong> ${tech.specialty}</p>
             <p style="margin-bottom: 10px;"><strong>المنطقة:</strong> ${tech.area}</p>
-            <p><strong>النجوم الحالية:</strong> <span id="star-count-${tech.id}">${stars}</span> ⭐</p>
+            <p><strong>النجوم:</strong> <span>${stars}</span> ⭐</p>
             ${bonusBadge}
-            <div class="rating-stars" data-tech-id="${tech.id}">
+            <div class="rating-stars">
                 <i class="fa-star fa-solid" onclick="rateTech(${tech.id}, 1)"></i>
-                <i class="fa-star fa-solid" onclick="rateTech(${tech.id}, 2)"></i>
                 <i class="fa-star fa-solid" onclick="rateTech(${tech.id}, 3)"></i>
-                <i class="fa-star fa-solid" onclick="rateTech(${tech.id}, 4)"></i>
                 <i class="fa-star fa-solid" onclick="rateTech(${tech.id}, 5)"></i>
             </div>
         `;
@@ -250,17 +264,12 @@ async function loadTechnicians() {
 
 async function rateTech(techId, starsGiven) {
     alert(`شكراً لتقييمك! تم منح الفني ${starsGiven} نجوم.`);
-    if(window.supabaseClient) {
+    if (window.supabaseClient) {
         try {
             const { data } = await supabaseClient.from('technicians').select('total_stars').eq('id', techId).single();
-            let currentStars = data ? (data.total_stars || 0) : 0;
-            let newTotal = currentStars + starsGiven;
-            
+            let newTotal = (data ? (data.total_stars || 0) : 0) + starsGiven;
             await supabaseClient.from('technicians').update({ total_stars: newTotal }).eq('id', techId);
-            await supabaseClient.from('reviews').insert([{ technician_id: techId, stars: starsGiven }]);
-        } catch(e) {
-            console.log('Rating error:', e);
-        }
+        } catch(e) {}
     }
     loadTechnicians();
 }
@@ -273,25 +282,11 @@ function toggleChat() {
 function sendChatMessage() {
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
-    if(!text) return;
-    
+    if (!text) return;
     appendMessage(text, 'outgoing');
     input.value = '';
-    
     setTimeout(() => {
-        let reply = "شكراً لتواصلك مع إدارة SN ELECTRIC. لقد تلقينا رسالتك وسنتابع طلبك فوراً.";
-        
-        const lower = text.toLowerCase();
-        if(lower.includes('طلب جديد') || lower.includes('أوردر') || lower.includes('خدمة')) {
-            reply = "بصفتك عميلاً مميزاً (VIP)، يسعدنا إبلاغك بأنه تم تطبيق خصم إضافي بقيمة 5% على تكلفة طلبك الجديد. برجاء اختيار الخدمة المطلوبة من القسم المخصص.";
-            window.isVipCustomer = true;
-        } else if(lower.includes('أسعار') || lower.includes('تكلفة')) {
-            reply = "أسعارنا تنافسية للغاية مع خصم 5% تلقائي للعملاء المتكررين. جميع الأسعار تقديرية وتتم مراجعتها بعد المعاينة. يمكنك طلب الخدمة مباشرة من قسم الخدمات.";
-        } else if(lower.includes('موعد') || lower.includes('متى')) {
-            reply = "فريقنا الفني جاهز للتحرك الفوري بناءً على عنوانك ومواعيدك المفضلة. برجاء تقديم طلبك والاتفاق على التفاصيل عبر واتساب.";
-        }
-        
-        appendMessage(reply, 'incoming');
+        appendMessage("شكراً لتواصلك مع إدارة SN ELECTRIC. لقد تلقينا رسالتك وسنتابع طلبك فوراً.", 'incoming');
     }, 800);
 }
 
