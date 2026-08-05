@@ -184,27 +184,51 @@
         </div>
     </footer>
 
+    <!-- تحميل مكتبة Supabase أولاً -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!-- تحميل ملف التهيئة الخاص بك ثانياً ليتم تعريف متغير supabase -->
     <script src="js/supabase.js"></script>
+    <!-- بقية ملفات المشروع -->
     <script src="js/app.js"></script>
     <script src="js/register-sw.js"></script>
     
-    <!-- كود تشغيل العداد عبر Supabase -->
+    <!-- كود تشغيل العداد المعدل والمضمون -->
     <script>
         document.addEventListener("DOMContentLoaded", async function() {
+            const viewCountEl = document.getElementById("view-count");
+
+            // الانتظار قليلاً للتأكد من تهيئة متغير supabase بشكل كامل
+            let attempts = 0;
+            while (typeof supabase === 'undefined' && attempts < 10) {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                attempts++;
+            }
+
+            if (typeof supabase === 'undefined') {
+                console.error("خطأ: لم يتم العثور على متغير supabase. تأكد من صحة الكود داخل js/supabase.js");
+                viewCountEl.textContent = "خطأ في الاتصال";
+                return;
+            }
+
             try {
-                // استدعاء الدالة البرمجية (RPC) التي أنشأناها في قاعدة البيانات لزيادة وتحديث العداد
                 const { data, error } = await supabase.rpc('increment_counter', { 
                     row_name: 'snelistric_visits' 
                 });
 
-                if (error) throw error;
+                if (error) {
+                    console.error("خطأ من قاعدة البيانات:", error.message);
+                    viewCountEl.textContent = "0";
+                    return;
+                }
 
-                // عرض الرقم في العنصر المخصص منسقاً
-                document.getElementById("view-count").textContent = data.toLocaleString();
-            } catch (error) {
-                console.error("خطأ في تحديث العداد من قاعدة البيانات:", error);
-                document.getElementById("view-count").textContent = "---";
+                if (data !== null && data !== undefined) {
+                    viewCountEl.textContent = Number(data).toLocaleString();
+                } else {
+                    viewCountEl.textContent = "0";
+                }
+            } catch (err) {
+                console.error("خطأ غير متوقع:", err);
+                viewCountEl.textContent = "0";
             }
         });
     </script>
