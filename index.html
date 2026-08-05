@@ -189,22 +189,23 @@
     <script src="js/app.js"></script>
     <script src="js/register-sw.js"></script>
     
-    <!-- كود تشغيل العداد -->
+    <!-- كود تشغيل العداد عبر Supabase -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // يمكنك استخدام CountAPI أو ربطه بقاعدة البيانات لاحقاً
-            const namespace = "SNelectric";
-            const key = "visits";
-
-            fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("view-count").textContent = data.value.toLocaleString();
-                })
-                .catch(error => {
-                    console.error("خطأ في جلب العداد:", error);
-                    document.getElementById("view-count").textContent = "متاحة قريباً";
+        document.addEventListener("DOMContentLoaded", async function() {
+            try {
+                // استدعاء الدالة البرمجية (RPC) التي أنشأناها في قاعدة البيانات لزيادة وتحديث العداد
+                const { data, error } = await supabase.rpc('increment_counter', { 
+                    row_name: 'snelistric_visits' 
                 });
+
+                if (error) throw error;
+
+                // عرض الرقم في العنصر المخصص منسقاً
+                document.getElementById("view-count").textContent = data.toLocaleString();
+            } catch (error) {
+                console.error("خطأ في تحديث العداد من قاعدة البيانات:", error);
+                document.getElementById("view-count").textContent = "---";
+            }
         });
     </script>
 </body>
