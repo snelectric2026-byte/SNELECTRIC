@@ -17,7 +17,7 @@
         .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center; }
         .stat-card h3 { color: var(--accent); font-size: 24px; margin-top: 5px; }
         
-        .requests-table-container { background: var(--dark); border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
+        .requests-table-container { background: var(--dark); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 25px; }
         .admin-vertical-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
         .admin-request-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .admin-card-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -31,6 +31,7 @@
         .btn-approve { background: #2ecc71; color: #fff; }
         .btn-reject { background: #e74c3c; color: #fff; }
         .btn-chat { background: var(--accent); color: var(--dark); }
+        .btn-edit-pass { background: #3498db; color: #fff; }
         
         #notificationAlertBox { display: none; background: #e74c3c; color: #fff; padding: 15px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
@@ -42,7 +43,7 @@
         <div class="admin-header">
             <div>
                 <h2><i class="fa-solid fa-user-shield"></i> لوحة تحكم الإدارة - SN ELECTRIC</h2>
-                <p style="font-size: 13px; color: #aaa; margin-top: 5px;">متابعة طلبات العملاء وتعديل الحالات بالوقت الفعلي (عرض رأسي)</p>
+                <p style="font-size: 13px; color: #aaa; margin-top: 5px;">متابعة طلبات العملاء وحساباتهم بالوقت الفعلي</p>
             </div>
             <div>
                 <button onclick="enableAudioAndNotifications()" style="background: var(--accent); color: var(--dark); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-bell"></i> تفعيل المنبه الصوتي</button>
@@ -68,21 +69,28 @@
                 <h3 id="statApproved" style="color: #2ecc71;">0</h3>
             </div>
             <div class="stat-card">
-                <p>تم الرفض ❌</p>
-                <h3 id="statRejected" style="color: #e74c3c;">0</h3>
+                <p>إجمالي العملاء المسجلين</p>
+                <h3 id="statClients" style="color: #3498db;">0</h3>
             </div>
         </div>
 
-        <!-- قسم عرض الطلبات بشكل رأسي مرتب -->
+        <!-- قسم طلبات العملاء -->
         <div class="requests-table-container">
-            <h3 style="margin-bottom: 15px; color: var(--accent);"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات (القائمة الرأسية)</h3>
+            <h3 style="margin-bottom: 15px; color: var(--accent);"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات</h3>
             <div id="adminVerticalList" class="admin-vertical-list">
-                <div style="text-align: center; padding: 20px;">جاري جلب البيانات...</div>
+                <div style="text-align: center; padding: 20px;">جاري جلب الطلبات...</div>
+            </div>
+        </div>
+
+        <!-- قسم سجل وحسابات العملاء وأكواد المرور -->
+        <div class="requests-table-container">
+            <h3 style="margin-bottom: 15px; color: #3498db;"><i class="fa-solid fa-users-gear"></i> سجل حسابات العملاء (أرقام الهواتف وكلمات السر)</h3>
+            <div id="adminClientsList" class="admin-vertical-list">
+                <div style="text-align: center; padding: 20px;">جاري جلب حسابات العملاء...</div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة منبه صوتي مخفية -->
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -102,6 +110,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminRequests();
+            loadAdminClients();
             setupRealtimeSubscription();
         });
 
@@ -109,7 +118,7 @@
             if (!window.supabaseClient) return;
 
             try {
-                const { data, error } = await window.supabaseClient
+                const { data } = await window.supabaseClient
                     .from('service_requests')
                     .select('*')
                     .order('created_at', { ascending: false });
@@ -123,7 +132,79 @@
             }
         }
 
-        // رسم الطلبات بشكل رأسي احترافي في لوحة التحكم
+        async function loadAdminClients() {
+            if (!window.supabaseClient) return;
+
+            try {
+                const { data } = await window.supabaseClient
+                    .from('clients')
+                    .select('*')
+                    .order('phone', { ascending: true });
+
+                const container = document.getElementById('adminClientsList');
+                const statClients = document.getElementById('statClients');
+
+                if (statClients && data) {
+                    statClients.innerText = data.length;
+                }
+
+                if (!container) return;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; padding: 20px; color: #aaa;">لا توجد حسابات عملاء مسجلة حتى الآن</div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                data.forEach((client, index) => {
+                    let card = document.createElement('div');
+                    card.className = 'admin-request-card';
+                    card.innerHTML = `
+                        <div class="admin-card-row">
+                            <span><strong># ${index + 1} | رقم الهاتف:</strong> <a href="tel:${client.phone}" style="color:var(--accent); text-decoration:none; font-weight:bold;">${client.phone}</a></span>
+                            <span><strong>كلمة السر:</strong> <span style="background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; font-family: monospace;">${client.password}</span></span>
+                        </div>
+                        <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
+                            <div class="action-btns">
+                                <button class="btn-edit-pass" onclick="changeClientPassword('${client.phone}')">
+                                    <i class="fa-solid fa-key"></i> تعديل كلمة السر
+                                </button>
+                                <a href="https://wa.me/2${client.phone}" target="_blank" class="btn-chat">
+                                    <i class="fa-brands fa-whatsapp"></i> مراسلة واتساب
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.log('Error loading clients:', err);
+            }
+        }
+
+        async function changeClientPassword(phone) {
+            let newPass = prompt(`أدخل كلمة المرور الجديدة للرقم (${phone}):`);
+            if (!newPass) return;
+
+            if (!window.supabaseClient) return;
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('clients')
+                    .update({ password: newPass.trim() })
+                    .eq('phone', phone);
+
+                if (!error) {
+                    alert('تم تحديث كلمة السر بنجاح للعميل!');
+                    loadAdminClients();
+                } else {
+                    alert('حدث خطأ أثناء تحديث كلمة السر.');
+                }
+            } catch (err) {
+                console.log('Password update error:', err);
+            }
+        }
+
         function renderRequestsVerticalList(requests) {
             const container = document.getElementById('adminVerticalList');
             if (!container) return;
@@ -175,7 +256,6 @@
             });
         }
 
-        // دالة الاعتماد وإرسال رسالة الواتساب الرسمية للعميل
         function approveAndSendWhatsApp(requestId, phone, clientName, projectCode) {
             updateRequestStatusById(requestId, 'موافقة', false);
 
@@ -186,8 +266,8 @@
                       `تم الموافقة على الطلب (كود المشروع: ${projectCode}) برجاء التواصل مع:%0a` +
                       `المنفذ: ${techName} (رقم الهاتف: ${techPhone})%0a` +
                       `-----------------------------------%0a` +
-                      `⚠️ تنبيه هام: الاتفاق عبر وسائل التواصل بدون رسائل حساب (إيداع المبلغ في حساب الفني أو موافقة كتابية من المنفذ باستلاستلام الجنيه نقداً) لا يعد مستنداً رسمياً.%0a` +
-                      `وإن تم الاتفاق والانتهاء من العمل بدون أي مشاكل وتراضٍ بين الطرفين، يتم دفع 10% من القيمة الإجمالية للشركة (حق الإدارة والمتابعة) دون الهبة.`;
+                      `⚠️ تنبيه هام: الاتفاق عبر وسائل التواصل بدون رسائل حساب (إيداع المبلغ في حساب الفني أو موافقة كتابية من المنفذ باستلام الجنيه نقداً) لا يعد مستنداً رسمياً.%0a` +
+                      `وإن تم الاتفاق والانتهاء من العمل بدون أي مشاكل وتراضٍ بين الطرفين، يتم دفع 10% من القيمة الإجمالية للشركة (حق الإدارة والمتابعة).`;
 
             window.open(`https://wa.me/2${phone}?text=${msg}`, '_blank');
         }
@@ -204,7 +284,6 @@
             document.getElementById('statRejected').innerText = rejected;
         }
 
-        // دالة التحديث الدقيقة المعتمدة على المعرف الفريد id حصراً
         async function updateRequestStatusById(requestId, newStatus, showAlert = true) {
             if (!window.supabaseClient) return;
 
@@ -212,7 +291,7 @@
                 const { error } = await window.supabaseClient
                     .from('service_requests')
                     .update({ status: newStatus })
-                    .eq('id', requestId); // التحديث حصراً للطلب المحدد فقط
+                    .eq('id', requestId);
 
                 if (!error) {
                     if (showAlert) alert(`تم تحديث حالة الطلب بنجاح إلى: ${newStatus}`);
@@ -251,6 +330,7 @@
             }
 
             loadAdminRequests();
+            loadAdminClients();
         }
     </script>
     <script src="js/register-sw.js"></script>
