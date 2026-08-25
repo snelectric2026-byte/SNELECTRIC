@@ -17,7 +17,6 @@
         .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center; }
         .stat-card h3 { color: var(--accent); font-size: 24px; margin-top: 5px; }
         
-        /* تعديل عرض الطلبات في لوحة التحكم لتصبح رأسية (قائمة متتالية) */
         .requests-table-container { background: var(--dark); border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
         .admin-vertical-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
         .admin-request-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; width: 100%; }
@@ -140,7 +139,6 @@
                 if (req.status === 'موافقة') statusClass = 'status-approved';
                 else if (req.status === 'مرفوض') statusClass = 'status-rejected';
 
-                // توليد كود أو رقم مشروع تعريفي إن لم يوجد
                 let projectCode = req.id ? `SN-${req.id}` : `SN-2026-${index+1}`;
 
                 let card = document.createElement('div');
@@ -161,10 +159,10 @@
                     </div>
                     <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
                         <div class="action-btns">
-                            <button class="btn-approve" onclick="approveAndSendWhatsApp('${req.customer_phone}', '${req.customer_name || 'العميل'}', '${projectCode}')">
+                            <button class="btn-approve" onclick="approveAndSendWhatsApp(${req.id}, '${req.customer_phone}', '${req.customer_name || 'العميل'}', '${projectCode}')">
                                 <i class="fa-solid fa-check"></i> موافقة وإرسال رسالة الاتفاق
                             </button>
-                            <button class="btn-reject" onclick="updateRequestStatus('${req.customer_phone}', 'مرفوض')">
+                            <button class="btn-reject" onclick="updateRequestStatusById(${req.id}, 'مرفوض')">
                                 <i class="fa-solid fa-xmark"></i> رفض
                             </button>
                             <a href="https://wa.me/2${req.customer_phone}" target="_blank" class="btn-chat">
@@ -177,12 +175,10 @@
             });
         }
 
-        // دالة الاعتماد وإرسال رسالة الواتساب الرسمية للعميل بالشروط القانونية والمالية المطلوبة
-        function approveAndSendWhatsApp(phone, clientName, projectCode) {
-            // تحديث حالة الطلب أولاً في قاعدة البيانات إلى "موافقة"
-            updateRequestStatus(phone, 'موافقة', false);
+        // دالة الاعتماد وإرسال رسالة الواتساب الرسمية للعميل
+        function approveAndSendWhatsApp(requestId, phone, clientName, projectCode) {
+            updateRequestStatusById(requestId, 'موافقة', false);
 
-            // بيانات الفني المنفذ الافتراضية (يمكن تعديلها أو ربطها ديناميكياً لاحقاً)
             let techName = "محمد إبراهيم";
             let techPhone = "01287837118";
 
@@ -190,7 +186,7 @@
                       `تم الموافقة على الطلب (كود المشروع: ${projectCode}) برجاء التواصل مع:%0a` +
                       `المنفذ: ${techName} (رقم الهاتف: ${techPhone})%0a` +
                       `-----------------------------------%0a` +
-                      `⚠️ تنبيه هام: الاتفاق عبر وسائل التواصل بدون رسائل حساب (إيداع المبلغ في حساب الفني أو موافقة كتابية من المنفذ باستلام الجنيه نقداً) لا يعد مستنداً رسمياً.%0a` +
+                      `⚠️ تنبيه هام: الاتفاق عبر وسائل التواصل بدون رسائل حساب (إيداع المبلغ في حساب الفني أو موافقة كتابية من المنفذ باستلاستلام الجنيه نقداً) لا يعد مستنداً رسمياً.%0a` +
                       `وإن تم الاتفاق والانتهاء من العمل بدون أي مشاكل وتراضٍ بين الطرفين، يتم دفع 10% من القيمة الإجمالية للشركة (حق الإدارة والمتابعة) دون الهبة.`;
 
             window.open(`https://wa.me/2${phone}?text=${msg}`, '_blank');
@@ -208,14 +204,15 @@
             document.getElementById('statRejected').innerText = rejected;
         }
 
-        async function updateRequestStatus(customerPhone, newStatus, showAlert = true) {
+        // دالة التحديث الدقيقة المعتمدة على المعرف الفريد id حصراً
+        async function updateRequestStatusById(requestId, newStatus, showAlert = true) {
             if (!window.supabaseClient) return;
 
             try {
                 const { error } = await window.supabaseClient
                     .from('service_requests')
                     .update({ status: newStatus })
-                    .eq('customer_phone', customerPhone);
+                    .eq('id', requestId); // التحديث حصراً للطلب المحدد فقط
 
                 if (!error) {
                     if (showAlert) alert(`تم تحديث حالة الطلب بنجاح إلى: ${newStatus}`);
