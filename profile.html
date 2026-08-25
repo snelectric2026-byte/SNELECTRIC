@@ -126,38 +126,52 @@
         async function loadClientDashboard(phone) {
             const area = document.getElementById('profileContentArea');
             try {
-                const { data } = await window.supabaseClient.from('service_requests').select('*').eq('customer_phone', phone).eq('status', 'موافقة').order('created_at', { ascending: false });
+                const { data: requestsData } = await window.supabaseClient
+                    .from('service_requests')
+                    .select('*')
+                    .eq('customer_phone', phone)
+                    .eq('status', 'موافقة')
+                    .order('created_at', { ascending: false });
 
-                if (!data || data.length === 0) {
+                if (!requestsData || requestsData.length === 0) {
                     renderAuthScreen('لا توجد طلبات معتمدة.');
                     return;
                 }
 
-                let latestReq = data[0];
-                let projectCode = `SN-${latestReq.id}`;
+                let projectsHtml = '';
+                requestsData.forEach((req) => {
+                    let projectCode = `SN-${req.id}`;
+                    projectsHtml += `
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-bottom: 12px;">
+                            <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <h4 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-contract"></i> مشروع رقم: ${projectCode}</h4>
+                                <span style="color: #2ecc71; font-weight: bold; font-size: 12px;">معتمد ✅</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+                                <p style="margin:0;"><strong>الخدمة:</strong> ${req.service_type || req.service_name}</p>
+                                <p style="margin:0;"><strong>الفني المسؤول:</strong> محمد إبراهيم</p>
+                            </div>
+                        </div>
+                    `;
+                });
 
                 area.innerHTML = `
                     <div class="profile-card">
-                        <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <h3 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-contract"></i> مشروع رقم: ${projectCode}</h3>
-                            <div>
-                                <button onclick="logoutClient()" style="background: #e74c3c; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
-                            </div>
+                        <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-user"></i> لوحة متابعة مشاريع العميل</h3>
+                            <button onclick="logoutClient()" style="background: #e74c3c; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px; margin-bottom: 15px;">
-                            <p><strong>العميل:</strong> ${latestReq.customer_name || 'غير متوفر'}</p>
-                            <p><strong>الخدمة:</strong> ${latestReq.service_type || latestReq.service_name}</p>
-                            <p><strong>الفني المسؤول:</strong> محمد إبراهيم</p>
-                            <p><strong>الحالة:</strong> <span style="color: #2ecc71; font-weight: bold;">معتمد ✅</span></p>
+                        <!-- قائمة بكل مشاريع العميل المعتمدة -->
+                        <div style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
+                            ${projectsHtml}
                         </div>
 
+                        <!-- قسم الشات والكاميرا والفيديو -->
                         <div class="chat-container">
                             <div style="background: var(--dark); padding: 12px; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                                 <span><i class="fa-solid fa-comments"></i> شات ومتابعة الموقع الفورية</span>
-                                <div>
-                                    <button onclick="startVideoCall('${phone}')" class="btn-video" style="padding: 6px 12px; border-radius: 6px; border:none; font-size: 12px; cursor:pointer;" title="مكالمة فيديو مباشرة"><i class="fa-solid fa-video"></i> مكالمة فيديو</button>
-                                </div>
+                                <button onclick="startVideoCall('${phone}')" class="btn-video" style="padding: 6px 12px; border-radius: 6px; border:none; font-size: 12px; cursor:pointer;" title="مكالمة فيديو مباشرة"><i class="fa-solid fa-video"></i> مكالمة فيديو</button>
                             </div>
                             <div id="profileChatBody" class="chat-body">
                                 <div class="chat-message incoming">أهلاً بك! يمكنك تصوير الموقع مباشرة بالكاميرا أو بدء مكالمة فيديو مع الإدارة.</div>
