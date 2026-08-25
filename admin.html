@@ -16,18 +16,23 @@
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center; }
         .stat-card h3 { color: var(--accent); font-size: 24px; margin-top: 5px; }
-        .requests-table-container { background: var(--dark); border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; padding: 15px; }
-        table { width: 100%; border-collapse: collapse; text-align: right; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; }
-        th { background: rgba(255,255,255,0.05); color: var(--accent); }
+        
+        /* تعديل عرض الطلبات في لوحة التحكم لتصبح رأسية (قائمة متتالية) */
+        .requests-table-container { background: var(--dark); border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
+        .admin-vertical-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+        .admin-request-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .admin-card-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
         .status-badge { padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; display: inline-block; }
         .status-pending { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid #f1c40f; }
         .status-approved { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
         .status-rejected { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
-        .action-btns button { padding: 6px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 5px; font-size: 13px; }
+        
+        .action-btns button, .action-btns a { padding: 8px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 5px; font-size: 13px; text-decoration: none; display: inline-block; }
         .btn-approve { background: #2ecc71; color: #fff; }
         .btn-reject { background: #e74c3c; color: #fff; }
         .btn-chat { background: var(--accent); color: var(--dark); }
+        
         #notificationAlertBox { display: none; background: #e74c3c; color: #fff; padding: 15px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
@@ -38,7 +43,7 @@
         <div class="admin-header">
             <div>
                 <h2><i class="fa-solid fa-user-shield"></i> لوحة تحكم الإدارة - SN ELECTRIC</h2>
-                <p style="font-size: 13px; color: #aaa; margin-top: 5px;">متابعة طلبات العملاء وتعديل الحالات بالوقت الفعلي</p>
+                <p style="font-size: 13px; color: #aaa; margin-top: 5px;">متابعة طلبات العملاء وتعديل الحالات بالوقت الفعلي (عرض رأسي)</p>
             </div>
             <div>
                 <button onclick="enableAudioAndNotifications()" style="background: var(--accent); color: var(--dark); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-bell"></i> تفعيل المنبه الصوتي</button>
@@ -69,25 +74,12 @@
             </div>
         </div>
 
+        <!-- قسم عرض الطلبات بشكل رأسي مرتب -->
         <div class="requests-table-container">
-            <h3 style="margin-bottom: 15px; color: var(--accent);"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>اسم العميل</th>
-                        <th>الهاتف</th>
-                        <th>الخدمة المطلوبة</th>
-                        <th>العنوان</th>
-                        <th>السعر (ج.م)</th>
-                        <th>الحالة الحالية</th>
-                        <th>الإجراءات والتحكم</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTableBody">
-                    <tr><td colspan="8" style="text-align: center;">جاري جلب البيانات...</td></tr>
-                </tbody>
-            </table>
+            <h3 style="margin-bottom: 15px; color: var(--accent);"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات (القائمة الرأسية)</h3>
+            <div id="adminVerticalList" class="admin-vertical-list">
+                <div style="text-align: center; padding: 20px;">جاري جلب البيانات...</div>
+            </div>
         </div>
     </div>
 
@@ -124,7 +116,7 @@
                     .order('created_at', { ascending: false });
 
                 if (data) {
-                    renderRequestsTable(data);
+                    renderRequestsVerticalList(data);
                     updateStats(data);
                 }
             } catch (err) {
@@ -132,38 +124,76 @@
             }
         }
 
-        function renderRequestsTable(requests) {
-            const tbody = document.getElementById('adminTableBody');
-            if (!tbody) return;
+        // رسم الطلبات بشكل رأسي احترافي في لوحة التحكم
+        function renderRequestsVerticalList(requests) {
+            const container = document.getElementById('adminVerticalList');
+            if (!container) return;
 
             if (requests.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">لا توجد طلبات مسجلة حتى الآن</td></tr>`;
+                container.innerHTML = `<div style="text-align: center; padding: 20px; color: #aaa;">لا توجد طلبات مسجلة حتى الآن</div>`;
                 return;
             }
 
-            tbody.innerHTML = '';
+            container.innerHTML = '';
             requests.forEach((req, index) => {
                 let statusClass = 'status-pending';
                 if (req.status === 'موافقة') statusClass = 'status-approved';
                 else if (req.status === 'مرفوض') statusClass = 'status-rejected';
 
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td><strong>${req.customer_name || 'غير متوفر'}</strong></td>
-                    <td><a href="tel:${req.customer_phone}" style="color:var(--accent); text-decoration:none;">${req.customer_phone}</a></td>
-                    <td>${req.service_name}</td>
-                    <td>${req.address || '-'}</td>
-                    <td>${req.price || 0} ج.م</td>
-                    <td><span class="status-badge ${statusClass}">${req.status || 'قيد الانتظار'}</span></td>
-                    <td class="action-btns">
-                        <button class="btn-approve" onclick="updateRequestStatus('${req.customer_phone}', 'موافقة')"><i class="fa-solid fa-check"></i> موافقة</button>
-                        <button class="btn-reject" onclick="updateRequestStatus('${req.customer_phone}', 'مرفوض')"><i class="fa-solid fa-xmark"></i> رفض</button>
-                        <a href="https://wa.me/2${req.customer_phone}" target="_blank" class="btn-chat" style="padding: 6px 10px; border-radius: 6px; text-decoration: none; display: inline-block; font-size:13px;"><i class="fa-brands fa-whatsapp"></i></a>
-                    </td>
+                // توليد كود أو رقم مشروع تعريفي إن لم يوجد
+                let projectCode = req.id ? `SN-${req.id}` : `SN-2026-${index+1}`;
+
+                let card = document.createElement('div');
+                card.className = 'admin-request-card';
+                card.innerHTML = `
+                    <div class="admin-card-row">
+                        <span><strong># ${index + 1} | كود المشروع:</strong> <span style="color:var(--accent);">${projectCode}</span></span>
+                        <span class="status-badge ${statusClass}">${req.status || 'قيد الانتظار'}</span>
+                    </div>
+                    <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                        <span><strong>العميل:</strong> ${req.customer_name || 'غير متوفر'}</span>
+                        <span><strong>الهاتف:</strong> <a href="tel:${req.customer_phone}" style="color:var(--accent); text-decoration:none;">${req.customer_phone}</a></span>
+                        <span><strong>الخدمة:</strong> ${req.service_name || req.service_type || 'خدمة عامة'}</span>
+                    </div>
+                    <div class="admin-card-row">
+                        <span><strong>العنوان:</strong> ${req.address || 'غير محدد'}</span>
+                        <span><strong>السعر التقديري:</strong> ${req.price || req.estimated_price || 0} ج.م</span>
+                    </div>
+                    <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
+                        <div class="action-btns">
+                            <button class="btn-approve" onclick="approveAndSendWhatsApp('${req.customer_phone}', '${req.customer_name || 'العميل'}', '${projectCode}')">
+                                <i class="fa-solid fa-check"></i> موافقة وإرسال رسالة الاتفاق
+                            </button>
+                            <button class="btn-reject" onclick="updateRequestStatus('${req.customer_phone}', 'مرفوض')">
+                                <i class="fa-solid fa-xmark"></i> رفض
+                            </button>
+                            <a href="https://wa.me/2${req.customer_phone}" target="_blank" class="btn-chat">
+                                <i class="fa-brands fa-whatsapp"></i> واتساب
+                            </a>
+                        </div>
+                    </div>
                 `;
-                tbody.appendChild(tr);
+                container.appendChild(card);
             });
+        }
+
+        // دالة الاعتماد وإرسال رسالة الواتساب الرسمية للعميل بالشروط القانونية والمالية المطلوبة
+        function approveAndSendWhatsApp(phone, clientName, projectCode) {
+            // تحديث حالة الطلب أولاً في قاعدة البيانات إلى "موافقة"
+            updateRequestStatus(phone, 'موافقة', false);
+
+            // بيانات الفني المنفذ الافتراضية (يمكن تعديلها أو ربطها ديناميكياً لاحقاً)
+            let techName = "محمد إبراهيم";
+            let techPhone = "01287837118";
+
+            let msg = `السيد/السيدة : ${clientName}%0a` +
+                      `تم الموافقة على الطلب (كود المشروع: ${projectCode}) برجاء التواصل مع:%0a` +
+                      `المنفذ: ${techName} (رقم الهاتف: ${techPhone})%0a` +
+                      `-----------------------------------%0a` +
+                      `⚠️ تنبيه هام: الاتفاق عبر وسائل التواصل بدون رسائل حساب (إيداع المبلغ في حساب الفني أو موافقة كتابية من المنفذ باستلام الجنيه نقداً) لا يعد مستنداً رسمياً.%0a` +
+                      `وإن تم الاتفاق والانتهاء من العمل بدون أي مشاكل وتراضٍ بين الطرفين، يتم دفع 10% من القيمة الإجمالية للشركة (حق الإدارة والمتابعة) دون الهبة.`;
+
+            window.open(`https://wa.me/2${phone}?text=${msg}`, '_blank');
         }
 
         function updateStats(requests) {
@@ -178,7 +208,7 @@
             document.getElementById('statRejected').innerText = rejected;
         }
 
-        async function updateRequestStatus(customerPhone, newStatus) {
+        async function updateRequestStatus(customerPhone, newStatus, showAlert = true) {
             if (!window.supabaseClient) return;
 
             try {
@@ -188,17 +218,16 @@
                     .eq('customer_phone', customerPhone);
 
                 if (!error) {
-                    alert(`تم تحديث حالة الطلب بنجاح إلى: ${newStatus}`);
+                    if (showAlert) alert(`تم تحديث حالة الطلب بنجاح إلى: ${newStatus}`);
                     loadAdminRequests();
                 } else {
-                    alert('حدث خطأ أثناء التحديث.');
+                    if (showAlert) alert('حدث خطأ أثناء التحديث.');
                 }
             } catch (err) {
                 console.log('Update error:', err);
             }
         }
 
-        // إعداد الاتصال الفوري Realtime لتلقي التنبيهات والأصوات عند قيام أي عميل بطلب جديد
         function setupRealtimeSubscription() {
             if (!window.supabaseClient) return;
 
@@ -211,14 +240,12 @@
         }
 
         function triggerNewOrderAlert(newOrder) {
-            // إظهار التنبيه المرئي
             const alertBox = document.getElementById('notificationAlertBox');
             if (alertBox) {
                 alertBox.style.display = 'block';
-                alertBox.innerText = `🚨 تنبيه: طلب جديد من العميل (${newOrder.customer_name}) لخدمة (${newOrder.service_name})!`;
+                alertBox.innerText = `🚨 تنبيه: طلب جديد من العميل (${newOrder.customer_name}) لخدمة (${newOrder.service_name || newOrder.service_type})!`;
             }
 
-            // تشغيل المنبه الصوتي إذا تم تفعيله
             if (audioEnabled) {
                 const audio = document.getElementById('alertSound');
                 if (audio) {
@@ -226,7 +253,6 @@
                 }
             }
 
-            // إعادة تحميل الجدول تلقائياً لعرض الطلب الجديد
             loadAdminRequests();
         }
     </script>
