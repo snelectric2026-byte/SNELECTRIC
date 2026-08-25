@@ -67,7 +67,16 @@
                 <p>نقدم أفضل خدمات التركيب والصيانة بأعلى معايير الجودة والأمان (خصم 5% تلقائي للعملاء المميزين VIP)</p>
             </div>
             <div class="services-grid">
-                <div class="card"><h3>⚡ تأسيس كهرباء</h3><p>تأسيس الكهرباء في مختلف المساحات والمنازل والمتاجر</p><button onclick="openForm('تأسيس كهرباء')">اطلب الخدمة</button></div>
+                <div class="card">
+                    <h3>⚡ تأسيس شقق</h3>
+                    <p>تأسيس مواسير الشقق (PVC أو EMT)، اللحام البارد، التكحيل، والشدادات مع تركيب اللوحات وعلب التجميع</p>
+                    <button onclick="openForm('تأسيس شقق')">اطلب الخدمة</button>
+                </div>
+                <div class="card">
+                    <h3>🏛️ تأسيس سقف</h3>
+                    <p>تركيب مواسير الأسقف الكهربائية (PVC أو EMT)، اللحام البارد، التكحيل (القورب والمسارات والأسقاط) والشدادات</p>
+                    <button onclick="openForm('تأسيس سقف')">اطلب الخدمة</button>
+                </div>
                 <div class="card"><h3>💡 تشطيب إكسسوارات</h3><p>تركيب نقاط المفاتيح والبرايز والأسلاك والمفاتيح الأوتوماتيك</p><button onclick="openForm('تشطيب إكسسوارات')">اطلب الخدمة</button></div>
                 <div class="card"><h3>🔧 صيانة أجهزة منزلية</h3><p>اصلاح الغسالة - البوتاجاز - الخلاط - السخان - الثلاجة والميكروويف</p><button onclick="openForm('صيانة أجهزة منزلية')">اطلب الخدمة</button></div>
                 <div class="card"><h3>📷 كاميرات مراقبة</h3><p>تركيب وتركيب أنظمة كاميرات المراقبة الحديثة والموثوقة</p><button onclick="openForm('كاميرات مراقبة')">اطلب الخدمة</button></div>
@@ -101,7 +110,8 @@
 
                 <label style="display:block; margin-top:15px; margin-bottom:5px; font-weight:700;">التخصص الأساسي</label>
                 <select id="tSpecialty" style="width:100%; padding:12px; background:var(--dark); border:1px solid var(--border); border-radius:10px; color:#fff; font-size:16px;">
-                    <option value="تأسيس كهرباء">تأسيس كهرباء</option>
+                    <option value="تأسيس شقق">تأسيس شقق</option>
+                    <option value="تأسيس سقف">تأسيس سقف</option>
                     <option value="تشطيب إكسسوارات">تشطيب إكسسوارات</option>
                     <option value="صيانة أجهزة منزلية">صيانة أجهزة منزلية</option>
                     <option value="كاميرات مراقبة">كاميرات مراقبة</option>
@@ -184,50 +194,33 @@
         </div>
     </footer>
 
-    <!-- تحميل مكتبة Supabase أولاً -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <!-- تحميل ملف التهيئة الخاص بك ثانياً ليتم تعريف متغير supabase -->
     <script src="js/supabase.js"></script>
-    <!-- بقية ملفات المشروع -->
     <script src="js/app.js"></script>
     <script src="js/register-sw.js"></script>
     
-    <!-- كود تشغيل العداد المعدل والمضمون -->
     <script>
         document.addEventListener("DOMContentLoaded", async function() {
             const viewCountEl = document.getElementById("view-count");
-
-            // الانتظار قليلاً للتأكد من تهيئة متغير supabase بشكل كامل
             let attempts = 0;
             while (typeof supabase === 'undefined' && attempts < 10) {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 attempts++;
             }
-
             if (typeof supabase === 'undefined') {
-                console.error("خطأ: لم يتم العثور على متغير supabase. تأكد من صحة الكود داخل js/supabase.js");
                 viewCountEl.textContent = "خطأ في الاتصال";
                 return;
             }
-
             try {
                 const { data, error } = await supabase.rpc('increment_counter', { 
                     row_name: 'snelistric_visits' 
                 });
-
                 if (error) {
-                    console.error("خطأ من قاعدة البيانات:", error.message);
                     viewCountEl.textContent = "0";
                     return;
                 }
-
-                if (data !== null && data !== undefined) {
-                    viewCountEl.textContent = Number(data).toLocaleString();
-                } else {
-                    viewCountEl.textContent = "0";
-                }
+                viewCountEl.textContent = data !== null && data !== undefined ? Number(data).toLocaleString() : "0";
             } catch (err) {
-                console.error("خطأ غير متوقع:", err);
                 viewCountEl.textContent = "0";
             }
         });
