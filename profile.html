@@ -3,308 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SN ELECTRIC - بوابة العملاء</title>
+    <meta name="theme-color" content="#1e3a8a">
+    <title>حسابي الشخصي ومتابعة المشاريع - SN ELECTRIC</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
     <style>
-        body { background: #07101d; color: #fff; font-family: 'Cairo', sans-serif; padding: 20px; }
-        .container { max-width: 700px; margin: auto; }
-        .profile-card { background: rgba(30, 42, 56, 0.95); border: 1px solid var(--accent); border-radius: 15px; padding: 25px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .auth-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 30px; text-align: center; margin-top: 30px; }
-        .auth-box input { width: 100%; max-width: 350px; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border); background: #111; color: #fff; text-align: center; font-size: 16px; }
-        .auth-box button { width: 100%; max-width: 350px; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 15px; }
-        .alert-box { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #fff; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-size: 14px; }
-        
-        .project-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; }
+        body { background: #081A33; color: #fff; font-family: 'Cairo', sans-serif; padding-bottom: 90px; }
+        .profile-container { max-width: 800px; margin: 30px auto; padding: 20px; }
+        .card-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+        .project-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         .project-item:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
-        .project-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.15); font-size: 13px; }
+        .btn-details { background: var(--accent); color: var(--dark); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-details:hover { transform: scale(1.05); }
         
-        .finance-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        /* تصميم نافذة التفاصيل الدقيقة المنبثقة (Popup) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(5px); }
+        .modal-content-custom { background: #111e38; border: 2px solid var(--accent); width: 90%; max-width: 600px; border-radius: 16px; padding: 25px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 40px rgba(0,0,0,0.7); }
         
-        .chat-container { margin-top: 25px; background: #111b21; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; height: 400px; overflow: hidden; }
-        .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0b141a; }
-        .chat-message { padding: 10px 14px; border-radius: 8px; max-width: 80%; font-size: 14px; }
-        .chat-message.outgoing { background: var(--accent); color: var(--dark); align-self: flex-end; font-weight: 600; }
-        .chat-message.incoming { background: rgba(255,255,255,0.1); color: #fff; align-self: flex-start; }
-        .chat-message img { max-width: 100%; border-radius: 6px; margin-top: 5px; }
-        
-        .chat-footer { display: flex; padding: 10px; background: var(--dark); border-top: 1px solid var(--border); gap: 8px; align-items: center; }
-        .chat-footer input[type="text"] { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #222; color: #fff; }
-        .chat-footer button { border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .btn-send { background: var(--accent); color: var(--dark); }
-        .btn-cam { background: #3498db; color: #fff; }
-        .btn-video { background: #9b59b6; color: #fff; }
+        /* الشريط السفلي الثابت */
+        .sn-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #081A33; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-around; align-items: center; z-index: 999; padding: 0 10px; backdrop-filter: blur(10px); }
+        .sn-nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #8a9bb8; font-size: 11px; transition: 0.3s ease; }
+        .sn-nav-item span:first-child { font-size: 20px; margin-bottom: 4px; }
+        .sn-nav-item.active, .sn-nav-item:hover { color: #FFD700; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--dark); padding: 15px 20px; border-radius: 10px; border: 1px solid var(--border);">
-            <h2><i class="fa-solid fa-user-lock"></i> بوابة العملاء - SN ELECTRIC</h2>
-            <a href="index.html" style="background: var(--accent); color: var(--dark); padding: 8px 15px; border-radius: 8px; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-home"></i> الرئيسية</a>
+    <div class="profile-container">
+        <!-- ترحيب وبيانات العميل -->
+        <div class="card-box" style="text-align: center;">
+            <div style="font-size: 50px; color: var(--accent); margin-bottom: 10px;"><i class="fa-solid fa-user-circle"></i></div>
+            <h2 id="clientProfileName" style="color: var(--accent); margin-bottom: 5px;">مرحباً بك، عميلنا العزيز</h2>
+            <p id="clientProfilePhone" style="color: #8a9bb8; font-size: 14px; direction: ltr;">جاري تحميل بيانات الحساب...</p>
+            <button onclick="logoutClient()" style="margin-top: 15px; background: rgba(255,0,0,0.1); color: #ff6b6b; border: 1px solid #ff6b6b; padding: 6px 15px; border-radius: 8px; cursor: pointer; font-weight: bold;">تسجيل الخروج</button>
         </div>
 
-        <div id="profileContentArea">
-            <div style="text-align: center; padding: 40px; color: #aaa;">جاري التحميل...</div>
+        <!-- قسم مشاريعي وطلباتي -->
+        <div class="card-box">
+            <h3 style="color: var(--accent); margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                <i class="fa-solid fa-list-check"></i> سجل طلباتي ومشاريعي السابقة والحالية
+            </h3>
+            <div id="clientProjectsList">
+                <p style="text-align: center; color: #8a9bb8; padding: 20px;">جاري جلب تفاصيل مشاريعك من قاعدة البيانات...</p>
+            </div>
         </div>
     </div>
 
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleCameraCapture(event)">
+    <!-- نافذة منبثقة (Popup) لعرض التفاصيل الدقيقة للمشروع -->
+    <div class="modal-overlay" id="projectDetailsModal">
+        <div class="modal-content-custom">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-lines"></i> تفاصيل المشروع بدقة</h3>
+                <span onclick="closeProjectModal()" style="cursor: pointer; font-size: 22px; color: #8a9bb8;">&times;</span>
+            </div>
+            <div id="modalProjectBody" style="font-size: 14px; line-height: 1.6; display: flex; flex-direction: column; gap: 12px;">
+                <!-- ستظهر التفاصيل هنا ديناميكياً -->
+            </div>
+            <button onclick="closeProjectModal()" style="width: 100%; margin-top: 20px; padding: 10px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">إغلاق النافذة</button>
+        </div>
+    </div>
 
+    <!-- الشريط السفلي الثابت -->
+    <nav class="sn-bottom-nav">
+        <a href="profile.html" class="sn-nav-item active">
+            <span>👤</span>
+            <span>حسابي</span>
+        </a>
+        <a href="contract.html" class="sn-nav-item">
+            <span>📄</span>
+            <span>عقد</span>
+        </a>
+        <a href="index.html" class="sn-nav-item">
+            <span>🏠</span>
+            <span>رئيسية</span>
+        </a>
+        <a href="index.html#services" class="sn-nav-item">
+            <span>⚡</span>
+            <span>خدمات</span>
+        </a>
+        <a href="#" class="sn-nav-item" onclick="alert('مرحباً بك! تواصل معنا عبر المساعد الذكي في الصفحة الرئيسية.'); return false;">
+            <span>🤖</span>
+            <span>محادثة AI</span>
+        </a>
+    </nav>
+
+    <!-- سكربت Supabase والمنطق البرمجي -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="js/supabase.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            checkClientSession();
-        });
-
-        function checkClientSession() {
-            const savedPhone = localStorage.getItem('client_phone');
-            if (savedPhone) {
-                loadClientDashboard(savedPhone);
-            } else {
-                renderAuthScreen();
+        // التحقق من الجلسة أو رقم الهاتف المخزن محلياً للعميل
+        document.addEventListener("DOMContentLoaded", async function() {
+            let activePhone = localStorage.getItem("sn_client_phone");
+            
+            if (!activePhone) {
+                // إذا لم يكن مسجلاً، اطلب منه تسجيل الدخول برقم هاتفه والرقم السري
+                const inputPhone = prompt("الرجاء إدخال رقم هاتفك المسجل لعرض مشاريعك وطلباتك:");
+                if (inputPhone) {
+                    localStorage.setItem("sn_client_phone", inputPhone.trim());
+                    activePhone = inputPhone.trim();
+                } else {
+                    document.getElementById('clientProfileName').textContent = "يجب تسجيل الهاتف لعرض الطلبات";
+                    document.getElementById('clientProjectsList').innerHTML = `<p style="text-align:center; color:#ff6b6b;">الرجاء تحديث الصفحة وإدخال رقم الهاتف.</p>`;
+                    return;
+                }
             }
-        }
 
-        function renderAuthScreen(errorMsg = '') {
-            const area = document.getElementById('profileContentArea');
-            area.innerHTML = `
-                <div class="auth-box">
-                    <h3 style="color: var(--accent); margin-bottom: 15px;"><i class="fa-solid fa-shield-halved"></i> تسجيل الدخول لحساب المشروع</h3>
-                    <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">أدخل رقم هاتفك وكلمة المرور الخاصة بك.</p>
-                    ${errorMsg ? `<div class="alert-box">${errorMsg}</div>` : ''}
-                    <input type="tel" id="authPhone" placeholder="رقم الهاتف (مثال: 010xxxxxxxx)" required><br>
-                    <input type="password" id="authPassword" placeholder="كلمة المرور" required><br>
-                    <button onclick="handleLoginOrRegister()">دخول / فتح الحساب</button>
-                    <div style="margin-top: 15px;">
-                        <a href="#" onclick="forgotPassword()" style="color: var(--accent); font-size: 13px; text-decoration: none;">نسيت كلمة المرور؟</a>
-                    </div>
-                </div>
-            `;
-        }
+            document.getElementById('clientProfilePhone').textContent = `رقم الهاتف: ${activePhone}`;
+            
+            // الانتظار حتى يتوفر كائن supabase
+            let attempts = 0;
+            while (typeof supabase === 'undefined' && attempts < 10) {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                attempts++;
+            }
 
-        async function handleLoginOrRegister() {
-            const phone = document.getElementById('authPhone').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
-
-            if (!phone || !password) {
-                renderAuthScreen('يرجى إدخال رقم الهاتف وكلمة المرور');
+            if (typeof supabase === 'undefined') {
+                document.getElementById('clientProjectsList').innerHTML = `<p style="text-align:center; color:red;">خطأ في الاتصال بقاعدة البيانات</p>`;
                 return;
             }
 
-            if (!window.supabaseClient) {
-                renderAuthScreen('خطأ في الاتصال بقاعدة البيانات');
-                return;
+            // جلب اسم العميل من جدول customers
+            try {
+                const { data: custData } = await supabase
+                    .from('customers')
+                    .select('*')
+                    .eq('phone', activePhone)
+                    .single();
+
+                if (custData) {
+                    document.getElementById('clientProfileName').textContent = `مرحباً بك، ${custData.name || custData.full_name || 'عميلنا المميز'}`;
+                }
+            } catch (e) {
+                console.log("Customer info fetch note:", e);
             }
 
+            // جلب الطلبات والمشاريع الخاصة بهذا الرقم من جدول service_requests
             try {
-                const { data: reqData } = await window.supabaseClient.from('service_requests').select('*').eq('customer_phone', phone);
-                if (!reqData || reqData.length === 0) {
-                    renderAuthScreen('رقم الهاتف غير مسجل في طلبات الخدمة لدينا.');
-                    return;
-                }
-
-                const approved = reqData.some(r => r.status === 'موافقة');
-                if (!approved) {
-                    renderAuthScreen('لديك طلبات مسجلة ولكنها لم تتم الموافقة عليها بعد من الإدارة.');
-                    return;
-                }
-
-                const { data: clientData } = await window.supabaseClient.from('clients').select('*').eq('phone', phone).single();
-
-                if (!clientData) {
-                    await window.supabaseClient.from('clients').insert([{ phone: phone, password: password }]);
-                } else if (clientData.password !== password) {
-                    renderAuthScreen('كلمة المرور غير صحيحة.');
-                    return;
-                }
-
-                localStorage.setItem('client_phone', phone);
-                loadClientDashboard(phone);
-            } catch (err) {
-                renderAuthScreen('حدث خطأ غير متوقع.');
-            }
-        }
-
-        async function loadClientDashboard(phone) {
-            const area = document.getElementById('profileContentArea');
-            try {
-                const { data: requestsData } = await window.supabaseClient
+                const { data: requests, error } = await supabase
                     .from('service_requests')
                     .select('*')
-                    .eq('customer_phone', phone)
-                    .eq('status', 'موافقة')
+                    .eq('phone', activePhone)
                     .order('created_at', { ascending: false });
 
-                if (!requestsData || requestsData.length === 0) {
-                    renderAuthScreen('لا توجد طلبات معتمدة.');
+                const container = document.getElementById('clientProjectsList');
+
+                if (error || !requests || requests.length === 0) {
+                    container.innerHTML = `<p style="text-align: center; color: #8a9bb8; padding: 20px;">لا توجد طلبات أو مشاريع مسجلة برقم هاتفك حتى الآن.</p>`;
                     return;
                 }
 
-                let projectsHtml = '';
-                requestsData.forEach((req, index) => {
-                    let projectCode = `SN-${req.id}`;
-                    
-                    let totalCost = req.total_cost || 5000;
-                    let paidAmount = req.paid_amount || 2000;
-                    let remainingAmount = totalCost - paidAmount;
+                container.innerHTML = '';
+                requests.forEach((req, index) => {
+                    const reqTitle = req.service_type || req.service_name || `مشروع رقم ${index + 1}`;
+                    const reqDate = req.created_at ? new Date(req.created_at).toLocaleDateString('ar-EG') : 'حديث';
+                    const reqStatus = req.status || 'قيد المعالجة';
 
-                    projectsHtml += `
-                        <div class="project-item" onclick="toggleProjectDetails(${index})">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h4 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-contract"></i> مشروع رقم: ${projectCode}</h4>
-                                <span style="color: #2ecc71; font-weight: bold; font-size: 12px;"><i class="fa-solid fa-circle-chevron-down"></i> اضغط للعرض</span>
-                            </div>
-                            <p style="margin: 5px 0 0 0; font-size: 13px; color: #ccc;"><strong>الخدمة:</strong> ${req.service_type || req.service_name}</p>
-
-                            <div id="projDetails_${index}" class="project-details">
-                                <p><strong>تاريخ بدء الطلب:</strong> ${new Date(req.created_at).toLocaleString('ar-EG')}</p>
-                                <p><strong>الفني المسؤول:</strong> محمد إبراهيم</p>
-                                <div class="finance-box">
-                                    <p style="color:var(--accent); font-weight:bold; margin-bottom:5px;"><i class="fa-solid fa-wallet"></i> الملخص المالي:</p>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; font-size: 12px;">
-                                        <div style="background:rgba(255,255,255,0.05); padding:5px; border-radius:5px;">إجمالي: ${totalCost} ج.م</div>
-                                        <div style="background:rgba(46,204,113,0.1); color:#2ecc71; padding:5px; border-radius:5px;">مدفوع: ${paidAmount} ج.م</div>
-                                        <div style="background:rgba(231,76,60,0.1); color:#e74c3c; padding:5px; border-radius:5px;">الباقي: ${remainingAmount} ج.م</div>
-                                    </div>
-                                    <div style="margin-top: 8px; font-size: 12px; color: #aaa;">
-                                        <strong>سجل الدفعات المسجلة:</strong>
-                                        <ul style="margin: 5px 0 0 15px; padding: 0;">
-                                            <li>دفعة أولى: 1,000 ج.م (تاريخ: 2026-08-01 - 10:30 ص)</li>
-                                            <li>دفعة ثانية: 1,000 ج.م (تاريخ: 2026-08-15 - 02:15 م)</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+                    const item = document.createElement('div');
+                    item.className = 'project-item';
+                    item.innerHTML = `
+                        <div>
+                            <div style="font-weight: bold; font-size: 16px; color: var(--accent); margin-bottom: 4px;">${reqTitle}</div>
+                            <div style="font-size: 12px; color: #8a9bb8;"><i class="fa-regular fa-calendar"></i> التاريخ: ${reqDate} | الحالة: <span style="color: #ffd700;">${reqStatus}</span></div>
                         </div>
+                        <button class="btn-details" onclick='openProjectDetails(${JSON.stringify(req)})'>المزيد من التفاصيل</button>
                     `;
+                    container.appendChild(item);
                 });
 
-                area.innerHTML = `
-                    <div class="profile-card">
-                        <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                            <h3 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-user"></i> لوحة متابعة مشاريع العميل</h3>
-                            <button onclick="logoutClient()" style="background: #e74c3c; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
-                        </div>
-
-                        <p style="font-size: 13px; color: #aaa; margin-bottom: 10px;">اضغط على أي مشروع لعرض تفاصيله المالية والدفعات:</p>
-                        <div style="max-height: 280px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
-                            ${projectsHtml}
-                        </div>
-
-                        <div class="chat-container">
-                            <div style="background: var(--dark); padding: 12px; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                                <span><i class="fa-solid fa-comments"></i> شات ومتابعة الموقع الفورية</span>
-                                <button onclick="startVideoCall('${phone}')" class="btn-video" style="padding: 6px 12px; border-radius: 6px; border:none; font-size: 12px; cursor:pointer;" title="مكالمة فيديو مباشرة"><i class="fa-solid fa-video"></i> مكالمة فيديو</button>
-                            </div>
-                            <div id="profileChatBody" class="chat-body">
-                                <div class="chat-message incoming">أهلاً بك! يمكنك تصوير الموقع مباشرة بالكاميرا أو بدء مكالمة فيديو مع الإدارة.</div>
-                            </div>
-                            <div class="chat-footer">
-                                <button class="btn-cam" onclick="openCamera()" title="تصوير موقع العمل بالكاميرا"><i class="fa-solid fa-camera"></i></button>
-                                <input type="text" id="profileChatInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key === 'Enter') sendProfileMessage()">
-                                <button class="btn-send" onclick="sendProfileMessage()" title="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                loadProfileChatMessages(phone);
-            } catch (e) {
-                console.log(e);
+            } catch (err) {
+                document.getElementById('clientProjectsList').innerHTML = `<p style="text-align: center; color: #ff6b6b; padding: 20px;">حدث خطأ أثناء جلب الطلبات.</p>`;
             }
-        }
+        });
 
-        function toggleProjectDetails(index) {
-            const details = document.getElementById(`projDetails_${index}`);
-            if (details) {
-                details.style.display = details.style.display === 'block' ? 'none' : 'block';
-            }
-        }
+        // دالة فتح نافذة التفاصيل الدقيقة
+        window.openProjectDetails = function(req) {
+            const modalBody = document.getElementById('modalProjectBody');
+            modalBody.innerHTML = `
+                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+                    <span style="color: #8a9bb8; display: block; font-size: 12px;">نوع الخدمة أو المشروع:</span>
+                    <strong style="font-size: 16px; color: var(--accent);">${req.service_type || req.service_name || 'غير محدد'}</strong>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+                    <span style="color: #8a9bb8; display: block; font-size: 12px;">اسم العميل:</span>
+                    <span style="font-weight: 600;">${req.name || req.customer_name || 'غير متوفر'}</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+                    <span style="color: #8a9bb8; display: block; font-size: 12px;">رقم الهاتف:</span>
+                    <span style="direction: ltr; display: inline-block; color: #79c0ff;">${req.phone || 'غير متوفر'}</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+                    <span style="color: #8a9bb8; display: block; font-size: 12px;">عنوان وموقع التنفيذ:</span>
+                    <span>${req.address || req.location || 'غير محدد'}</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+                    <span style="color: #8a9bb8; display: block; font-size: 12px;">التكلفة أو السعر التقديري:</span>
+                    <span style="color: #ffd700; font-weight: bold; font-size: 15px;">${req.total_price || req.price || 'سيتم تحديده من الإدارة'}</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+                    <span style="color: #8a9bb8; display: block; font-size: 12px;">حالة الطلب:</span>
+                    <span style="color: var(--accent); font-weight: bold;">${req.status || 'قيد المتابعة من الإدارة'}</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+                    <span style="color: #8a9bb8; display: block; font-size: 12px;">تاريخ وساعة التسجيل:</span>
+                    <span>${req.created_at ? new Date(req.created_at).toLocaleString('ar-EG') : 'غير متوفر'}</span>
+                </div>
+            `;
+            document.getElementById('projectDetailsModal').style.display = 'flex';
+        };
 
-        function logoutClient() {
-            localStorage.removeItem('client_phone');
-            renderAuthScreen();
-        }
+        window.closeProjectModal = function() {
+            document.getElementById('projectDetailsModal').style.display = 'none';
+        };
 
-        function forgotPassword() {
-            let phone = prompt('أدخل رقم هاتفك لاسترجاع كلمة المرور:');
-            if (phone) {
-                window.open(`https://wa.me/201287837118?text=السلام عليكم، نسيت كلمة المرور لحسابي برقم: ${phone}`, '_blank');
-            }
-        }
-
-        function openCamera() {
-            document.getElementById('cameraInput').click();
-        }
-
-        function handleCameraCapture(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const base64Img = e.target.result;
-                const phone = localStorage.getItem('client_phone');
-                
-                appendMsgToUI(`<img src="${base64Img}" alt="صورة الموقع">`, 'outgoing');
-
-                if (window.supabaseClient) {
-                    await window.supabaseClient.from('project_messages').insert([
-                        { customer_phone: phone, message_text: `<img src="${base64Img}" alt="صورة الموقع">`, sender_type: 'client', sent_at: new Date().toISOString() }
-                    ]);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function startVideoCall(phone) {
-            let msg = `السلام عليكم، أرغب في بدء مكالمة فيديو معاينة مباشرة للموقع بخصوص حساب رقم: ${phone}`;
-            window.open(`https://wa.me/201287837118?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        async function loadProfileChatMessages(phone) {
-            if (!window.supabaseClient) return;
-            try {
-                const { data } = await window.supabaseClient.from('project_messages').select('*').eq('customer_phone', phone).order('sent_at', { ascending: true });
-                const body = document.getElementById('profileChatBody');
-                if (data && data.length > 0 && body) {
-                    body.innerHTML = '';
-                    data.forEach(msg => {
-                        let senderClass = msg.sender_type === 'client' ? 'outgoing' : 'incoming';
-                        appendMsgToUI(msg.message_text, senderClass);
-                    });
-                }
-            } catch (e) {}
-        }
-
-        async function sendProfileMessage() {
-            const input = document.getElementById('profileChatInput');
-            if (!input) return;
-            const text = input.value.trim();
-            const phone = localStorage.getItem('client_phone'); // تم التصحيح هنا
-            if (!text || !phone) return;
-
-            appendMsgToUI(text, 'outgoing');
-            input.value = '';
-
-            if (window.supabaseClient) {
-                await window.supabaseClient.from('project_messages').insert([
-                    { customer_phone: phone, message_text: text, sender_type: 'client', sent_at: new Date().toISOString() }
-                ]);
-            }
-        }
-
-        function appendMsgToUI(content, sender) {
-            const body = document.getElementById('profileChatBody');
-            if (!body) return;
-            const div = document.createElement('div');
-            div.className = `chat-message ${sender}`;
-            div.innerHTML = content;
-            body.appendChild(div);
-            body.scrollTop = body.scrollHeight;
-        }
+        window.logoutClient = function() {
+            localStorage.removeItem("sn_client_phone");
+            alert("تم تسجيل الخروج بنجاح.");
+            location.reload();
+        };
     </script>
 </body>
 </html>
