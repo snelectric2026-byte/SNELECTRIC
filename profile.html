@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SN ELECTRIC - الصفحة الشخصية وحساب المشروع</title>
+    <title>SN ELECTRIC - بوابة العملاء</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
@@ -11,176 +11,216 @@
         body { background: #07101d; color: #fff; font-family: 'Cairo', sans-serif; padding: 20px; }
         .container { max-width: 700px; margin: auto; }
         .profile-card { background: rgba(30, 42, 56, 0.95); border: 1px solid var(--accent); border-radius: 15px; padding: 25px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .alert-box { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #fff; padding: 20px; border-radius: 12px; text-align: center; font-weight: bold; margin-top: 40px; font-size: 15px; line-height: 1.8; }
-        .chat-container { margin-top: 25px; background: #111b21; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; height: 400px; overflow: hidden; }
+        .auth-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 30px; text-align: center; margin-top: 30px; }
+        .auth-box input { width: 100%; max-width: 350px; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border); background: #111; color: #fff; text-align: center; font-size: 16px; }
+        .auth-box button { width: 100%; max-width: 350px; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        .alert-box { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #fff; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-size: 14px; }
+        
+        .chat-container { margin-top: 25px; background: #111b21; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; height: 450px; overflow: hidden; }
         .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0b141a; }
         .chat-message { padding: 10px 14px; border-radius: 8px; max-width: 80%; font-size: 14px; }
         .chat-message.outgoing { background: var(--accent); color: var(--dark); align-self: flex-end; font-weight: 600; }
         .chat-message.incoming { background: rgba(255,255,255,0.1); color: #fff; align-self: flex-start; }
-        .chat-footer { display: flex; padding: 10px; background: var(--dark); border-top: 1px solid var(--border); gap: 10px; }
-        .chat-footer input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #222; color: #fff; }
-        .chat-footer button { background: var(--accent); color: var(--dark); border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .chat-message img { max-width: 100%; border-radius: 6px; margin-top: 5px; }
+        
+        .chat-footer { display: flex; padding: 10px; background: var(--dark); border-top: 1px solid var(--border); gap: 8px; align-items: center; }
+        .chat-footer input[type="text"] { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #222; color: #fff; }
+        .chat-footer button { background: var(--accent); color: var(--dark); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-cam { background: #3498db !important; color: #fff !important; }
+        .btn-video { background: #e74c3c !important; color: #fff !important; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- زر العودة للرئيسية -->
         <div style="display: flex; justify-content: space-between; align-items: center; background: var(--dark); padding: 15px 20px; border-radius: 10px; border: 1px solid var(--border);">
-            <h2><i class="fa-solid fa-user-gear"></i> الصفحة الشخصية للعميل</h2>
+            <h2><i class="fa-solid fa-user-lock"></i> بوابة العملاء - SN ELECTRIC</h2>
             <a href="index.html" style="background: var(--accent); color: var(--dark); padding: 8px 15px; border-radius: 8px; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-home"></i> الرئيسية</a>
         </div>
 
-        <!-- منطقة المحتوى التي تتغير بناءً على حالة الموافقة -->
         <div id="profileContentArea">
-            <div style="text-align: center; padding: 40px; color: #aaa;">جاري التحقق من حالة اتفاقاتك وسجل حسابك...</div>
+            <div style="text-align: center; padding: 40px; color: #aaa;">جاري التحميل...</div>
         </div>
     </div>
 
-    <!-- مكتبة سوبابيز -->
+    <!-- مخزن مخفي لالتقاط الصور من الكاميرا -->
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleCameraCapture(event)">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="js/supabase.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            checkAndLoadProfile();
+        document.addEventListener('DOMContentLoaded', () => {
+            checkClientSession();
         });
 
-        async function checkAndLoadProfile() {
-            let customerPhone = localStorage.getItem('client_phone');
-            const area = document.getElementById('profileContentArea');
+        function checkClientSession() {
+            const savedPhone = localStorage.getItem('client_phone');
+            if (savedPhone) {
+                loadClientDashboard(savedPhone);
+            } else {
+                renderAuthScreen();
+            }
+        }
 
-            // إذا لم يكن الهاتف مخزناً، نعرض نموذج إدخال الهاتف يدوياً كحل سريع وآمن
-            if (!customerPhone) {
-                area.innerHTML = `
-                    <div class="alert-box">
-                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 30px; margin-bottom: 10px; display: block; color: #e74c3c;"></i>
-                        عذراً، لم يتم العثور على رقم هاتف مسجل في متصفحك. يرجى إدخال رقم الهاتف الذي قدمت به الطلب لفتح حسابك:
-                        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-                            <input type="tel" id="manualPhoneInput" placeholder="أدخل رقم هاتفك..." style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #111; color: #fff; width: 220px; text-align: center;">
-                            <button onclick="savePhoneAndReload()" style="background: var(--accent); color: var(--dark); border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">دخول</button>
-                        </div>
-                        <br>
-                        <a href="index.html" style="color: var(--accent); text-decoration: underline; font-size: 13px;">أو الانتقال لتقديم طلب جديد</a>
+        function renderAuthScreen(errorMsg = '') {
+            const area = document.getElementById('profileContentArea');
+            area.innerHTML = `
+                <div class="auth-box">
+                    <h3 style="color: var(--accent); margin-bottom: 15px;"><i class="fa-solid fa-shield-halved"></i> تسجيل الدخول لحساب المشروع</h3>
+                    <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">أدخل رقم هاتفك وكلمة المرور الخاصة بك.</p>
+                    ${errorMsg ? `<div class="alert-box">${errorMsg}</div>` : ''}
+                    <input type="tel" id="authPhone" placeholder="رقم الهاتف (مثال: 010xxxxxxxx)" required><br>
+                    <input type="password" id="authPassword" placeholder="كلمة المرور" required><br>
+                    <button onclick="handleLoginOrRegister()">دخول / فتح الحساب</button>
+                    <div style="margin-top: 15px;">
+                        <a href="#" onclick="forgotPassword()" style="color: var(--accent); font-size: 13px; text-decoration: none;">نسيت كلمة المرور؟</a>
                     </div>
-                `;
+                </div>
+            `;
+        }
+
+        async function handleLoginOrRegister() {
+            const phone = document.getElementById('authPhone').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+
+            if (!phone || !password) {
+                renderAuthScreen('يرجى إدخال رقم الهاتف وكلمة المرور');
                 return;
             }
 
             if (!window.supabaseClient) {
-                area.innerHTML = `<div class="alert-box">خطأ في الاتصال بقاعدة البيانات. يرجى التحقق لاحقاً.</div>`;
+                renderAuthScreen('خطأ في الاتصال بقاعدة البيانات');
                 return;
             }
 
             try {
-                // الاستعلام عن طلبات العميل برقم الهاتف
-                const { data, error } = await window.supabaseClient
-                    .from('service_requests')
-                    .select('*')
-                    .eq('customer_phone', customerPhone);
+                const { data: reqData } = await window.supabaseClient.from('service_requests').select('*').eq('customer_phone', phone);
+                if (!reqData || reqData.length === 0) {
+                    renderAuthScreen('رقم الهاتف غير مسجل في طلبات الخدمة لدينا.');
+                    return;
+                }
+
+                const approved = reqData.some(r => r.status === 'موافقة');
+                if (!approved) {
+                    renderAuthScreen('لديك طلبات مسجلة ولكنها لم تتم الموافقة عليها بعد من الإدارة.');
+                    return;
+                }
+
+                const { data: clientData } = await window.supabaseClient.from('clients').select('*').eq('phone', phone).single();
+
+                if (!clientData) {
+                    await window.supabaseClient.from('clients').insert([{ phone: phone, password: password }]);
+                } else if (clientData.password !== password) {
+                    renderAuthScreen('كلمة المرور غير صحيحة.');
+                    return;
+                }
+
+                localStorage.setItem('client_phone', phone);
+                loadClientDashboard(phone);
+            } catch (err) {
+                renderAuthScreen('حدث خطأ غير متوقع.');
+            }
+        }
+
+        async function loadClientDashboard(phone) {
+            const area = document.getElementById('profileContentArea');
+            try {
+                const { data } = await window.supabaseClient.from('service_requests').select('*').eq('customer_phone', phone).eq('status', 'موافقة').order('created_at', { ascending: false });
 
                 if (!data || data.length === 0) {
-                    area.innerHTML = `
-                        v<div class="alert-box">
-                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 30px; margin-bottom: 10px; display: block; color: #e74c3c;"></i>
-                            رقم الهاتف (${customerPhone}) غير مسجل في طلبات الخدمة. يرجى التأكد من الرقم أو تقديم طلب جديد.
-                            <br><br>
-                            <button onclick="localStorage.removeItem('client_phone'); location.reload();" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 5px 15px; border-radius: 6px; cursor: pointer;">تغيير الرقم</button>
-                        </div>
-                    `;
+                    renderAuthScreen('لا توجد طلبات معتمدة.');
                     return;
                 }
 
-                // فحص ما إذا كان هناك طلب واحد على الأقل تم الموافقة عليه
-                const approvedRequests = data.filter(req => req.status === 'موافقة');
-
-                if (approvedRequests.length === 0) {
-                    area.innerHTML = `
-                        <div class="alert-box" style="background: rgba(241, 196, 15, 0.1); border-color: #f1c40f; color: #f1c40f;">
-                            <i class="fa-solid fa-clock" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>
-                            لديك طلبات مسجلة برقم (${customerPhone}) ولكنها لا تزال (قيد الانتظار). يرجى الانتظار حتى تتم الموافقة عليها من الإدارة.
-                            <br><br>
-                            <button onclick="localStorage.removeItem('client_phone'); location.reload();" style="background: transparent; color: #f1c40f; border: 1px solid #f1c40f; padding: 5px 15px; border-radius: 6px; cursor: pointer;">تسجيل برقم آخر</button>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // إذا وجد طلب موافق عليه، نعرض أحدث طلب مع تفاصيله الكاملة والشات
-                let latestReq = approvedRequests[0];
+                let latestReq = data[0];
                 let projectCode = `SN-${latestReq.id}`;
 
                 area.innerHTML = `
                     <div class="profile-card">
-                        <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                            <h3 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-contract"></i> تفاصيل مشروعك المعتمد</h3>
-                            <span style="background: var(--accent); color: var(--dark); padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px;">${projectCode}</span>
+                        <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <h3 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-contract"></i> مشروع رقم: ${projectCode}</h3>
+                            <div>
+                                <button onclick="logoutClient()" style="background: #e74c3c; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
+                            </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px; margin-bottom: 15px;">
-                            <p><strong>الاسم:</strong> ${latestReq.customer_name || 'غير متوفر'}</p>
-                            <p><strong>الهاتف:</strong> ${latestReq.customer_phone}</p>
-                            <p style="grid-column: span 2;"><strong>العنوان:</strong> ${latestReq.address || 'غير محدد'}</p>
+                            <p><strong>العميل:</strong> ${latestReq.customer_name || 'غير متوفر'}</p>
                             <p><strong>الخدمة:</strong> ${latestReq.service_type || latestReq.service_name}</p>
-                            <p><strong>السعر التقديري:</strong> <span style="color:var(--accent); font-weight:bold;">${latestReq.price || latestReq.estimated_price || 0} ج.م</span></p>
-                            <p><strong>الفني المنفذ:</strong> محمد إبراهيم (<a href="tel:01287837118" style="color:var(--accent); text-decoration:none;">01287837118</a>)</p>
-                            <p><strong>الحالة:</strong> <span style="color: #2ecc71; font-weight: bold;">معتمد وموافق عليه ✅</span></p>
-                        </div>
-
-                        <div style="text-align: center; margin-top: 15px;">
-                            <button onclick="sendProjectImagesToWhatsApp('${projectCode}', '${latestReq.customer_name}')" style="background: #25d366; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;">
-                                <i class="fa-brands fa-whatsapp"></i> إرسال صور المشروع الخاصة بي لواتساب الشركة
-                            </button>
+                            <p><strong>الفني المسؤول:</strong> محمد إبراهيم</p>
+                            <p><strong>الحالة:</strong> <span style="color: #2ecc71; font-weight: bold;">معتمد ✅</span></p>
                         </div>
 
                         <div class="chat-container">
-                            <div style="background: var(--dark); padding: 12px; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-solid fa-lock"></i> محادثة المشروع الآمنة مع الإدارة
+                            <div style="background: var(--dark); padding: 12px; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                                <span><i class="fa-solid fa-comments"></i> شات ومتابعة الموقع الفورية</span>
+                                <div>
+                                    <button onclick="startVideoCall('${phone}')" class="btn-video" style="padding: 5px 10px; border-radius: 6px; border:none; font-size: 12px; cursor:pointer;" title="مكالمة فيديو مباشرة"><i class="fa-solid fa-video"></i> مكالمة فيديو</button>
+                                </div>
                             </div>
                             <div id="profileChatBody" class="chat-body">
-                                <div class="chat-message incoming">أهلاً بك! تم اعتماد طلبك وفتح شات المشروع الآمن لمتابعة كافة التفاصيل مع الإدارة مباشرة.</div>
+                                <div class="chat-message incoming">أهلاً بك! يمكنك تصوير الموقع مباشرة بالكاميرا أو بدء مكالمة فيديو مع الإدارة.</div>
                             </div>
                             <div class="chat-footer">
-                                <input type="text" id="profileChatInput" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key === 'Enter') sendProfileMessage()">
-                                <button onclick="sendProfileMessage()"><i class="fa-solid fa-paper-plane"></i> إرسال</button>
+                                <button class="btn-cam" onclick="openCamera()" title="تصوير وإرسال صورة للموقع"><i class="fa-solid fa-camera"></i></button>
+                                <input type="text" id="profileChatInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key === 'Enter') sendProfileMessage()">
+                                <button onclick="sendProfileMessage()"><i class="fa-solid fa-paper-plane"></i></button>
                             </div>
                         </div>
                     </div>
                 `;
-
-                loadProfileChatMessages(customerPhone);
-
-            } catch (err) {
-                console.log('Error loading profile:', err);
-                area.innerHTML = `<div class="alert-box">حدث خطأ أثناء تحميل بيانات الصفحة الشخصية.</div>`;
+                loadProfileChatMessages(phone);
+            } catch (e) {
+                console.log(e);
             }
         }
 
-        function savePhoneAndReload() {
-            const phoneInput = document.getElementById('manualPhoneInput').value.trim();
-            if (!phoneInput) {
-                alert('يرجى إدخال رقم الهاتف صحيحاً');
-                return;
-            }
-            localStorage.setItem('client_phone', phoneInput);
-            location.reload();
+        function logoutClient() {
+            localStorage.removeItem('client_phone');
+            renderAuthScreen();
         }
 
-        function sendProjectImagesToWhatsApp(projectCode, clientName) {
-            let msg = `السلام عليكم، أرسل صور المشروع الخاصة بي:%0a` +
-                      `كود المشروع: ${projectCode}%0a` +
-                      `اسم العميل: ${clientName || 'العميل'}`;
-            window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
+        function forgotPassword() {
+            let phone = prompt('أدخل رقم هاتفك لاسترجاع كلمة المرور:');
+            if (phone) {
+                window.open(`https://wa.me/201287837118?text=السلام عليكم، نسيت كلمة المرور لحسابي برقم: ${phone}`, '_blank');
+            }
+        }
+
+        function openCamera() {
+            document.getElementById('cameraInput').click();
+        }
+
+        function handleCameraCapture(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Img = e.target.result;
+                const phone = localStorage.getItem('client_phone');
+                
+                appendMsgToUI(`<img src="${base64Img}" alt="صورة الموقع">`, 'outgoing');
+
+                if (window.supabaseClient) {
+                    await window.supabaseClient.from('project_messages').insert([
+                        { customer_phone: phone, message_text: `<img src="${base64Img}" alt="صورة الموقع">`, sender_type: 'client', sent_at: new Date().toISOString() }
+                    ]);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function startVideoCall(phone) {
+            // فتح مكالمة فيديو فورية عبر واتساب الشركة (بدون حفظ في الدेटा)
+            let msg = `السلام عليكم، أرغب في بدء مكالمة فيديو معاينة مباشرة للموقع بخصوص حساب رقم: ${phone}`;
+            window.open(`https://wa.me/201287837118?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         async function loadProfileChatMessages(phone) {
             if (!window.supabaseClient) return;
             try {
-                const { data } = await window.supabaseClient
-                    .from('project_messages')
-                    .select('*')
-                    .eq('customer_phone', phone)
-                    .order('sent_at', { ascending: true });
-
+                const { data } = await window.supabaseClient.from('project_messages').select('*').eq('customer_phone', phone).order('sent_at', { ascending: true });
                 const body = document.getElementById('profileChatBody');
                 if (data && data.length > 0 && body) {
                     body.innerHTML = '';
@@ -189,9 +229,7 @@
                         appendMsgToUI(msg.message_text, senderClass);
                     });
                 }
-            } catch (e) {
-                console.log('Chat load error:', e);
-            }
+            } catch (e) {}
         }
 
         async function sendProfileMessage() {
@@ -199,34 +237,24 @@
             if (!input) return;
             const text = input.value.trim();
             const phone = localStorage.getItem('client_phone');
-
             if (!text || !phone) return;
 
             appendMsgToUI(text, 'outgoing');
             input.value = '';
 
             if (window.supabaseClient) {
-                try {
-                    await window.supabaseClient.from('project_messages').insert([
-                        {
-                            customer_phone: phone,
-                            message_text: text,
-                            sender_type: 'client',
-                            sent_at: new Date().toISOString()
-                        }
-                    ]);
-                } catch (e) {
-                    console.log('Message insert error:', e);
-                }
+                await window.supabaseClient.from('project_messages').insert([
+                    { customer_phone: phone, message_text: text, sender_type: 'client', sent_at: new Date().toISOString() }
+                ]);
             }
         }
 
-        function appendMsgToUI(text, sender) {
+        function appendMsgToUI(content, sender) {
             const body = document.getElementById('profileChatBody');
             if (!body) return;
             const div = document.createElement('div');
             div.className = `chat-message ${sender}`;
-            div.innerText = text;
+            div.innerHTML = content;
             body.appendChild(div);
             body.scrollTop = body.scrollHeight;
         }
