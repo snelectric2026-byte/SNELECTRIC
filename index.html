@@ -132,7 +132,6 @@
 <body>
 
     <header>
-        <!-- تم حذف زر الثلاث خطوط نهائياً لتصبح الواجهة مرتبة -->
         <div class="container nav" style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 12px 16px;">
             <a href="#" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
                 <img src="icon.png" alt="SN ELECTRIC" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px;">
@@ -361,6 +360,101 @@
     <script src="js/register-sw.js"></script>
     
     <script>
+        // دالة إرسال الطلب وحفظ الحساب والرقم السري في جدول customers تلقائياً
+        async function sendWhatsApp() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            
+            if (!name || !phone || !address) {
+                alert("الرجاء ملء جميع البيانات الأساسية (الاسم، الهاتف، العنوان).");
+                return;
+            }
+
+            // طلب رقم سري من العميل لتسجيله في جدول customers
+            let clientPin = prompt("أدخل رقماً سرياً خاصاً بك (لتتمكن من مراجعة طلباتك ومشاريعك لاحقاً من صفحتك الشخصية بكل سهولة):");
+            if (!clientPin) {
+                clientPin = "1234"; // رقم سري افتراضي في حال لم يدخله
+            }
+
+            const titleEl = document.getElementById('formTitle');
+            const serviceType = titleEl ? titleEl.textContent.replace('طلب خدمة: ', '').replace('طلب خدمة', 'خدمة عامة') : 'خدمة عامة';
+            
+            const priceBox = document.getElementById('totalPrice');
+            const totalPriceText = priceBox ? priceBox.textContent : "حسب المعاينة";
+
+            if (typeof supabase === 'undefined') {
+                alert("خطأ في الاتصال بقاعدة البيانات. تأكد من الإنترنت.");
+                return;
+            }
+
+            try {
+                // 1. حفظ أو تحديث بيانات العميل والرقم السري في جدول customers (ليظهر في لوحة الإدارة وفي السجل)
+                const { error: custError } = await supabase
+                    .from('customers')
+                    .upsert([
+                        { 
+                            phone: phone, 
+                            name: name, 
+                            password: clientPin, 
+                            created_at: new Date()
+                        }
+                    ], { onConflict: 'phone' });
+
+                if (custError) {
+                    console.log("Customer upsert note:", custError);
+                }
+
+                // 2. حفظ تفاصيل المشروع في جدول service_requests
+                const { error: reqError } = await supabase
+                    .from('service_requests')
+                    .insert([
+                        {
+                            name: name,
+                            phone: phone,
+                            service_type: serviceType,
+                            address: address,
+                            total_price: totalPriceText,
+                            status: 'قيد المعالجة',
+                            created_at: new Date()
+                        }
+                    ]);
+
+                if (reqError) {
+                    alert("حدث خطأ أثناء حفظ الطلب في قاعدة البيانات.");
+                    return;
+                }
+
+                // حفظ رقم الهاتف محلياً ليدخل مباشرة لصفحته الشخصية
+                localStorage.setItem("sn_client_phone", phone);
+
+                // تجهيز رسالة الواتساب للإدارة
+                const adminPhone = "201558837118";
+                const message = `*طلب خدمة جديد - SN ELECTRIC*%0a` +
+                                `------------------%0a` +
+                                `👤 *الاسم:* ${name}%0a` +
+                                `📞 *الهاتف:* ${phone}%0a` +
+                                `🔒 *الرقم السري:* ${clientPin}%0a` +
+                                `⚡ *الخدمة:* ${serviceType}%0a` +
+                                `📍 *العنوان:* ${address}%0a` +
+                                `💰 *التكلفة:* ${totalPriceText}%0a` +
+                                `------------------%0a` +
+                                `تم تسجيل الطلب والحساب بنجاح عبر الموقع الإلكتروني.`;
+
+                alert("تم حفظ طلبك وحسابك بنجاح! سيتم تحويلك الآن لمتابعة الطلب عبر الواتساب.");
+                
+                window.open(`https://wa.me/${adminPhone}?text=${message}`, '_blank');
+                closeForm();
+                
+                // توجيه العميل تلقائياً لصفحته الشخصية لمشاهدة مشروعه
+                window.location.href = "profile.html";
+
+            } catch (err) {
+                console.error("Error submitting order:", err);
+                alert("حدث خطأ غير متوقع أثناء إرسال الطلب.");
+            }
+        }
+
         // سكربت السحب والإفلات لأيقونة الشات العائمة
         const chatBtn = document.getElementById('draggableChatBtn');
         let isDragging = false;
