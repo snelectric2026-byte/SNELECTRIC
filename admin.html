@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="description" content="لوحة تحكم الإدارة - SN ELECTRIC">
+    <link rel="manifest" href="manifest.json">
+    <title>SN ELECTRIC - لوحة التحكم الإدارية</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
+    <style>
+        body { background: #07101d; color: #fff; font-family: 'Cairo', sans-serif; padding: 20px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--dark); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center; }
+        .stat-card h3 { color: var(--accent); font-size: 24px; margin-top: 5px; }
+        .requests-table-container { background: var(--dark); border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; padding: 15px; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; }
+        th { background: rgba(255,255,255,0.05); color: var(--accent); }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; display: inline-block; }
+        .status-pending { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid #f1c40f; }
+        .status-approved { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+        .status-rejected { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+        .action-btns button { padding: 6px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 5px; font-size: 13px; }
+        .btn-approve { background: #2ecc71; color: #fff; }
+        .btn-reject { background: #e74c3c; color: #fff; }
+        .btn-chat { background: var(--accent); color: var(--dark); }
+        #notificationAlertBox { display: none; background: #e74c3c; color: #fff; padding: 15px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="admin-header">
+            <div>
+                <h2><i class="fa-solid fa-user-shield"></i> لوحة تحكم الإدارة - SN ELECTRIC</h2>
+                <p style="font-size: 13px; color: #aaa; margin-top: 5px;">متابعة طلبات العملاء وتعديل الحالات بالوقت الفعلي</p>
+            </div>
+            <div>
+                <button onclick="enableAudioAndNotifications()" style="background: var(--accent); color: var(--dark); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-bell"></i> تفعيل المنبه الصوتي</button>
+                <a href="index.html" style="background: #1e3a8a; color: #fff; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-right: 10px;"><i class="fa-solid fa-home"></i> الرئيسية</a>
+            </div>
+        </div>
+
+        <div id="notificationAlertBox">
+            <i class="fa-solid fa-triangle-exclamation"></i> تنبيه هام: تم استلام طلب خدمة جديد ومباشر الآن! يرجى المراجعة.
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p>إجمالي الطلبات</p>
+                <h3 id="statTotal">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>قيد الانتظار 🟡</p>
+                <h3 id="statPending" style="color: #f1c40f;">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>تم الموافقة ✅</p>
+                <h3 id="statApproved" style="color: #2ecc71;">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>تم الرفض ❌</p>
+                <h3 id="statRejected" style="color: #e74c3c;">0</h3>
+            </div>
+        </div>
+
+        <div class="requests-table-container">
+            <h3 style="margin-bottom: 15px; color: var(--accent);"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم العميل</th>
+                        <th>الهاتف</th>
+                        <th>الخدمة المطلوبة</th>
+                        <th>العنوان</th>
+                        <th>السعر (ج.م)</th>
+                        <th>الحالة الحالية</th>
+                        <th>الإجراءات والتحكم</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                    <tr><td colspan="8" style="text-align: center;">جاري جلب البيانات...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- نافذة منبه صوتي مخفية -->
+    <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="js/supabase.js"></script>
+    <script>
+        let audioEnabled = false;
+
+        function enableAudioAndNotifications() {
+            audioEnabled = true;
+            const audio = document.getElementById('alertSound');
+            audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+                alert('تم تفعيل المنبه الصوتي والمرئي بنجاح للإشعارات!');
+            }).catch(e => console.log('Audio unlocked:', e));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAdminRequests();
+            setupRealtimeSubscription();
+        });
+
+        async function loadAdminRequests() {
+            if (!window.supabaseClient) return;
+
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('service_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (data) {
+                    renderRequestsTable(data);
+                    updateStats(data);
+                }
+            } catch (err) {
+                console.log('Error loading requests:', err);
+            }
+        }
+
+        function renderRequestsTable(requests) {
+            const tbody = document.getElementById('adminTableBody');
+            if (!tbody) return;
+
+            if (requests.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">لا توجد طلبات مسجلة حتى الآن</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            requests.forEach((req, index) => {
+                let statusClass = 'status-pending';
+                if (req.status === 'موافقة') statusClass = 'status-approved';
+                else if (req.status === 'مرفوض') statusClass = 'status-rejected';
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${req.customer_name || 'غير متوفر'}</strong></td>
+                    <td><a href="tel:${req.customer_phone}" style="color:var(--accent); text-decoration:none;">${req.customer_phone}</a></td>
+                    <td>${req.service_name}</td>
+                    <td>${req.address || '-'}</td>
+                    <td>${req.price || 0} ج.م</td>
+                    <td><span class="status-badge ${statusClass}">${req.status || 'قيد الانتظار'}</span></td>
+                    <td class="action-btns">
+                        <button class="btn-approve" onclick="updateRequestStatus('${req.customer_phone}', 'موافقة')"><i class="fa-solid fa-check"></i> موافقة</button>
+                        <button class="btn-reject" onclick="updateRequestStatus('${req.customer_phone}', 'مرفوض')"><i class="fa-solid fa-xmark"></i> رفض</button>
+                        <a href="https://wa.me/2${req.customer_phone}" target="_blank" class="btn-chat" style="padding: 6px 10px; border-radius: 6px; text-decoration: none; display: inline-block; font-size:13px;"><i class="fa-brands fa-whatsapp"></i></a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStats(requests) {
+            let total = requests.length;
+            let pending = requests.filter(r => !r.status || r.status === 'قيد الانتظار' || r.status === 'قيد الانتظار 🟡').length;
+            let approved = requests.filter(r => r.status === 'موافقة').length;
+            let rejected = requests.filter(r => r.status === 'مرفوض').length;
+
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statPending').innerText = pending;
+            document.getElementById('statApproved').innerText = approved;
+            document.getElementById('statRejected').innerText = rejected;
+        }
+
+        async function updateRequestStatus(customerPhone, newStatus) {
+            if (!window.supabaseClient) return;
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('service_requests')
+                    .update({ status: newStatus })
+                    .eq('customer_phone', customerPhone);
+
+                if (!error) {
+                    alert(`تم تحديث حالة الطلب بنجاح إلى: ${newStatus}`);
+                    loadAdminRequests();
+                } else {
+                    alert('حدث خطأ أثناء التحديث.');
+                }
+            } catch (err) {
+                console.log('Update error:', err);
+            }
+        }
+
+        // إعداد الاتصال الفوري Realtime لتلقي التنبيهات والأصوات عند قيام أي عميل بطلب جديد
+        function setupRealtimeSubscription() {
+            if (!window.supabaseClient) return;
+
+            window.supabaseClient
+                .channel('public:service_requests')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'service_requests' }, payload => {
+                    triggerNewOrderAlert(payload.new);
+                })
+                .subscribe();
+        }
+
+        function triggerNewOrderAlert(newOrder) {
+            // إظهار التنبيه المرئي
+            const alertBox = document.getElementById('notificationAlertBox');
+            if (alertBox) {
+                alertBox.style.display = 'block';
+                alertBox.innerText = `🚨 تنبيه: طلب جديد من العميل (${newOrder.customer_name}) لخدمة (${newOrder.service_name})!`;
+            }
+
+            // تشغيل المنبه الصوتي إذا تم تفعيله
+            if (audioEnabled) {
+                const audio = document.getElementById('alertSound');
+                if (audio) {
+                    audio.play().catch(e => console.log('Audio play error:', e));
+                }
+            }
+
+            // إعادة تحميل الجدول تلقائياً لعرض الطلب الجديد
+            loadAdminRequests();
+        }
+    </script>
+    <script src="js/register-sw.js"></script>
+</body>
+</html>
