@@ -40,6 +40,7 @@
                 <a href="#tech-list">الفنيين والتقييمات</a>
                 <a href="#join-tech">انضم كفني</a>
                 <a href="contract.html">عقد الاتفاق</a>
+                <a href="profile.html" style="color: var(--accent); font-weight: bold;"><i class="fa-solid fa-user-gear"></i> الصفحة الشخصية</a>
                 <a href="terms.html">سياسات التعامل</a>
                 <a href="#contact">تواصل معنا</a>
             </nav>
@@ -56,6 +57,7 @@
                 <div class="hero-buttons" style="margin-top: 20px;">
                     <a href="#services" class="btn-primary">خدماتنا والأسعار</a>
                     <a href="contract.html" class="btn-secondary" style="background:#0b2b57; display:inline-block; text-align:center;">إصدار عقد رسمي</a>
+                    <a href="profile.html" class="btn-secondary" style="background:var(--accent); color:var(--dark); display:inline-block; text-align:center; font-weight:bold;"><i class="fa-solid fa-user-gear"></i> الصفحة الشخصية وحسابي</a>
                 </div>
             </div>
         </div>
@@ -173,24 +175,6 @@
         </div>
     </div>
 
-    <!-- مكان ظهور زر محادثة المشروع الآمنة حصرياً للعملاء المعتمدين -->
-    <div id="floatingSecureChatContainer"></div>
-
-    <!-- صندوق محادثة المشروع الآمنة (مخفي افتراضياً ولا يظهر إلا بعد الموافقة والاعتماد) -->
-    <div id="approvedChatWidget" style="display: none; position: fixed; bottom: 25px; left: 25px; width: 350px; max-width: 90vw; height: 450px; background: #111e38; border: 2px solid var(--accent); border-radius: 15px; flex-direction: column; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden;">
-        <div class="chat-header" style="background: var(--dark); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
-            <span style="font-weight: bold; color: var(--accent); font-size: 14px;"><i class="fa-solid fa-lock"></i> محادثة مشروع SN ELECTRIC الآمنة</span>
-            <span style="cursor: pointer; font-size: 18px; color: #fff;" onclick="toggleApprovedChat()">&times;</span>
-        </div>
-        <div class="chat-body" id="approvedChatBody" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: #fff;">
-            <div class="chat-message incoming" style="background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; max-width: 80%;">مرحباً بك! تمت الموافقة على طلبك. يمكنك مراسلة الإدارة مباشرة من هنا لحفظ كافة تفاصيل المشروع.</div>
-        </div>
-        <div class="chat-footer" style="padding: 10px; background: var(--dark); display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <input type="text" id="approvedChatInput" placeholder="اكتب رسالتك هنا..." style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0d1729; color: #fff; outline: none;" onkeypress="if(event.key==='Enter') sendApprovedMessage()">
-            <button onclick="sendApprovedMessage()" style="background: var(--accent); color: var(--dark); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">إرسال</button>
-        </div>
-    </div>
-
     <div class="chat-widget-btn" onclick="toggleChat()"><i class="fa-solid fa-comments"></i></div>
     <div class="chat-box" id="chatBox">
         <div class="chat-header">
@@ -246,59 +230,5 @@
             }
         });
     </script>
-    <!-- ================================================== -->
-<!-- واجهة حساب المشروع والشات الآمن للعميل المعتمد فقط -->
-<!-- ================================================== -->
-<div id="clientProjectDashboard" style="display: none; background: rgba(30, 42, 56, 0.95); border: 1px solid var(--accent); border-radius: 15px; padding: 20px; margin: 30px auto; max-width: 600px; color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-    <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-contract"></i> لوحة مشروعك المعتمد</h3>
-        <span id="dashProjectCode" style="background: var(--accent); color: var(--dark); padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 13px;">SN-000</span>
-    </div>
-
-    <!-- بيانات العميل والمنفذ -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; margin-bottom: 15px;">
-        <p><strong>العميل:</strong> <span id="dashClientName">-</span></p>
-        <p><strong>الهاتف:</strong> <span id="dashClientPhone">-</span></p>
-        <p style="grid-column: span 2;"><strong>العنوان:</strong> <span id="dashClientAddress">-</span></p>
-        <p><strong>الفني المنفذ:</strong> <span id="dashTechName">محمد إبراهيم</span> (<a href="tel:01287837118" style="color:var(--accent); text-decoration:none;" id="dashTechPhone">01287837118</a>)</p>
-        <p><strong>تقييم الفني:</strong> <span id="dashTechRating">4.9</span> ⭐</p>
-    </div>
-
-    <!-- الحسابات المالية الدقيقة -->
-    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px; font-size: 13px;">
-        <p style="margin-bottom: 5px;">🔹 الدفعة التشغيلية المدفوعة: <span id="dashOpPayment" style="color: #f1c40f; font-weight: bold;">0</span> ج.م</p>
-        <p style="margin-bottom: 5px;">🔹 المبلغ المتبقي: <span id="dashRemainingAmount" style="color: #2ecc71; font-weight: bold;">0</span> ج.م</p>
-        <p style="margin-bottom: 5px;">🔹 حالة الحساب: <span id="dashPaymentStatus" style="font-weight: bold;">قيد التنفيذ</span></p>
-        <p style="margin: 0; color: #aaa; font-size: 12px;">ملاحظة الهدية/التراضٍ: <span id="dashClientGift">تراضٍ شخصي بين الطرفين</span></p>
-    </div>
-
-    <!-- زر إرسال صور المشروع إلى واتساب الشركة -->
-    <div style="text-align: center;">
-        <button onclick="sendProjectImagesToWhatsApp()" style="background: #25d366; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;">
-            <i class="fa-brands fa-whatsapp"></i> إرسال صور المشروع الخاصة بي لواتساب الشركة
-        </button>
-    </div>
-</div>
-
-<!-- حاوية زر فتح الشات الآمن العائم -->
-<div id="floatingSecureChatContainer"></div>
-
-<!-- صندوق المحادثة الآمنة المنبثق (مخفي افتراضياً ويفتح عند الضغط على الزر) -->
-<div id="approvedChatWidget" style="display: none; position: fixed; bottom: 80px; left: 25px; width: 350px; height: 450px; background: #111b21; border: 1px solid var(--border); border-radius: 12px; flex-direction: column; z-index: 1000; box-shadow: 0 5px 25px rgba(0,0,0,0.7);">
-    <div style="background: var(--dark); padding: 12px; border-top-left-radius: 12px; border-top-right-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
-        <span style="font-weight: bold; color: var(--accent);"><i class="fa-solid fa-lock"></i> محادثة المشروع الآمنة</span>
-        <button onclick="toggleApprovedChat()" style="background: none; border: none; color: #fff; cursor: pointer; font-size: 16px;"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div id="approvedChatBody" style="flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #0b141a;">
-        <div style="background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; align-self: flex-start; font-size: 13px; color: #fff;">
-            أهلاً بك! تم فتح شات المشروع الآمن بعد اعتماد طلبك. يمكنك مراسلة الإدارة ومتابعة التفاصيل هنا.
-        </div>
-    </div>
-    <div style="padding: 10px; background: var(--dark); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; display: flex; gap: 8px; border-top: 1px solid var(--border);">
-        <input type="text" id="approvedChatInput" placeholder="اكتب رسالة المشروع هنا..." style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #222; color: #fff; font-size: 13px;" onkeypress="if(event.key === 'Enter') sendApprovedMessage()">
-        <button onclick="sendApprovedMessage()" style="background: var(--accent); color: var(--dark); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
-</div>
-
 </body>
 </html>
