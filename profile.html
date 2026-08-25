@@ -11,7 +11,7 @@
         body { background: #07101d; color: #fff; font-family: 'Cairo', sans-serif; padding: 20px; }
         .container { max-width: 700px; margin: auto; }
         .profile-card { background: rgba(30, 42, 56, 0.95); border: 1px solid var(--accent); border-radius: 15px; padding: 25px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .alert-box { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #e74c3c; padding: 20px; border-radius: 12px; text-align: center; font-weight: bold; margin-top: 40px; font-size: 16px; line-height: 1.8; }
+        .alert-box { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #fff; padding: 20px; border-radius: 12px; text-align: center; font-weight: bold; margin-top: 40px; font-size: 15px; line-height: 1.8; }
         .chat-container { margin-top: 25px; background: #111b21; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; height: 400px; overflow: hidden; }
         .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0b141a; }
         .chat-message { padding: 10px 14px; border-radius: 8px; max-width: 80%; font-size: 14px; }
@@ -42,23 +42,32 @@
     <script src="js/supabase.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const customerPhone = localStorage.getItem('client_phone');
+            checkAndLoadProfile();
+        });
+
+        async function checkAndLoadProfile() {
+            let customerPhone = localStorage.getItem('client_phone');
             const area = document.getElementById('profileContentArea');
 
+            // إذا لم يكن الهاتف مخزناً، نعرض نموذج إدخال الهاتف يدوياً كحل سريع وآمن
             if (!customerPhone) {
                 area.innerHTML = `
                     <div class="alert-box">
-                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>
-                        عذراً، يرجى تقديم طلب اتفاق أولاً والانتظار حتى تتم الموافقة عليه من الإدارة لفتح الصفحة الشخصية والشات الآمن.
-                        <br><br>
-                        <a href="index.html" style="background: var(--accent); color: var(--dark); padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin-top: 10px;">الانتقال لتقديم طلب</a>
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 30px; margin-bottom: 10px; display: block; color: #e74c3c;"></i>
+                        عذراً، لم يتم العثور على رقم هاتف مسجل في متصفحك. يرجى إدخال رقم الهاتف الذي قدمت به الطلب لفتح حسابك:
+                        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                            <input type="tel" id="manualPhoneInput" placeholder="أدخل رقم هاتفك..." style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #111; color: #fff; width: 220px; text-align: center;">
+                            <button onclick="savePhoneAndReload()" style="background: var(--accent); color: var(--dark); border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">دخول</button>
+                        </div>
+                        <br>
+                        <a href="index.html" style="color: var(--accent); text-decoration: underline; font-size: 13px;">أو الانتقال لتقديم طلب جديد</a>
                     </div>
                 `;
                 return;
             }
 
             if (!window.supabaseClient) {
-                area.innerHTML = `<div class="alert-box">خطأ في الاتصال بقاعدة البيانات. يجدر التحقق لاحقاً.</div>`;
+                area.innerHTML = `<div class="alert-box">خطأ في الاتصال بقاعدة البيانات. يرجى التحقق لاحقاً.</div>`;
                 return;
             }
 
@@ -71,9 +80,11 @@
 
                 if (!data || data.length === 0) {
                     area.innerHTML = `
-                        <div class="alert-box">
-                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>
-                            عذراً، يرجى تقديم طلب اتفاق أولاً والانتظار حتى تتم الموافقة عليه من الإدارة لفتح الصفحة الشخصية والشات الآمن.
+                        v<div class="alert-box">
+                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 30px; margin-bottom: 10px; display: block; color: #e74c3c;"></i>
+                            رقم الهاتف (${customerPhone}) غير مسجل في طلبات الخدمة. يرجى التأكد من الرقم أو تقديم طلب جديد.
+                            <br><br>
+                            <button onclick="localStorage.removeItem('client_phone'); location.reload();" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 5px 15px; border-radius: 6px; cursor: pointer;">تغيير الرقم</button>
                         </div>
                     `;
                     return;
@@ -86,13 +97,15 @@
                     area.innerHTML = `
                         <div class="alert-box" style="background: rgba(241, 196, 15, 0.1); border-color: #f1c40f; color: #f1c40f;">
                             <i class="fa-solid fa-clock" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>
-                            لديك طلبات مسجلة ولكنها لا تزال (قيد الانتظار). يرجى الانتظار حتى تتم الموافقة عليها من الإدارة لتفعيل الصفحة الشخصية والشات الآمن.
+                            لديك طلبات مسجلة برقم (${customerPhone}) ولكنها لا تزال (قيد الانتظار). يرجى الانتظار حتى تتم الموافقة عليها من الإدارة.
+                            <br><br>
+                            <button onclick="localStorage.removeItem('client_phone'); location.reload();" style="background: transparent; color: #f1c40f; border: 1px solid #f1c40f; padding: 5px 15px; border-radius: 6px; cursor: pointer;">تسجيل برقم آخر</button>
                         </div>
                     `;
                     return;
                 }
 
-                // إذا وجد طلب موافق عليه أو أكثر، نعرض أحدث طلب مع تفاصيله الكاملة والشات
+                // إذا وجد طلب موافق عليه، نعرض أحدث طلب مع تفاصيله الكاملة والشات
                 let latestReq = approvedRequests[0];
                 let projectCode = `SN-${latestReq.id}`;
 
@@ -107,20 +120,18 @@
                             <p><strong>الاسم:</strong> ${latestReq.customer_name || 'غير متوفر'}</p>
                             <p><strong>الهاتف:</strong> ${latestReq.customer_phone}</p>
                             <p style="grid-column: span 2;"><strong>العنوان:</strong> ${latestReq.address || 'غير محدد'}</p>
-                            <p><strong>الخدمة:</strong> ${latestReq.service_type}</p>
-                            <p><strong>السعر التقديري:</strong> <span style="color:var(--accent); font-weight:bold;">${latestReq.estimated_price || 0} ج.م</span></p>
-                            <p><strong>الفني المنفذ:</strong> ${latestReq.tech_name || 'محمد إبراهيم'} (<a href="tel:${latestReq.tech_phone || '01287837118'}" style="color:var(--accent); text-decoration:none;">${latestReq.tech_phone || '01287837118'}</a>)</p>
+                            <p><strong>الخدمة:</strong> ${latestReq.service_type || latestReq.service_name}</p>
+                            <p><strong>السعر التقديري:</strong> <span style="color:var(--accent); font-weight:bold;">${latestReq.price || latestReq.estimated_price || 0} ج.م</span></p>
+                            <p><strong>الفني المنفذ:</strong> محمد إبراهيم (<a href="tel:01287837118" style="color:var(--accent); text-decoration:none;">01287837118</a>)</p>
                             <p><strong>الحالة:</strong> <span style="color: #2ecc71; font-weight: bold;">معتمد وموافق عليه ✅</span></p>
                         </div>
 
-                        <!-- زر إرسال صور المشروع لواتساب الشركة -->
                         <div style="text-align: center; margin-top: 15px;">
                             <button onclick="sendProjectImagesToWhatsApp('${projectCode}', '${latestReq.customer_name}')" style="background: #25d366; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;">
                                 <i class="fa-brands fa-whatsapp"></i> إرسال صور المشروع الخاصة بي لواتساب الشركة
                             </button>
                         </div>
 
-                        <!-- قسم الشات الآمن الداخلي المباشر -->
                         <div class="chat-container">
                             <div style="background: var(--dark); padding: 12px; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
                                 <i class="fa-solid fa-lock"></i> محادثة المشروع الآمنة مع الإدارة
@@ -136,25 +147,31 @@
                     </div>
                 `;
 
-                // تحميل رسائل الشات الخاصة بهذا العميل
                 loadProfileChatMessages(customerPhone);
 
             } catch (err) {
                 console.log('Error loading profile:', err);
                 area.innerHTML = `<div class="alert-box">حدث خطأ أثناء تحميل بيانات الصفحة الشخصية.</div>`;
             }
-        });
+        }
 
-        // دالة إرسال صور المشروع عبر الواتساب
+        function savePhoneAndReload() {
+            const phoneInput = document.getElementById('manualPhoneInput').value.trim();
+            if (!phoneInput) {
+                alert('يرجى إدخال رقم الهاتف صحيحاً');
+                return;
+            }
+            localStorage.setItem('client_phone', phoneInput);
+            location.reload();
+        }
+
         function sendProjectImagesToWhatsApp(projectCode, clientName) {
             let msg = `السلام عليكم، أرسل صور المشروع الخاصة بي:%0a` +
                       `كود المشروع: ${projectCode}%0a` +
-                      `اسم العميل: ${clientName || 'العميل'}%0a` +
-                      `(يرجى إرفاق الصور المحددة في المحادثة أدناه)`;
+                      `اسم العميل: ${clientName || 'العميل'}`;
             window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
         }
 
-        // جلب الرسائل السابقة للشات
         async function loadProfileChatMessages(phone) {
             if (!window.supabaseClient) return;
             try {
@@ -177,7 +194,6 @@
             }
         }
 
-        // إرسال رسالة جديدة وحفظها في سوبابيز
         async function sendProfileMessage() {
             const input = document.getElementById('profileChatInput');
             if (!input) return;
