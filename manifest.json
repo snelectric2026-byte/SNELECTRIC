@@ -1,8 +1,8 @@
 {
-  "name": "SN ELECTRIC - خدمات كهربائية",
-  "short_name": "SN ELECTRIC",
-  "description": "تطبيق خدمات كهربائية احترافية - تأسيس، تشطيب، صيانة وكاميرات مراقبة",
-  "start_url": "/",
+  "name": "SN ELECTRIC - لوحة التحكم",
+  "short_name": "SN Admin",
+  "description": "لوحة تحكم الإدارة - SN ELECTRIC",
+  "start_url": "/admin.html",
   "scope": "/",
   "display": "standalone",
   "theme_color": "#1e3a8a",
