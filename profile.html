@@ -3,224 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1e3a8a">
-    <title>حسابي الشخصي ومتابعة المشاريع - SN ELECTRIC</title>
+    <title>حسابي الشخصي - SN ELECTRIC</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap">
     <style>
-        body { background: #081A33; color: #fff; font-family: 'Cairo', sans-serif; padding-bottom: 90px; }
-        .profile-container { max-width: 800px; margin: 30px auto; padding: 20px; }
-        .card-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-        .project-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-        .project-item:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
-        .btn-details { background: var(--accent); color: var(--dark); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
-        .btn-details:hover { transform: scale(1.05); }
+        body { background: #071120; color: #fff; font-family: 'Cairo', sans-serif; padding-bottom: 90px; }
         
-        /* تصميم نافذة التفاصيل الدقيقة المنبثقة (Popup) */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(5px); }
-        .modal-content-custom { background: #111e38; border: 2px solid var(--accent); width: 90%; max-width: 600px; border-radius: 16px; padding: 25px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 40px rgba(0,0,0,0.7); }
+        /* الفريم العصري بحدود حمراء تنقلب أخضر عند النجاح */
+        .auth-container { 
+            max-width: 420px; margin: 50px auto; background: #0d1a30; 
+            border: 2px solid #e74c3c; border-radius: 16px; padding: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: border-color 0.4s ease, box-shadow 0.4s ease; 
+        }
+        .auth-container.success-mode { 
+            border-color: #2ecc71; 
+            box-shadow: 0 0 20px rgba(46,204,113,0.3);
+        }
         
-        /* الشريط السفلي الثابت */
-        .sn-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #081A33; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-around; align-items: center; z-index: 999; padding: 0 10px; backdrop-filter: blur(10px); }
-        .sn-nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #8a9bb8; font-size: 11px; transition: 0.3s ease; }
-        .sn-nav-item span:first-child { font-size: 20px; margin-bottom: 4px; }
-        .sn-nav-item.active, .sn-nav-item:hover { color: #FFD700; }
+        .auth-title { text-align: center; color: var(--accent); margin-bottom: 20px; font-size: 22px; font-weight: 800; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px; background: #071120; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 15px; }
+        .btn-action { width: 100%; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .toggle-link { text-align: center; margin-top: 15px; font-size: 13px; color: #a0aec0; cursor: pointer; text-decoration: underline; }
+        .project-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px; margin-bottom: 15px; border-right: 4px solid var(--accent); }
     </style>
 </head>
 <body>
 
-    <div class="profile-container">
-        <!-- ترحيب وبيانات العميل -->
-        <div class="card-box" style="text-align: center;">
-            <div style="font-size: 50px; color: var(--accent); margin-bottom: 10px;"><i class="fa-solid fa-user-circle"></i></div>
-            <h2 id="clientProfileName" style="color: var(--accent); margin-bottom: 5px;">مرحباً بك، عميلنا العزيز</h2>
-            <p id="clientProfilePhone" style="color: #8a9bb8; font-size: 14px; direction: ltr;">جاري تحميل بيانات الحساب...</p>
-            <button onclick="logoutClient()" style="margin-top: 15px; background: rgba(255,0,0,0.1); color: #ff6b6b; border: 1px solid #ff6b6b; padding: 6px 15px; border-radius: 8px; cursor: pointer; font-weight: bold;">تسجيل الخروج</button>
+    <header style="padding: 15px; background: #081a33; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center;">
+        <h2 style="color: var(--accent); font-size: 18px;"><i class="fa-solid fa-user-shield"></i> لوحة متابعة العملاء</h2>
+    </header>
+
+    <div class="container" style="padding-top: 20px;">
+        
+        <!-- نموذج الدخول ونسيت كلمة المرور (إطار أحمر نشط) -->
+        <div id="authBox" class="auth-container">
+            <div id="loginView">
+                <div class="auth-title">تسجيل الدخول لمتابعة طلباتك</div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" id="loginPhone" placeholder="أدخل رقم هاتفك المسجل">
+                </div>
+                <div class="form-group">
+                    <label>الرقم السري</label>
+                    <input type="password" id="loginPassword" placeholder="أدخل الرقم السري">
+                </div>
+                <button class="btn-action" onclick="clientLogin()">دخول</button>
+                <div class="toggle-link" onclick="switchView('forgot')">نسيت كلمة المرور؟</div>
+            </div>
+
+            <div id="forgotView" style="display: none;">
+                <div class="auth-title" style="color: #e74c3c;">استعادة كلمة المرور</div>
+                <div class="form-group">
+                    <label>رقم الهاتف المرتبط بحسابك</label>
+                    <input type="tel" id="forgotPhone" placeholder="أدخل رقم هاتفك">
+                </div>
+                <div class="form-group">
+                    <label>الرقم السري الجديد</label>
+                    <input type="password" id="newPassword" placeholder="أدخل الرقم السري الجديد">
+                </div>
+                <div class="form-group">
+                    <label>تأكيد الرقم السري الجديد</label>
+                    <input type="password" id="confirmNewPassword" placeholder="أعد إدخال الرقم السري">
+                </div>
+                <button class="btn-action" style="background: #e74c3c; color: #fff;" onclick="resetPassword()">تحديث كلمة المرور</button>
+                <div class="toggle-link" onclick="switchView('login')">العودة لتسجيل الدخول</div>
+            </div>
         </div>
 
-        <!-- قسم مشاريعي وطلباتي -->
-        <div class="card-box">
-            <h3 style="color: var(--accent); margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                <i class="fa-solid fa-list-check"></i> سجل طلباتي ومشاريعي السابقة والحالية
-            </h3>
+        <!-- لوحة عرض الطلبات بعد التحقق الناجح -->
+        <div id="dashboardBox" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <div>
+                    <h3 id="clientWelcomeName" style="color: #2ecc71; margin: 0; font-size: 18px;">مرحباً بك</h3>
+                    <p id="clientWelcomePhone" style="margin: 5px 0 0 0; font-size: 13px; color: #a0aec0;"></p>
+                </div>
+                <button onclick="clientLogout()" style="background: #e74c3c; color: #fff; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">تسجيل خروج</button>
+            </div>
+
+            <h3 style="margin-bottom: 15px; border-bottom: 2px solid var(--accent); padding-bottom: 8px;">مشاريعك وطلباتك السابقة:</h3>
             <div id="clientProjectsList">
-                <p style="text-align: center; color: #8a9bb8; padding: 20px;">جاري جلب تفاصيل مشاريعك من قاعدة البيانات...</p>
+                <p style="text-align: center; color: #a0aec0;">جاري تحميل مشاريعك...</p>
             </div>
         </div>
+
     </div>
 
-    <!-- نافذة منبثقة (Popup) لعرض التفاصيل الدقيقة للمشروع -->
-    <div class="modal-overlay" id="projectDetailsModal">
-        <div class="modal-content-custom">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px;">
-                <h3 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-lines"></i> تفاصيل المشروع بدقة</h3>
-                <span onclick="closeProjectModal()" style="cursor: pointer; font-size: 22px; color: #8a9bb8;">&times;</span>
-            </div>
-            <div id="modalProjectBody" style="font-size: 14px; line-height: 1.6; display: flex; flex-direction: column; gap: 12px;">
-                <!-- ستظهر التفاصيل هنا ديناميكياً -->
-            </div>
-            <button onclick="closeProjectModal()" style="width: 100%; margin-top: 20px; padding: 10px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">إغلاق النافذة</button>
-        </div>
-    </div>
-
-    <!-- الشريط السفلي الثابت -->
     <nav class="sn-bottom-nav">
-        <a href="profile.html" class="sn-nav-item active">
-            <span>👤</span>
-            <span>حسابي</span>
-        </a>
-        <a href="contract.html" class="sn-nav-item">
-            <span>📄</span>
-            <span>عقد</span>
-        </a>
-        <a href="index.html" class="sn-nav-item">
-            <span>🏠</span>
-            <span>رئيسية</span>
-        </a>
-        <a href="index.html#services" class="sn-nav-item">
-            <span>⚡</span>
-            <span>خدمات</span>
-        </a>
-        <a href="#" class="sn-nav-item" onclick="alert('مرحباً بك! تواصل معنا عبر المساعد الذكي في الصفحة الرئيسية.'); return false;">
-            <span>🤖</span>
-            <span>محادثة AI</span>
-        </a>
+        <a href="profile.html" class="sn-nav-item active"><span>👤</span><span>حسابي</span></a>
+        <a href="contract.html" class="sn-nav-item"><span>📄</span><span>عقد</span></a>
+        <a href="index.html" class="sn-nav-item"><span>🏠</span><span>رئيسية</span></a>
     </nav>
 
-    <!-- سكربت Supabase والمنطق البرمجي -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="js/supabase.js"></script>
     <script>
-        // التحقق من الجلسة أو رقم الهاتف المخزن محلياً للعميل
+        function switchView(view) {
+            const authBox = document.getElementById('authBox');
+            authBox.classList.remove('success-mode');
+            if(view === 'forgot') {
+                document.getElementById('loginView').style.display = 'none';
+                document.getElementById('forgotView').style.display = 'block';
+            } else {
+                document.getElementById('loginView').style.display = 'block';
+                document.getElementById('forgotView').style.display = 'none';
+            }
+        }
+
+        // فحص الجلسة المخزنة مسبقاً (دخول تلقائي إذا لم يسجل خروج)
         document.addEventListener("DOMContentLoaded", async function() {
-            let activePhone = localStorage.getItem("sn_client_phone");
-            
-            if (!activePhone) {
-                // إذا لم يكن مسجلاً، اطلب منه تسجيل الدخول برقم هاتفه والرقم السري
-                const inputPhone = prompt("الرجاء إدخال رقم هاتفك المسجل لعرض مشاريعك وطلباتك:");
-                if (inputPhone) {
-                    localStorage.setItem("sn_client_phone", inputPhone.trim());
-                    activePhone = inputPhone.trim();
-                } else {
-                    document.getElementById('clientProfileName').textContent = "يجب تسجيل الهاتف لعرض الطلبات";
-                    document.getElementById('clientProjectsList').innerHTML = `<p style="text-align:center; color:#ff6b6b;">الرجاء تحديث الصفحة وإدخال رقم الهاتف.</p>`;
-                    return;
-                }
-            }
-
-            document.getElementById('clientProfilePhone').textContent = `رقم الهاتف: ${activePhone}`;
-            
-            // الانتظار حتى يتوفر كائن supabase
-            let attempts = 0;
-            while (typeof supabase === 'undefined' && attempts < 10) {
-                await new Promise(resolve => setTimeout(resolve, 200));
-                attempts++;
-            }
-
-            if (typeof supabase === 'undefined') {
-                document.getElementById('clientProjectsList').innerHTML = `<p style="text-align:center; color:red;">خطأ في الاتصال بقاعدة البيانات</p>`;
-                return;
-            }
-
-            // جلب اسم العميل من جدول customers
-            try {
-                const { data: custData } = await supabase
-                    .from('customers')
-                    .select('*')
-                    .eq('phone', activePhone)
-                    .single();
-
-                if (custData) {
-                    document.getElementById('clientProfileName').textContent = `مرحباً بك، ${custData.name || custData.full_name || 'عميلنا المميز'}`;
-                }
-            } catch (e) {
-                console.log("Customer info fetch note:", e);
-            }
-
-            // جلب الطلبات والمشاريع الخاصة بهذا الرقم من جدول service_requests
-            try {
-                const { data: requests, error } = await supabase
-                    .from('service_requests')
-                    .select('*')
-                    .eq('phone', activePhone)
-                    .order('created_at', { ascending: false });
-
-                const container = document.getElementById('clientProjectsList');
-
-                if (error || !requests || requests.length === 0) {
-                    container.innerHTML = `<p style="text-align: center; color: #8a9bb8; padding: 20px;">لا توجد طلبات أو مشاريع مسجلة برقم هاتفك حتى الآن.</p>`;
-                    return;
-                }
-
-                container.innerHTML = '';
-                requests.forEach((req, index) => {
-                    const reqTitle = req.service_type || req.service_name || `مشروع رقم ${index + 1}`;
-                    const reqDate = req.created_at ? new Date(req.created_at).toLocaleDateString('ar-EG') : 'حديث';
-                    const reqStatus = req.status || 'قيد المعالجة';
-
-                    const item = document.createElement('div');
-                    item.className = 'project-item';
-                    item.innerHTML = `
-                        <div>
-                            <div style="font-weight: bold; font-size: 16px; color: var(--accent); margin-bottom: 4px;">${reqTitle}</div>
-                            <div style="font-size: 12px; color: #8a9bb8;"><i class="fa-regular fa-calendar"></i> التاريخ: ${reqDate} | الحالة: <span style="color: #ffd700;">${reqStatus}</span></div>
-                        </div>
-                        <button class="btn-details" onclick='openProjectDetails(${JSON.stringify(req)})'>المزيد من التفاصيل</button>
-                    `;
-                    container.appendChild(item);
-                });
-
-            } catch (err) {
-                document.getElementById('clientProjectsList').innerHTML = `<p style="text-align: center; color: #ff6b6b; padding: 20px;">حدث خطأ أثناء جلب الطلبات.</p>`;
+            const savedPhone = localStorage.getItem("sn_client_phone");
+            if (savedPhone) {
+                document.getElementById('loginPhone').value = savedPhone;
+                fetchClientData(savedPhone);
             }
         });
 
-        // دالة فتح نافذة التفاصيل الدقيقة
-        window.openProjectDetails = function(req) {
-            const modalBody = document.getElementById('modalProjectBody');
-            modalBody.innerHTML = `
-                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-                    <span style="color: #8a9bb8; display: block; font-size: 12px;">نوع الخدمة أو المشروع:</span>
-                    <strong style="font-size: 16px; color: var(--accent);">${req.service_type || req.service_name || 'غير محدد'}</strong>
-                </div>
-                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-                    <span style="color: #8a9bb8; display: block; font-size: 12px;">اسم العميل:</span>
-                    <span style="font-weight: 600;">${req.name || req.customer_name || 'غير متوفر'}</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-                    <span style="color: #8a9bb8; display: block; font-size: 12px;">رقم الهاتف:</span>
-                    <span style="direction: ltr; display: inline-block; color: #79c0ff;">${req.phone || 'غير متوفر'}</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-                    <span style="color: #8a9bb8; display: block; font-size: 12px;">عنوان وموقع التنفيذ:</span>
-                    <span>${req.address || req.location || 'غير محدد'}</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-                    <span style="color: #8a9bb8; display: block; font-size: 12px;">التكلفة أو السعر التقديري:</span>
-                    <span style="color: #ffd700; font-weight: bold; font-size: 15px;">${req.total_price || req.price || 'سيتم تحديده من الإدارة'}</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-                    <span style="color: #8a9bb8; display: block; font-size: 12px;">حالة الطلب:</span>
-                    <span style="color: var(--accent); font-weight: bold;">${req.status || 'قيد المتابعة من الإدارة'}</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-                    <span style="color: #8a9bb8; display: block; font-size: 12px;">تاريخ وساعة التسجيل:</span>
-                    <span>${req.created_at ? new Date(req.created_at).toLocaleString('ar-EG') : 'غير متوفر'}</span>
-                </div>
-            `;
-            document.getElementById('projectDetailsModal').style.display = 'flex';
-        };
+        async function clientLogin() {
+            const phone = document.getElementById('loginPhone').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
 
-        window.closeProjectModal = function() {
-            document.getElementById('projectDetailsModal').style.display = 'none';
-        };
+            if(!phone || !password) {
+                alert("الرجاء إدخال رقم الهاتف والرقم السري.");
+                return;
+            }
 
-        window.logoutClient = function() {
+            const { data, error } = await supabase.from('customers').select('*').eq('phone', phone).single();
+
+            if (error || !data) {
+                alert("رقم الهاتف غير مسجل أو بيانات الدخول غير صحيحة.");
+                return;
+            }
+
+            if (data.password && data.password !== password) {
+                alert("الرقم السري غير صحيح.");
+                return;
+            }
+
+            // حفظ بيانات الجلسة وتحويل الإطار إلى اللون الأخضر دليلاً على النجاح
+            localStorage.setItem("sn_client_phone", phone);
+            localStorage.setItem("sn_client_pin", password);
+            
+            const authBox = document.getElementById('authBox');
+            authBox.classList.add('success-mode');
+            
+            setTimeout(() => {
+                fetchClientData(phone);
+            }, 500);
+        }
+
+        async function resetPassword() {
+            const phone = document.getElementById('forgotPhone').value.trim();
+            const newPass = document.getElementById('newPassword').value.trim();
+            const confirmPass = document.getElementById('confirmNewPassword').value.trim();
+
+            if (!phone || !newPass || !confirmPass) {
+                alert("الرجاء إكمال جميع الحقول.");
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                alert("كلمتا المرور غير متطابقتين!");
+                return;
+            }
+
+            // تحديث الرقم السري في Supabase
+            const { error } = await supabase.from('customers').update({ password: newPass }).eq('phone', phone);
+
+            if (error) {
+                alert("حدث خطأ أثناء التحديث: " + error.message);
+                return;
+            }
+
+            // تحويل الإطار إلى الأخضر دليلاً على نجاح عملية الاستعادة
+            const authBox = document.getElementById('authBox');
+            authBox.classList.add('success-mode');
+            
+            alert("تم تحديث الرقم السري بنجاح!");
+            document.getElementById('loginPhone').value = phone;
+            setTimeout(() => { switchView('login'); }, 600);
+        }
+
+        async function fetchClientData(phone) {
+            document.getElementById('authBox').style.display = 'none';
+            document.getElementById('dashboardBox').style.display = 'block';
+
+            const { data: custData } = await supabase.from('customers').select('name').eq('phone', phone).single();
+            if(custData) {
+                document.getElementById('clientWelcomeName').textContent = "مرحباً، " + custData.name;
+            }
+            document.getElementById('clientWelcomePhone').textContent = "رقم الهاتف: " + phone;
+
+            const { data: reqs, error } = await supabase.from('service_requests').select('*').eq('phone', phone).order('created_at', { ascending: false });
+
+            const listContainer = document.getElementById('clientProjectsList');
+            if (error || !reqs || reqs.length === 0) {
+                listContainer.innerHTML = `<p style="text-align: center; color: #a0aec0; padding: 20px;">لا توجد طلبات مسجلة لهذا الرقم حتى الآن.</p>`;
+                return;
+            }
+
+            let html = '';
+            reqs.forEach(req => {
+                html += `
+                    <div class="project-card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong style="color: var(--accent);">${req.service_type || 'خدمة عامة'}</strong>
+                            <span style="background: rgba(255,215,0,0.15); color: #ffd700; padding: 2px 8px; border-radius: 6px; font-size: 12px;">${req.status || 'قيد المعالجة'}</span>
+                        </div>
+                        <p style="margin: 4px 0; font-size: 14px;"><i class="fa-solid fa-location-dot"></i> العنوان: ${req.address || 'غير محدد'}</p>
+                        <p style="margin: 4px 0; font-size: 14px;"><i class="fa-solid fa-money-bill"></i> التكلفة: ${req.total_price || 'حسب المعاينة'}</p>
+                        <p style="margin: 4px 0; font-size: 12px; color: #8a9bb8;"><i class="fa-regular fa-clock"></i> التاريخ: ${new Date(req.created_at).toLocaleString('ar-EG')}</p>
+                    </div>
+                `;
+            });
+            listContainer.innerHTML = html;
+        }
+
+        function clientLogout() {
             localStorage.removeItem("sn_client_phone");
-            alert("تم تسجيل الخروج بنجاح.");
+            localStorage.removeItem("sn_client_pin");
             location.reload();
-        };
+        }
     </script>
 </body>
 </html>
