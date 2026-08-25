@@ -1,5 +1,5 @@
 /*==================================================
-    SN ELECTRIC | app.js (المصحح وشامل الوظائف وتتبع الحالات)
+    SN ELECTRIC | app.js (نسخة كاملة ومصححة لتسجيل الطلبات)
 ==================================================*/
 
 // تفعيل فحص رابط واتساب وحالة المحادثة الآمنة عند تحميل المستند
@@ -24,7 +24,7 @@ async function checkClientChatAccess(customerPhone) {
     if (!window.supabaseClient || !customerPhone) return;
 
     try {
-        const { data, error } = await window.supabaseClient
+        const { data } = await window.supabaseClient
             .from('service_requests')
             .select('status')
             .eq('customer_phone', customerPhone)
@@ -444,6 +444,7 @@ async function checkCustomerStatus(name) {
     } catch(err) { console.log('Error checking customer:', err); }
 }
 
+// الدالة المحدثة كلياً والمسؤولة عن الإرسال وقاعدة البيانات والواتساب
 async function sendWhatsApp() {
     const name = document.getElementById('customerName')?.value || '';
     const phone = document.getElementById('customerPhone')?.value || '';
@@ -451,36 +452,47 @@ async function sendWhatsApp() {
     const serviceTitle = document.getElementById('formTitle')?.innerText || 'خدمة';
     const finalPrice = window.finalCalculatedPrice || 0;
     
-    const submitBtn = document.querySelector('#serviceForm button[type="submit"]');
+    if (!phone) {
+        alert('يرجى إدخال رقم الهاتف على الأقل لتسجيل الطلب.');
+        return;
+    }
+
+    const submitBtn = document.querySelector('#serviceForm button[type="submit"]') || document.querySelector('.btn-submit');
     const originalBtnText = submitBtn ? submitBtn.innerText : '';
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerText = '⏳ جاري تسجيل الاتفاق وحفظ الحالة بالوقت الفعلي...';
+        submitBtn.innerText = '⏳ جاري حفظ الطلب في قاعدة البيانات...';
     }
 
     const currentTimestamp = new Date().toISOString();
 
-    if (window.supabaseClient) {
+    const db = window.supabaseClient || window.supabase;
+    if (db) {
         try {
-            await window.supabaseClient.from('service_requests').insert([
+            const { error } = await db.from('service_requests').insert([
                 { 
                     customer_name: name, 
                     customer_phone: phone, 
                     address: address, 
-                    service_name: serviceTitle, 
-                    price: finalPrice, 
+                    service_type: serviceTitle, 
+                    estimated_price: finalPrice, 
                     status: 'قيد الانتظار',
-                    status_color: '#f1c40f',
-                    pending_at: currentTimestamp,
                     created_at: currentTimestamp
                 }
             ]);
-        } catch(e) { 
-            console.log('Supabase insert error:', e); 
-        }
-    }
 
-    await new Promise(resolve => setTimeout(resolve, 800));
+            if (error) {
+                console.error('Supabase Insert Error Details:', error);
+                alert('خطأ في حفظ الطلب بالقاعدة: ' + error.message);
+            } else {
+                console.log('تم حفظ الطلب في Supabase بنجاح تام وسيظهر في لوحة الأدمن!');
+            }
+        } catch(e) { 
+            console.error('Unexpected database error:', e); 
+        }
+    } else {
+        console.warn('غير متصل بقاعدة بيانات Supabase');
+    }
 
     if (submitBtn) {
         submitBtn.disabled = false;
