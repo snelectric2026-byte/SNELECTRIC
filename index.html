@@ -12,9 +12,31 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
     <style>
         .vip-badge { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        .chat-widget-btn { position: fixed; bottom: 85px; left: 25px; background: var(--accent); color: var(--dark); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.4); z-index: 1000; transition: transform 0.3s; }
-        .chat-widget-btn:hover { transform: scale(1.1); }
-        .chat-box { position: fixed; bottom: 155px; left: 25px; width: 350px; max-width: 90vw; height: 450px; background: #111e38; border: 2px solid var(--accent); border-radius: 15px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden; }
+        
+        /* أيقونة الشات العائمة القابلة للسحب */
+        .chat-widget-btn { 
+            position: fixed; 
+            bottom: 90px; 
+            left: 25px; 
+            background: var(--accent); 
+            color: var(--dark); 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 24px; 
+            cursor: pointer; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4); 
+            z-index: 1000; 
+            touch-action: none;
+            user-select: none;
+            transition: box-shadow 0.3s; 
+        }
+        .chat-widget-btn:hover { transform: scale(1.05); }
+
+        .chat-box { position: fixed; bottom: 160px; left: 25px; width: 350px; max-width: 90vw; height: 450px; background: #111e38; border: 2px solid var(--accent); border-radius: 15px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden; }
         .chat-header { background: var(--dark); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
         .chat-message { padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.4; }
@@ -23,6 +45,7 @@
         .chat-footer { padding: 10px; background: var(--dark); display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
         .chat-footer input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0d1729; color: #fff; }
         .chat-footer button { background: var(--accent); color: var(--dark); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
         .rating-stars { display: flex; gap: 5px; direction: ltr; justify-content: center; margin: 10px 0; font-size: 22px; color: #ffd700; cursor: pointer; }
         .tech-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 15px; text-align: center; }
         .calculator-section { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
@@ -75,7 +98,7 @@
             color: var(--accent);
         }
 
-        /* تنسيقات الشريط السفلي الثابت */
+        /* تنسيقات الشريط السفلي الثابت بالترتيب الجديد */
         .sn-bottom-nav {
             position: fixed;
             bottom: 0;
@@ -102,19 +125,7 @@
         }
         .sn-nav-item span:first-child { font-size: 20px; margin-bottom: 4px; }
         .sn-nav-item.active, .sn-nav-item:hover { color: #FFD700; }
-        .sn-nav-item.highlight-btn {
-            background: #FFD700;
-            color: #081A33;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: -20px;
-            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
-            font-weight: bold;
-        }
+        
         body { padding-bottom: 80px; }
     </style>
 </head>
@@ -122,23 +133,18 @@
 
     <header>
         <div class="container nav" style="display: flex; justify-content: space-between; align-items: center; position: relative;">
-            <!-- شعار الموقع -->
             <a href="#" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
                 <img src="icon.png" alt="SN ELECTRIC" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px;">
                 <span style="color: var(--accent); font-weight: 800; font-size: 16px;">SN ELECTRIC</span>
             </a>
-
-            <!-- القائمة القديمة مخفية -->
             <nav id="navMenu" style="display: none;"></nav>
-
-            <!-- زر القائمة التبديلي -->
             <div class="menu" id="menuToggleBtn" onclick="alert('تم دمج خيارات القائمة في الشريط الأفقي المتحرك أعلى الصفحة لسهولة التصفح بالـ Swipe!');" style="cursor: pointer; font-size: 24px; color: var(--accent);">
                 <i class="fa-solid fa-bars"></i>
             </div>
         </div>
     </header>
 
-    <!-- الشريط الأفقي الشامل المتحرك بالـ Swipe -->
+    <!-- الشريط الأفقي المتحرك بالـ Swipe -->
     <div class="sn-horizontal-bar-wrapper">
         <div class="sn-horizontal-scroll">
             <a href="#" class="sn-bar-item active">
@@ -148,10 +154,6 @@
             <a href="#services" class="sn-bar-item">
                 <span class="icon">⚡</span>
                 <span class="text">خدماتنا والأسعار</span>
-            </a>
-            <a href="contract.html" class="sn-bar-item">
-                <span class="icon">🔌</span>
-                <span class="text">خامات</span>
             </a>
             <a href="contract.html" class="sn-bar-item">
                 <span class="icon">📄</span>
@@ -180,7 +182,7 @@
         </div>
     </div>
 
-    <!-- قسم الهيرو بدون الأزرار الزائدة -->
+    <!-- قسم الهيرو -->
     <section class="hero">
         <div class="container hero-content" style="text-align: center; padding: 40px 0;">
             <div class="hero-text">
@@ -303,7 +305,11 @@
         </div>
     </div>
 
-    <div class="chat-widget-btn" onclick="toggleChat()"><i class="fa-solid fa-comments"></i></div>
+    <!-- زر الشات العائم القابلة للسحب والإفلات -->
+    <div class="chat-widget-btn" id="draggableChatBtn" onclick="toggleChat()">
+        <i class="fa-solid fa-comments"></i>
+    </div>
+
     <div class="chat-box" id="chatBox">
         <div class="chat-header">
             <span style="font-weight: bold; color: var(--accent);"><i class="fa-solid fa-headset"></i> خدمة عملاء SN ELECTRIC</span>
@@ -327,26 +333,27 @@
         </div>
     </footer>
 
-    <!-- الشريط السفلي الثابت -->
+    <!-- الشريط السفلي الثابت بالترتيب الجديد المطلوبة: حسابي، عقد، رئيسية، خدمات، محادثة ai -->
     <nav class="sn-bottom-nav">
-        <a href="terms.html" class="sn-nav-item">
-            <span>⚙️</span>
-            <span>المزيد</span>
-        </a>
-        <a href="contract.html" class="sn-nav-item">
-            <span>🛒</span>
-            <span>الطلبات</span>
-        </a>
-        <a href="index.html" class="sn-nav-item highlight-btn">
-            <span>⚡</span>
-        </a>
         <a href="profile.html" class="sn-nav-item">
             <span>👤</span>
             <span>حسابي</span>
         </a>
+        <a href="contract.html" class="sn-nav-item">
+            <span>📄</span>
+            <span>عقد</span>
+        </a>
         <a href="index.html" class="sn-nav-item active">
             <span>🏠</span>
-            <span>الرئيسية</span>
+            <span>رئيسية</span>
+        </a>
+        <a href="#services" class="sn-nav-item">
+            <span>⚡</span>
+            <span>خدمات</span>
+        </a>
+        <a href="#" class="sn-nav-item" onclick="toggleChat(); return false;">
+            <span>🤖</span>
+            <span>محادثة AI</span>
         </a>
     </nav>
 
@@ -356,6 +363,70 @@
     <script src="js/register-sw.js"></script>
     
     <script>
+        // سكربت السحب والإفلات لأيقونة الشات العائمة (يدعم الماوس واللمس للهواتف)
+        const chatBtn = document.getElementById('draggableChatBtn');
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+        let hasMoved = false;
+
+        function dragStart(e) {
+            hasMoved = false;
+            isDragging = true;
+            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+            
+            initialX = clientX - chatBtn.offsetLeft;
+            initialY = clientY - chatBtn.offsetTop;
+            
+            chatBtn.style.transition = 'none';
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            hasMoved = true;
+            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+            let currentX = clientX - initialX;
+            let currentY = clientY - initialY;
+
+            // حدود الشاشة لكي لا تخرج الأيقونة تماماً
+            const maxX = window.innerWidth - chatBtn.offsetWidth;
+            const maxY = window.innerHeight - chatBtn.offsetHeight;
+
+            currentX = Math.max(10, Math.min(currentX, maxX - 10));
+            currentY = Math.max(10, Math.min(currentY, maxY - 10));
+
+            chatBtn.style.left = currentX + 'px';
+            chatBtn.style.top = currentY + 'px';
+            chatBtn.style.bottom = 'auto';
+            chatBtn.style.right = 'auto';
+        }
+
+        function dragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            chatBtn.style.transition = 'transform 0.3s';
+            
+            // إذا تم السحب، نمنع فتح نافذة الشات بالخطأ عند رفع الإصبع
+            if (hasMoved) {
+                // منع الحدث الافتتاحي للنقر لمرة واحدة فقط بعد السحب
+                chatBtn.onclick = function(event) {
+                    event.stopImmediatePropagation();
+                    chatBtn.onclick = toggleChat; // إعادة ربط الوظيفة العادية للنقر
+                };
+            }
+        }
+
+        chatBtn.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        chatBtn.addEventListener('touchstart', dragStart, {passive: true});
+        document.addEventListener('touchmove', drag, {passive: true});
+        document.addEventListener('touchend', dragEnd);
+
+        // عداد الزيارات
         document.addEventListener("DOMContentLoaded", async function() {
             const viewCountEl = document.getElementById("view-count");
             let attempts = 0;
