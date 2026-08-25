@@ -10,10 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (phoneFromURL) {
         localStorage.setItem('client_phone', phoneFromURL);
         checkClientChatAccess(phoneFromURL);
+        loadClientProjectDashboard(phoneFromURL);
     } else {
         let savedPhone = localStorage.getItem('client_phone');
         if (savedPhone) {
             checkClientChatAccess(savedPhone);
+            loadClientProjectDashboard(savedPhone);
         }
     }
     loadTechnicians();
@@ -37,6 +39,61 @@ async function checkClientChatAccess(customerPhone) {
     } catch (err) {
         console.log('Access check note:', err);
     }
+}
+
+// دالة جلب وعرض بيانات صفحة العميل المعتمد (الحسابات المالية، كود المشروع، بيانات الفني)
+async function loadClientProjectDashboard(clientPhone) {
+    if (!window.supabaseClient) return;
+
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('service_requests')
+            .select('*')
+            .eq('customer_phone', clientPhone)
+            .single();
+
+        const dashboardElement = document.getElementById('clientProjectDashboard');
+        if (data && data.status === 'موافقة') {
+            if (dashboardElement) dashboardElement.style.display = 'block';
+
+            let projectCode = `SN-${data.id}`;
+            
+            // تعبئة البيانات في واجهة العميل إن وجدت العناصر
+            if (document.getElementById('dashClientName')) document.getElementById('dashClientName').innerText = data.customer_name || 'غير متوفر';
+            if (document.getElementById('dashClientPhone')) document.getElementById('dashClientPhone').innerText = data.customer_phone || '';
+            if (document.getElementById('dashClientAddress')) document.getElementById('dashClientAddress').innerText = data.address || 'غير محدد';
+            if (document.getElementById('dashProjectCode')) document.getElementById('dashProjectCode').innerText = projectCode;
+
+            // بيانات المنفذ (الفني) - افتراضية أو مسجلة
+            if (document.getElementById('dashTechName')) document.getElementById('dashTechName').innerText = data.tech_name || 'محمد إبراهيم';
+            if (document.getElementById('dashTechPhone')) document.getElementById('dashTechPhone').innerText = data.tech_phone || '01287837118';
+            if (document.getElementById('dashTechRating')) document.getElementById('dashTechRating').innerText = data.tech_rating || '4.9';
+
+            // الحسابات المالية والاتفاق
+            if (document.getElementById('dashOpPayment')) document.getElementById('dashOpPayment').innerText = data.op_payment || '0';
+            if (document.getElementById('dashRemainingAmount')) document.getElementById('dashRemainingAmount').innerText = data.remaining_amount || data.estimated_price || '0';
+            if (document.getElementById('dashPaymentStatus')) document.getElementById('dashPaymentStatus').innerText = data.payment_status || 'قيد التنفيذ';
+            if (document.getElementById('dashClientGift')) document.getElementById('dashClientGift').innerText = data.client_gift || 'تراضٍ شخصي بين الطرفين';
+
+        } else {
+            if (dashboardElement) dashboardElement.style.display = 'none';
+        }
+    } catch (err) {
+        console.log('Error loading client dashboard:', err);
+    }
+}
+
+// دالة إرسال صور المشروع إلى واتساب الشركة (المضافة بناءً على طلبك)
+function sendProjectImagesToWhatsApp() {
+    const projectCode = document.getElementById('dashProjectCode')?.innerText || 'SN-000';
+    const clientName = document.getElementById('dashClientName')?.innerText || '';
+    
+    let msg = `السلام عليكم، أرسل صور المشروع الخاصة بي:%0a` +
+              `كود المشروع: ${projectCode}%0a` +
+              `اسم العميل: ${clientName}%0a` +
+              `(يرجى إرفاق الصور المحددة في المحادثة أدناه)`;
+
+    window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
 }
 
 // إظهار زر محادثة المشروع الآمنة الحصري للعميل المعتمد
@@ -444,7 +501,7 @@ async function checkCustomerStatus(name) {
     } catch(err) { console.log('Error checking customer:', err); }
 }
 
-// الدالة المحدثة كلياً والمسؤولة عن الإرسال وقاعدة البيانات والواتساب
+// الدالة المسؤولة عن الإرسال وقاعدة البيانات والواتساب
 async function sendWhatsApp() {
     const name = document.getElementById('customerName')?.value || '';
     const phone = document.getElementById('customerPhone')?.value || '';
