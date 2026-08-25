@@ -14,17 +14,47 @@ function openForm(serviceName) {
     let fieldsHTML = '';
     let calcHTML = '';
     
-    if (serviceName === 'تأسيس كهرباء') {
+    if (serviceName === 'تأسيس شقق') {
         fieldsHTML = `
-            <label>عدد النقاط (المخارج)</label>
-            <input type="number" id="calcPoints" value="10" min="1" oninput="calculatePrice()">
-            <label>طول السلك التقريبي (متر)</label>
-            <input type="number" id="calcWireLength" value="50" min="0" oninput="calculatePrice()">
-            <label>نوع التكسير والحفر</label>
-            <select id="calcDrillingType" onchange="calculatePrice()">
-                <option value="بدون">بدون تكسير (خرطوم ظاهر)</option>
-                <option value="بسيط">بسيط (طوب أحمر)</option>
-                <option value="عميق">عميق (خرسانة / خرسانة مسلحة)</option>
+            <label>طبيعة العمل</label>
+            <select id="calcApartmentType" onchange="calculatePrice()">
+                <option value="دور واحد">دور واحد</option>
+                <option value="متعدد الأدوار">متعدد الأدوار</option>
+            </select>
+            <label>نوع المواسير المستخدمة</label>
+            <select id="calcPipeType" onchange="calculatePrice()">
+                <option value="PVC">PVC (باللحام البارد والتكحيل)</option>
+                <option value="EMT">EMT (مواسير معدنية بتركيب الجلب)</option>
+            </select>
+            <label>عدد أمتار المواسير</label>
+            <input type="number" id="calcPipeLength" value="50" min="0" oninput="calculatePrice()">
+            <label>عدد أمتار التكحيل</label>
+            <input type="number" id="calcTakhilLength" value="10" min="0" oninput="calculatePrice()">
+            <label>عدد أمتار الشداد (إن وجد)</label>
+            <input type="number" id="calcShedadLength" value="0" min="0" oninput="calculatePrice()">
+            <label>عدد اللوحات الداخلية المراد تركيبها (اللوحة الواحدة 600 جنيه)</label>
+            <input type="number" id="calcPanelsCount" value="0" min="0" oninput="calculatePrice()">
+            <label>عدد علب التجميع (مقاومات 30×30 أو أكبر بالروزطة بدون الخام - العلبه 200 جنيه)</label>
+            <input type="number" id="calcBoxesCount" value="0" min="0" oninput="calculatePrice()">
+        `;
+    } else if (serviceName === 'تأسيس سقف') {
+        fieldsHTML = `
+            <label>نوع المواسير المستخدمة</label>
+            <select id="calcPipeType" onchange="calculatePrice()">
+                <option value="PVC">PVC (سعر المتر 35 ج)</option>
+                <option value="EMT">EMT (مواسير معدنية - سعر المتر 60 ج)</option>
+            </select>
+            <label>عدد أمتار المواسير</label>
+            <input type="number" id="calcPipeLength" value="40" min="0" oninput="calculatePrice()">
+            <label>عدد أمتار التكحيل أو (عدد القورب المفتوحة والمغلقة، الأسقاط أو المسار)</label>
+            <input type="number" id="calcTakhilLength" value="10" min="0" oninput="calculatePrice()">
+            <label>عدد أمتار الشداد (إن وجد)</label>
+            <input type="number" id="calcShedadLength" value="0" min="0" oninput="calculatePrice()">
+            <label>نوع التأسيس</label>
+            <select id="calcInstallNature">
+                <option value="داخلي">داخلي</option>
+                <option value="خارجي">خارجي</option>
+                <option value="الاثنين">الاثنين (مع مراعاة المسارات والرسوم الهندسية)</option>
             </select>
         `;
     } else if (serviceName === 'تشطيب إكسسوارات') {
@@ -84,19 +114,67 @@ function calculatePrice() {
     let total = 0;
     let breakdown = '';
     
-    if (title === 'تأسيس كهرباء') {
-        const points = parseInt(document.getElementById('calcPoints')?.value || 0);
-        const wireLength = parseInt(document.getElementById('calcWireLength')?.value || 0);
-        const drillingType = document.getElementById('calcDrillingType')?.value || 'بدون';
+    if (title === 'تأسيس سقف' || title === 'تأسيس شقق') {
+        const pipeType = document.getElementById('calcPipeType')?.value || 'PVC';
+        const pipeLength = parseInt(document.getElementById('calcPipeLength')?.value || 0);
+        const takhilLength = parseInt(document.getElementById('calcTakhilLength')?.value || 0);
+        const shedadLength = parseInt(document.getElementById('calcShedadLength')?.value || 0);
+        const panelsCount = parseInt(document.getElementById('calcPanelsCount')?.value || 0);
+        const boxesCount = parseInt(document.getElementById('calcBoxesCount')?.value || 0);
+        const apartmentType = document.getElementById('calcApartmentType')?.value || 'دور واحد';
+
+        let pipeUnitPrice = 35; 
+        let takhilUnitPrice = 10;
+        let shedadUnitPrice = 5;
+
+        if (title === 'تأسيس شقق' && apartmentType === 'دور واحد') {
+            if (pipeType === 'PVC') {
+                pipeUnitPrice = 40;
+                takhilUnitPrice = 20;
+                shedadUnitPrice = 5;
+            } else if (pipeType === 'EMT') {
+                pipeUnitPrice = 60;
+                takhilUnitPrice = 25;
+                shedadUnitPrice = 10;
+            }
+        } else if (title === 'تأسيس شقق' && apartmentType === 'متعدد الأدوار') {
+            if (pipeType === 'PVC') {
+                pipeUnitPrice = 40;
+                takhilUnitPrice = 20;
+                shedadUnitPrice = 5;
+            } else if (pipeType === 'EMT') {
+                pipeUnitPrice = 60;
+                takhilUnitPrice = 25;
+                shedadUnitPrice = 10;
+            }
+        } else if (title === 'تأسيس سقف') {
+            if (pipeType === 'PVC') {
+                pipeUnitPrice = 35;
+                takhilUnitPrice = 10;
+                shedadUnitPrice = 5;
+            } else if (pipeType === 'EMT') {
+                pipeUnitPrice = 60;
+                takhilUnitPrice = 25;
+                shedadUnitPrice = 10;
+            }
+        }
+
+        const pipeTotal = pipeLength * pipeUnitPrice;
+        const takhilTotal = takhilLength * takhilUnitPrice;
+        const shedadTotal = shedadLength * shedadUnitPrice;
+        const panelsTotal = panelsCount * 600;
+        const boxesTotal = boxesCount * 200;
+
+        total = pipeTotal + takhilTotal + shedadTotal + panelsTotal + boxesTotal;
         
-        let pointPrice = 50;
-        if(drillingType === 'بسيط') pointPrice = 100;
-        else if(drillingType === 'عميق') pointPrice = 150;
-        
-        const pointsTotal = points * pointPrice;
-        const wireTotal = wireLength * 10;
-        total = pointsTotal + wireTotal;
-        breakdown = `<small>${points} نقاط × ${pointPrice} ج.م = ${pointsTotal} ج.م<br>${wireLength} متر سلك × 10 ج.م = ${wireTotal} ج.م</small>`;
+        breakdown = `<small>
+            - مواسير ${pipeType} (${pipeLength}م × ${pipeUnitPrice}ج) = ${pipeTotal} ج.م<br>
+            - التكحيل / القورب والمسارات والأسقاط (${takhilLength}م × ${takhilUnitPrice}ج) = ${takhilTotal} ج.م<br>
+            - الشداد (${shedadLength}م × ${shedadUnitPrice}ج) = ${shedadTotal} ج.م
+            ${panelsCount > 0 ? `<br>- تركيب لوحات داخلية (${panelsCount} × 600ج) = ${panelsTotal} ج.م` : ''}
+            ${boxesCount > 0 ? `<br>- علب تجميع 30×30+ بالروزطة (${boxesCount} × 200ج) = ${boxesTotal} ج.م` : ''}
+        </small>`;
+
     } else if (title === 'تشطيب إكسسوارات') {
         const points = parseInt(document.getElementById('calcPoints')?.value || 0);
         const boxes = parseInt(document.getElementById('calcBoxes')?.value || 0);
@@ -226,8 +304,8 @@ async function loadTechnicians() {
     if (!container) return;
     
     let techs = [
-        { id: 1, name: 'محمد إبراهيم', specialty: 'تأسيس كهرباء وصيانة', area: 'القاهرة والجيزة', total_stars: 9 },
-        { id: 2, name: 'محمود عبد الفتاح', specialty: 'كاميرات مراقبة وإكسسوارات', area: 'الإسكندرية', total_stars: 10 },
+        { id: 1, name: 'محمد إبراهيم', specialty: 'تأسيس شقق وصيانة', area: 'القاهرة والجيزة', total_stars: 9 },
+        { id: 2, name: 'محمود عبد الفتاح', specialty: 'تأسيس سقف وكاميرات مراقبة', area: 'الإسكندرية', total_stars: 10 },
         { id: 3, name: 'محمد علي', specialty: 'صيانة أجهزة منزلية', area: 'الإسكندرية / العجمي', total_stars: 8 },
         { id: 4, name: 'أحمد رزق', specialty: 'كاميرات مراقبة وإكسسوارات', area: 'الجيزة', total_stars: 8 }
     ];
