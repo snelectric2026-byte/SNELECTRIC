@@ -32,8 +32,14 @@
 <body>
 
     <header>
-        <div class="container nav">
-            <a href="#" class="logo"><div class="menu-logo-text"><span>SN ELECTRIC</span></div></a>
+        <div class="container nav" style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+            <!-- شعار الموقع بصورة icon.png بدلاً من النص الباهت -->
+            <a href="#" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                <img src="icon.png" alt="SN ELECTRIC" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px;">
+                <span style="color: var(--accent); font-weight: 800; font-size: 16px;">SN ELECTRIC</span>
+            </a>
+
+            <!-- القائمة الجانبية المنسدلة -->
             <nav id="navMenu">
                 <a href="#">الرئيسية</a>
                 <a href="#services">خدماتنا والأسعار</a>
@@ -44,7 +50,11 @@
                 <a href="terms.html">سياسات التعامل</a>
                 <a href="#contact">تواصل معنا</a>
             </nav>
-            <div class="menu" onclick="document.getElementById('navMenu').classList.toggle('active')"><i class="fa-solid fa-bars"></i></div>
+
+            <!-- زر القائمة (الثلاث خطوط) -->
+            <div class="menu" id="menuToggleBtn" onclick="document.getElementById('navMenu').classList.toggle('active')" style="cursor: pointer; font-size: 24px; color: var(--accent);">
+                <i class="fa-solid fa-bars"></i>
+            </div>
         </div>
     </header>
 
@@ -54,7 +64,7 @@
                 <h1><span>SN ELECTRIC</span></h1>
                 <p><i class="fa-solid fa-plug"></i> كهربائي محترف - Power & Control</p>
                 <div id="customerWelcomeArea" style="margin-top: 15px;"></div>
-                <div class="hero-buttons" style="margin-top: 20px;">
+                <div class="hero-buttons" style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
                     <a href="#services" class="btn-primary">خدماتنا والأسعار</a>
                     <a href="contract.html" class="btn-secondary" style="background:#0b2b57; display:inline-block; text-align:center;">إصدار عقد رسمي</a>
                     <a href="profile.html" class="btn-secondary" style="background:var(--accent); color:var(--dark); display:inline-block; text-align:center; font-weight:bold;"><i class="fa-solid fa-user-gear"></i> الصفحة الشخصية وحسابي</a>
