@@ -147,7 +147,6 @@
                 requestsData.forEach((req, index) => {
                     let projectCode = `SN-${req.id}`;
                     
-                    // افتراض بيانات مالية (يمكن ربطها بأعمدة قاعدة البيانات مباشرة إذا وجدت، أو استخدام قيم افتراضية منظمة)
                     let totalCost = req.total_cost || 5000;
                     let paidAmount = req.paid_amount || 2000;
                     let remainingAmount = totalCost - paidAmount;
@@ -284,15 +283,15 @@
             const input = document.getElementById('profileChatInput');
             if (!input) return;
             const text = input.value.trim();
-            boxPhone = localStorage.getItem('client_phone');
-            if (!text || !boxPhone) return;
+            const phone = localStorage.getItem('client_phone'); // تم التصحيح هنا
+            if (!text || !phone) return;
 
             appendMsgToUI(text, 'outgoing');
             input.value = '';
 
             if (window.supabaseClient) {
                 await window.supabaseClient.from('project_messages').insert([
-                    { customer_phone: boxPhone, message_text: text, sender_type: 'client', sent_at: new Date().toISOString() }
+                    { customer_phone: phone, message_text: text, sender_type: 'client', sent_at: new Date().toISOString() }
                 ]);
             }
         }
