@@ -222,3 +222,62 @@ section{padding:90px 0;scroll-margin-top:70px;}
 body {
     padding-bottom: 80px; 
 }
+/* ==========================================
+   SN ELECTRIC - Horizontal Swipe Bar (Max it style)
+   ========================================== */
+
+.sn-horizontal-bar-wrapper {
+    width: 100%;
+    background: rgba(8, 26, 51, 0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    position: sticky;
+    top: 70px; /* تحت الهيدر مباشرة */
+    z-index: 900;
+    backdrop-filter: blur(10px);
+}
+
+.sn-horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+    padding: 0 16px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* إخفاء شريط التمرير في متصفحات فايرفوكس */
+    -webkit-overflow-scrolling: touch;
+}
+
+.sn-horizontal-scroll::-webkit-scrollbar {
+    display: none; /* إخفاء شريط التمرير في كروم وسفاري */
+}
+
+.sn-bar-item {
+    flex: 0 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+    scroll-snap-align: start;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.sn-bar-item .icon {
+    font-size: 16px;
+}
+
+.sn-bar-item:active {
+    transform: scale(0.95);
+}
+
+.sn-bar-item.active, .sn-bar-item:hover {
+    background: var(--secondary);
+    border-color: var(--accent);
+    color: var(--accent);
+}
