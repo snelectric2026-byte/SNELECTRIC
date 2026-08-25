@@ -12,9 +12,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
     <style>
         .vip-badge { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        .chat-widget-btn { position: fixed; bottom: 25px; left: 25px; background: var(--accent); color: var(--dark); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.4); z-index: 1000; transition: transform 0.3s; }
+        .chat-widget-btn { position: fixed; bottom: 85px; left: 25px; background: var(--accent); color: var(--dark); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.4); z-index: 1000; transition: transform 0.3s; }
         .chat-widget-btn:hover { transform: scale(1.1); }
-        .chat-box { position: fixed; bottom: 95px; left: 25px; width: 350px; max-width: 90vw; height: 450px; background: #111e38; border: 2px solid var(--accent); border-radius: 15px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden; }
+        .chat-box { position: fixed; bottom: 155px; left: 25px; width: 350px; max-width: 90vw; height: 450px; background: #111e38; border: 2px solid var(--accent); border-radius: 15px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden; }
         .chat-header { background: var(--dark); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
         .chat-message { padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.4; }
@@ -27,36 +27,158 @@
         .tech-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 15px; text-align: center; }
         .calculator-section { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
         .visitor-counter-box { margin-top: 8px; font-size: 14px; color: var(--accent); opacity: 0.9; }
+
+        /* تنسيقات الشريط الأفقي الشامل المتحرك بالـ Swipe */
+        .sn-horizontal-bar-wrapper {
+            width: 100%;
+            background: rgba(8, 26, 51, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+            position: sticky;
+            top: 70px;
+            z-index: 900;
+            backdrop-filter: blur(10px);
+        }
+        .sn-horizontal-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding: 0 16px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sn-horizontal-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .sn-bar-item {
+            flex: 0 0 auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 10px 18px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 600;
+            scroll-snap-align: start;
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+        .sn-bar-item .icon { font-size: 16px; }
+        .sn-bar-item:active { transform: scale(0.95); }
+        .sn-bar-item.active, .sn-bar-item:hover {
+            background: var(--secondary);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* تنسيقات الشريط السفلي الثابت */
+        .sn-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: #081A33;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 999;
+            padding: 0 10px;
+            backdrop-filter: blur(10px);
+        }
+        .sn-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #8a9bb8;
+            font-size: 11px;
+            transition: 0.3s ease;
+        }
+        .sn-nav-item span:first-child { font-size: 20px; margin-bottom: 4px; }
+        .sn-nav-item.active, .sn-nav-item:hover { color: #FFD700; }
+        .sn-nav-item.highlight-btn {
+            background: #FFD700;
+            color: #081A33;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: -20px;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+            font-weight: bold;
+        }
+        body { padding-bottom: 80px; }
     </style>
 </head>
 <body>
 
     <header>
         <div class="container nav" style="display: flex; justify-content: space-between; align-items: center; position: relative;">
-            <!-- شعار الموقع بصورة icon.png بدلاً من النص الباهت -->
+            <!-- شعار الموقع -->
             <a href="#" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
                 <img src="icon.png" alt="SN ELECTRIC" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px;">
                 <span style="color: var(--accent); font-weight: 800; font-size: 16px;">SN ELECTRIC</span>
             </a>
 
-            <!-- القائمة الجانبية المنسدلة -->
-            <nav id="navMenu">
-                <a href="#">الرئيسية</a>
-                <a href="#services">خدماتنا والأسعار</a>
-                <a href="#tech-list">الفنيين والتقييمات</a>
-                <a href="#join-tech">انضم كفني</a>
-                <a href="contract.html">عقد الاتفاق</a>
-                <a href="profile.html" style="color: var(--accent); font-weight: bold;"><i class="fa-solid fa-user-gear"></i> الصفحة الشخصية</a>
-                <a href="terms.html">سياسات التعامل</a>
-                <a href="#contact">تواصل معنا</a>
-            </nav>
+            <!-- القائمة القديمة مخفية، وتم تحويل محتواها للشريط الأفقي المتحرك بالأسفل -->
+            <nav id="navMenu" style="display: none;"></nav>
 
-            <!-- زر القائمة (الثلاث خطوط) -->
-            <div class="menu" id="menuToggleBtn" onclick="document.getElementById('navMenu').classList.toggle('active')" style="cursor: pointer; font-size: 24px; color: var(--accent);">
+            <!-- زر القائمة التبديلي -->
+            <div class="menu" id="menuToggleBtn" onclick="alert('تم دمج خيارات القائمة في الشريط الأفقي المتحرك أعلى الصفحة لسهولة التصفح بالـ Swipe!');" style="cursor: pointer; font-size: 24px; color: var(--accent);">
                 <i class="fa-solid fa-bars"></i>
             </div>
         </div>
     </header>
+
+    <!-- الشريط الأفقي الشامل المتحرك بالـ Swipe (يضم الخدمات، خامات، عقد، حسابي، وكل محتوى القائمة بجوار بعضها) -->
+    <div class="sn-horizontal-bar-wrapper">
+        <div class="sn-horizontal-scroll">
+            <a href="#" class="sn-bar-item active">
+                <span class="icon">🏠</span>
+                <span class="text">الرئيسية</span>
+            </a>
+            <a href="#services" class="sn-bar-item">
+                <span class="icon">⚡</span>
+                <span class="text">خدماتنا والأسعار</span>
+            </a>
+            <a href="contract.html" class="sn-bar-item">
+                <span class="icon">🔌</span>
+                <span class="text">خامات</span>
+            </a>
+            <a href="contract.html" class="sn-bar-item">
+                <span class="icon">📄</span>
+                <span class="text">عقد الاتفاق</span>
+            </a>
+            <a href="profile.html" class="sn-bar-item">
+                <span class="icon">👤</span>
+                <span class="text">حسابي الشخصي</span>
+            </a>
+            <a href="#tech-list" class="sn-bar-item">
+                <span class="icon">⭐</span>
+                <span class="text">الفنيين والتقييمات</span>
+            </a>
+            <a href="#join-tech" class="sn-bar-item">
+                <span class="icon">🛠️</span>
+                <span class="text">انضم كفني</span>
+            </a>
+            <a href="terms.html" class="sn-bar-item">
+                <span class="icon">📋</span>
+                <span class="text">سياسات التعامل</span>
+            </a>
+            <a href="#contact" class="sn-bar-item">
+                <span class="icon">📞</span>
+                <span class="text">تواصل معنا</span>
+            </a>
+        </div>
+    </div>
 
     <section class="hero">
         <div class="container hero-content">
@@ -209,7 +331,30 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!-- الشريط السفلي الثابت (ثابت في كل الصفحات) -->
+    <nav class="sn-bottom-nav">
+        <a href="terms.html" class="sn-nav-item">
+            <span>⚙️</span>
+            <span>المزيد</span>
+        </a>
+        <a href="contract.html" class="sn-nav-item">
+            <span>🛒</span>
+            <span>الطلبات</span>
+        </a>
+        <a href="index.html" class="sn-nav-item highlight-btn">
+            <span>⚡</span>
+        </a>
+        <a href="profile.html" class="sn-nav-item">
+            <span>👤</span>
+            <span>حسابي</span>
+        </a>
+        <a href="index.html" class="sn-nav-item active">
+            <span>🏠</span>
+            <span>الرئيسية</span>
+        </a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.5net/npm/@supabase/supabase-js"></script>
     <script src="js/supabase.js"></script>
     <script src="js/app.js"></script>
     <script src="js/register-sw.js"></script>
@@ -240,29 +385,5 @@
             }
         });
     </script>
-    <!-- الشريط السفلي الثابت (يتكرر في كل الصفحات) -->
-<nav class="sn-bottom-nav">
-    <a href="terms.html" class="sn-nav-item">
-        <span>⚙️</span>
-        <span>المزيد</span>
-    </a>
-    <a href="contract.html" class="sn-nav-item">
-        <span>🛒</span>
-        <span>الطلبات</span>
-    </a>
-    <!-- الزر البارز في المنتصف -->
-    <a href="index.html" class="sn-nav-item highlight-btn">
-        <span>⚡</span>
-    </a>
-    <a href="profile.html" class="sn-nav-item">
-        <span>👤</span>
-        <span>حسابي</span>
-    </a>
-    <a href="index.html" class="sn-nav-item active">
-        <span>🏠</span>
-        <span>الرئيسية</span>
-    </a>
-</nav>
-
 </body>
 </html>
