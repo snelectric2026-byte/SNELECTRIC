@@ -25,9 +25,10 @@
         
         .chat-footer { display: flex; padding: 10px; background: var(--dark); border-top: 1px solid var(--border); gap: 8px; align-items: center; }
         .chat-footer input[type="text"] { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #222; color: #fff; }
-        .chat-footer button { background: var(--accent); color: var(--dark); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-cam { background: #3498db !important; color: #fff !important; }
-        .btn-video { background: #e74c3c !important; color: #fff !important; }
+        .chat-footer button { border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-send { background: var(--accent); color: var(--dark); }
+        .btn-cam { background: #3498db; color: #fff; }
+        .btn-video { background: #9b59b6; color: #fff; }
     </style>
 </head>
 <body>
@@ -43,7 +44,7 @@
         </div>
     </div>
 
-    <!-- مخزن مخفي لالتقاط الصور من الكاميرا -->
+    <!-- عنصر مخفي لالتقاط الصور عبر كاميرا الهاتف مباشرة -->
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleCameraCapture(event)">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -155,16 +156,16 @@
                             <div style="background: var(--dark); padding: 12px; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                                 <span><i class="fa-solid fa-comments"></i> شات ومتابعة الموقع الفورية</span>
                                 <div>
-                                    <button onclick="startVideoCall('${phone}')" class="btn-video" style="padding: 5px 10px; border-radius: 6px; border:none; font-size: 12px; cursor:pointer;" title="مكالمة فيديو مباشرة"><i class="fa-solid fa-video"></i> مكالمة فيديو</button>
+                                    <button onclick="startVideoCall('${phone}')" class="btn-video" style="padding: 6px 12px; border-radius: 6px; border:none; font-size: 12px; cursor:pointer;" title="مكالمة فيديو مباشرة"><i class="fa-solid fa-video"></i> مكالمة فيديو</button>
                                 </div>
                             </div>
                             <div id="profileChatBody" class="chat-body">
                                 <div class="chat-message incoming">أهلاً بك! يمكنك تصوير الموقع مباشرة بالكاميرا أو بدء مكالمة فيديو مع الإدارة.</div>
                             </div>
                             <div class="chat-footer">
-                                <button class="btn-cam" onclick="openCamera()" title="تصوير وإرسال صورة للموقع"><i class="fa-solid fa-camera"></i></button>
+                                <button class="btn-cam" onclick="openCamera()" title="تصوير موقع العمل بالكاميرا"><i class="fa-solid fa-camera"></i></button>
                                 <input type="text" id="profileChatInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key === 'Enter') sendProfileMessage()">
-                                <button onclick="sendProfileMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                                <button class="btn-send" onclick="sendProfileMessage()" title="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
                             </div>
                         </div>
                     </div>
@@ -212,7 +213,6 @@
         }
 
         function startVideoCall(phone) {
-            // فتح مكالمة فيديو فورية عبر واتساب الشركة (بدون حفظ في الدेटा)
             let msg = `السلام عليكم، أرغب في بدء مكالمة فيديو معاينة مباشرة للموقع بخصوص حساب رقم: ${phone}`;
             window.open(`https://wa.me/201287837118?text=${encodeURIComponent(msg)}`, '_blank');
         }
