@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1e3a8a">
-    <meta name="description" content="لوحة تحكم الإدارة - SN ELECTRIC">
-    <link rel="manifest" href="manifest.json">
     <title>SN ELECTRIC - لوحة التحكم الإدارية</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -13,7 +11,7 @@
     <style>
         body { background: #07101d; color: #fff; font-family: 'Cairo', sans-serif; padding: 20px; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--dark); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center; }
         .stat-card h3 { color: var(--accent); font-size: 24px; margin-top: 5px; }
         
@@ -32,9 +30,9 @@
         .btn-reject { background: #e74c3c; color: #fff; }
         .btn-chat { background: var(--accent); color: var(--dark); }
         .btn-edit-pass { background: #3498db; color: #fff; }
+        .btn-video { background: #9b59b6; color: #fff; }
         
-        #notificationAlertBox { display: none; background: #e74c3c; color: #fff; padding: 15px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        #notificationAlertBox { display: none; background: #e74c3c; color: #fff; padding: 15px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -43,184 +41,117 @@
         <div class="admin-header">
             <div>
                 <h2><i class="fa-solid fa-user-shield"></i> لوحة تحكم الإدارة - SN ELECTRIC</h2>
-                <p style="font-size: 13px; color: #aaa; margin-top: 5px;">متابعة طلبات العملاء وحساباتهم بالوقت الفعلي</p>
             </div>
             <div>
-                <button onclick="enableAudioAndNotifications()" style="background: var(--accent); color: var(--dark); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-bell"></i> تفعيل المنبه الصوتي</button>
-                <a href="index.html" style="background: #1e3a8a; color: #fff; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-right: 10px;"><i class="fa-solid fa-home"></i> الرئيسية</a>
+                <a href="index.html" style="background: #1e3a8a; color: #fff; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-home"></i> الرئيسية</a>
             </div>
         </div>
 
         <div id="notificationAlertBox">
-            <i class="fa-solid fa-triangle-exclamation"></i> تنبيه هام: تم استلام طلب خدمة جديد ومباشر الآن! يرجى المراجعة.
+            <i class="fa-solid fa-triangle-exclamation"></i> تنبيه: طلب خدمة جديد!
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card">
-                <p>إجمالي الطلبات</p>
-                <h3 id="statTotal">0</h3>
-            </div>
-            <div class="stat-card">
-                <p>قيد الانتظار 🟡</p>
-                <h3 id="statPending" style="color: #f1c40f;">0</h3>
-            </div>
-            <div class="stat-card">
-                <p>تم الموافقة ✅</p>
-                <h3 id="statApproved" style="color: #2ecc71;">0</h3>
-            </div>
-            <div class="stat-card">
-                <p>إجمالي العملاء المسجلين</p>
-                <h3 id="statClients" style="color: #3498db;">0</h3>
-            </div>
+            <div class="stat-card"><p>إجمالي الطلبات</p><h3 id="statTotal">0</h3></div>
+            <div class="stat-card"><p>قيد الانتظار</p><h3 id="statPending" style="color: #f1c40f;">0</h3></div>
+            <div class="stat-card"><p>تم الموافقة</p><h3 id="statApproved" style="color: #2ecc71;">0</h3></div>
+            <div class="stat-card"><p>العملاء المسجلين</p><h3 id="statClients" style="color: #3498db;">0</h3></div>
         </div>
 
-        <!-- قسم طلبات العملاء -->
         <div class="requests-table-container">
             <h3 style="margin-bottom: 15px; color: var(--accent);"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات</h3>
             <div id="adminVerticalList" class="admin-vertical-list">
-                <div style="text-align: center; padding: 20px;">جاري جلب الطلبات...</div>
+                <div style="text-align: center; padding: 20px;">جاري الجلب...</div>
             </div>
         </div>
 
-        <!-- قسم سجل وحسابات العملاء وأكواد المرور -->
         <div class="requests-table-container">
-            <h3 style="margin-bottom: 15px; color: #3498db;"><i class="fa-solid fa-users-gear"></i> سجل حسابات العملاء (أرقام الهواتف وكلمات السر)</h3>
+            <h3 style="margin-bottom: 15px; color: #3498db;"><i class="fa-solid fa-users-gear"></i> سجل حسابات العملاء وأرقام الهواتف</h3>
             <div id="adminClientsList" class="admin-vertical-list">
-                <div style="text-align: center; padding: 20px;">جاري جلب حسابات العملاء...</div>
+                <div style="text-align: center; padding: 20px;">جاري الجلب...</div>
             </div>
         </div>
     </div>
 
-    <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="js/supabase.js"></script>
     <script>
-        let audioEnabled = false;
-
-        function enableAudioAndNotifications() {
-            audioEnabled = true;
-            const audio = document.getElementById('alertSound');
-            audio.play().then(() => {
-                audio.pause();
-                audio.currentTime = 0;
-                alert('تم تفعيل المنبه الصوتي والمرئي بنجاح للإشعارات!');
-            }).catch(e => console.log('Audio unlocked:', e));
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminRequests();
             loadAdminClients();
-            setupRealtimeSubscription();
         });
 
         async function loadAdminRequests() {
             if (!window.supabaseClient) return;
-
-            try {
-                const { data } = await window.supabaseClient
-                    .from('service_requests')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (data) {
-                    renderRequestsVerticalList(data);
-                    updateStats(data);
-                }
-            } catch (err) {
-                console.log('Error loading requests:', err);
+            const { data } = await window.supabaseClient.from('service_requests').select('*').order('created_at', { ascending: false });
+            if (data) {
+                renderRequestsVerticalList(data);
+                updateStats(data);
             }
         }
 
         async function loadAdminClients() {
             if (!window.supabaseClient) return;
+            const { data } = await window.supabaseClient.from('clients').select('*').order('phone', { ascending: true });
+            const container = document.getElementById('adminClientsList');
+            if (document.getElementById('statClients') && data) document.getElementById('statClients').innerText = data.length;
+            if (!container) return;
 
-            try {
-                const { data } = await window.supabaseClient
-                    .from('clients')
-                    .select('*')
-                    .order('phone', { ascending: true });
-
-                const container = document.getElementById('adminClientsList');
-                const statClients = document.getElementById('statClients');
-
-                if (statClients && data) {
-                    statClients.innerText = data.length;
-                }
-
-                if (!container) return;
-
-                if (!data || data.length === 0) {
-                    container.innerHTML = `<div style="text-align: center; padding: 20px; color: #aaa;">لا توجد حسابات عملاء مسجلة حتى الآن</div>`;
-                    return;
-                }
-
-                container.innerHTML = '';
-                data.forEach((client, index) => {
-                    let card = document.createElement('div');
-                    card.className = 'admin-request-card';
-                    card.innerHTML = `
-                        <div class="admin-card-row">
-                            <span><strong># ${index + 1} | رقم الهاتف:</strong> <a href="tel:${client.phone}" style="color:var(--accent); text-decoration:none; font-weight:bold;">${client.phone}</a></span>
-                            <span><strong>كلمة السر:</strong> <span style="background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; font-family: monospace;">${client.password}</span></span>
-                        </div>
-                        <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
-                            <div class="action-btns">
-                                <button class="btn-edit-pass" onclick="changeClientPassword('${client.phone}')">
-                                    <i class="fa-solid fa-key"></i> تعديل كلمة السر
-                                </button>
-                                <a href="https://wa.me/2${client.phone}" target="_blank" class="btn-chat">
-                                    <i class="fa-brands fa-whatsapp"></i> مراسلة واتساب
-                                </a>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                console.log('Error loading clients:', err);
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 20px; color: #aaa;">لا توجد حسابات مسجلة</div>`;
+                return;
             }
+
+            container.innerHTML = '';
+            data.forEach((client, index) => {
+                let card = document.createElement('div');
+                card.className = 'admin-request-card';
+                card.innerHTML = `
+                    <div class="admin-card-row">
+                        <span><strong># ${index + 1} | الهاتف:</strong> <a href="tel:${client.phone}" style="color:var(--accent); text-decoration:none;">${client.phone}</a></span>
+                        <span><strong>كلمة السر:</strong> <span style="background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; font-family: monospace;">${client.password}</span></span>
+                    </div>
+                    <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
+                        <div class="action-btns">
+                            <button class="btn-video" onclick="startAdminVideoCall('${client.phone}')"><i class="fa-solid fa-video"></i> مكالمة فيديو</button>
+                            <button class="btn-edit-pass" onclick="changeClientPassword('${client.phone}')"><i class="fa-solid fa-key"></i> تعديل كلمة السر</button>
+                            <a href="https://wa.me/2${client.phone}" target="_blank" class="btn-chat"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function startAdminVideoCall(phone) {
+            let msg = `مرحباً بك من إدارة SN ELECTRIC، نبدأ الآن مكالمة فيديو معاينة مباشرة للموقع.`;
+            window.open(`https://wa.me/2${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         async function changeClientPassword(phone) {
             let newPass = prompt(`أدخل كلمة المرور الجديدة للرقم (${phone}):`);
             if (!newPass) return;
-
-            if (!window.supabaseClient) return;
-
-            try {
-                const { error } = await window.supabaseClient
-                    .from('clients')
-                    .update({ password: newPass.trim() })
-                    .eq('phone', phone);
-
-                if (!error) {
-                    alert('تم تحديث كلمة السر بنجاح للعميل!');
-                    loadAdminClients();
-                } else {
-                    alert('حدث خطأ أثناء تحديث كلمة السر.');
-                }
-            } catch (err) {
-                console.log('Password update error:', err);
+            const { error } = await window.supabaseClient.from('clients').update({ password: newPass.trim() }).eq('phone', phone);
+            if (!error) {
+                alert('تم التحديث بنجاح');
+                loadAdminClients();
+            } else {
+                alert('حدث خطأ');
             }
         }
 
         function renderRequestsVerticalList(requests) {
             const container = document.getElementById('adminVerticalList');
             if (!container) return;
-
             if (requests.length === 0) {
-                container.innerHTML = `<div style="text-align: center; padding: 20px; color: #aaa;">لا توجد طلبات مسجلة حتى الآن</div>`;
+                container.innerHTML = `<div style="text-align: center; padding: 20px; color: #aaa;">لا توجد طلبات</div>`;
                 return;
             }
 
             container.innerHTML = '';
             requests.forEach((req, index) => {
-                let statusClass = 'status-pending';
-                if (req.status === 'موافقة') statusClass = 'status-approved';
-                else if (req.status === 'مرفوض') statusClass = 'status-rejected';
-
-                let projectCode = req.id ? `SN-${req.id}` : `SN-2026-${index+1}`;
+                let statusClass = req.status === 'موافقة' ? 'status-approved' : (req.status === 'مرفوض' ? 'status-rejected' : 'status-pending');
+                let projectCode = req.id ? `SN-${req.id}` : `SN-${index+1}`;
 
                 let card = document.createElement('div');
                 card.className = 'admin-request-card';
@@ -229,26 +160,16 @@
                         <span><strong># ${index + 1} | كود المشروع:</strong> <span style="color:var(--accent);">${projectCode}</span></span>
                         <span class="status-badge ${statusClass}">${req.status || 'قيد الانتظار'}</span>
                     </div>
-                    <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
-                        <span><strong>العميل:</strong> ${req.customer_name || 'غير متوفر'}</span>
-                        <span><strong>الهاتف:</strong> <a href="tel:${req.customer_phone}" style="color:var(--accent); text-decoration:none;">${req.customer_phone}</a></span>
-                        <span><strong>الخدمة:</strong> ${req.service_name || req.service_type || 'خدمة عامة'}</span>
-                    </div>
                     <div class="admin-card-row">
-                        <span><strong>العنوان:</strong> ${req.address || 'غير محدد'}</span>
-                        <span><strong>السعر التقديري:</strong> ${req.price || req.estimated_price || 0} ج.م</span>
+                        <span><strong>العميل:</strong> ${req.customer_name || 'غير متوفر'}</span>
+                        <span><strong>الهاتف:</strong> ${req.customer_phone}</span>
+                        <span><strong>الخدمة:</strong> ${req.service_name || req.service_type}</span>
                     </div>
                     <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
                         <div class="action-btns">
-                            <button class="btn-approve" onclick="approveAndSendWhatsApp(${req.id}, '${req.customer_phone}', '${req.customer_name || 'العميل'}', '${projectCode}')">
-                                <i class="fa-solid fa-check"></i> موافقة وإرسال رسالة الاتفاق
-                            </button>
-                            <button class="btn-reject" onclick="updateRequestStatusById(${req.id}, 'مرفوض')">
-                                <i class="fa-solid fa-xmark"></i> رفض
-                            </button>
-                            <a href="https://wa.me/2${req.customer_phone}" target="_blank" class="btn-chat">
-                                <i class="fa-brands fa-whatsapp"></i> واتساب
-                            </a>
+                            <button class="btn-approve" onclick="updateStatus(${req.id}, 'موافقة')"><i class="fa-solid fa-check"></i> موافقة</button>
+                            <button class="btn-reject" onclick="updateStatus(${req.id}, 'مرفوض')"><i class="fa-solid fa-xmark"></i> رفض</button>
+                            <button class="btn-video" onclick="startAdminVideoCall('${req.customer_phone}')"><i class="fa-solid fa-video"></i> فيديو</button>
                         </div>
                     </div>
                 `;
@@ -256,83 +177,16 @@
             });
         }
 
-        function approveAndSendWhatsApp(requestId, phone, clientName, projectCode) {
-            updateRequestStatusById(requestId, 'موافقة', false);
-
-            let techName = "محمد إبراهيم";
-            let techPhone = "01287837118";
-
-            let msg = `السيد/السيدة : ${clientName}%0a` +
-                      `تم الموافقة على الطلب (كود المشروع: ${projectCode}) برجاء التواصل مع:%0a` +
-                      `المنفذ: ${techName} (رقم الهاتف: ${techPhone})%0a` +
-                      `-----------------------------------%0a` +
-                      `⚠️ تنبيه هام: الاتفاق عبر وسائل التواصل بدون رسائل حساب (إيداع المبلغ في حساب الفني أو موافقة كتابية من المنفذ باستلام الجنيه نقداً) لا يعد مستنداً رسمياً.%0a` +
-                      `وإن تم الاتفاق والانتهاء من العمل بدون أي مشاكل وتراضٍ بين الطرفين، يتم دفع 10% من القيمة الإجمالية للشركة (حق الإدارة والمتابعة).`;
-
-            window.open(`https://wa.me/2${phone}?text=${msg}`, '_blank');
+        async function updateStatus(id, status) {
+            await window.supabaseClient.from('service_requests').update({ status: status }).eq('id', id);
+            loadAdminRequests();
         }
 
         function updateStats(requests) {
-            let total = requests.length;
-            let pending = requests.filter(r => !r.status || r.status === 'قيد الانتظار' || r.status === 'قيد الانتظار 🟡').length;
-            let approved = requests.filter(r => r.status === 'موافقة').length;
-            let rejected = requests.filter(r => r.status === 'مرفوض').length;
-
-            document.getElementById('statTotal').innerText = total;
-            document.getElementById('statPending').innerText = pending;
-            document.getElementById('statApproved').innerText = approved;
-            document.getElementById('statRejected').innerText = rejected;
-        }
-
-        async function updateRequestStatusById(requestId, newStatus, showAlert = true) {
-            if (!window.supabaseClient) return;
-
-            try {
-                const { error } = await window.supabaseClient
-                    .from('service_requests')
-                    .update({ status: newStatus })
-                    .eq('id', requestId);
-
-                if (!error) {
-                    if (showAlert) alert(`تم تحديث حالة الطلب بنجاح إلى: ${newStatus}`);
-                    loadAdminRequests();
-                } else {
-                    if (showAlert) alert('حدث خطأ أثناء التحديث.');
-                }
-            } catch (err) {
-                console.log('Update error:', err);
-            }
-        }
-
-        function setupRealtimeSubscription() {
-            if (!window.supabaseClient) return;
-
-            window.supabaseClient
-                .channel('public:service_requests')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'service_requests' }, payload => {
-                    triggerNewOrderAlert(payload.new);
-                })
-                .subscribe();
-        }
-
-        function triggerNewOrderAlert(newOrder) {
-            const alertBox = document.getElementById('notificationAlertBox');
-            if (alertBox) {
-                alertBox.style.display = 'block';
-                alertBox.innerText = `🚨 تنبيه: طلب جديد من العميل (${newOrder.customer_name}) لخدمة (${newOrder.service_name || newOrder.service_type})!`;
-            }
-
-            if (audioEnabled) {
-                const audio = document.getElementById('alertSound');
-                if (audio) {
-                    audio.play().catch(e => console.log('Audio play error:', e));
-                }
-            }
-
-            loadAdminRequests();
-            loadAdminClients();
+            document.getElementById('statTotal').innerText = requests.length;
+            document.getElementById('statPending').innerText = requests.filter(r => !r.status || r.status === 'قيد الانتظار').length;
+            document.getElementById('statApproved').innerText = requests.filter(r => r.status === 'موافقة').length;
         }
     </script>
-    <script src="js/register-sw.js"></script>
 </body>
 </html>
