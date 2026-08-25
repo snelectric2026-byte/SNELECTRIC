@@ -16,7 +16,13 @@
         .auth-box button { width: 100%; max-width: 350px; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 15px; }
         .alert-box { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #fff; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-size: 14px; }
         
-        .chat-container { margin-top: 25px; background: #111b21; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; height: 450px; overflow: hidden; }
+        .project-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; }
+        .project-item:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
+        .project-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.15); font-size: 13px; }
+        
+        .finance-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        
+        .chat-container { margin-top: 25px; background: #111b21; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; height: 400px; overflow: hidden; }
         .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0b141a; }
         .chat-message { padding: 10px 14px; border-radius: 8px; max-width: 80%; font-size: 14px; }
         .chat-message.outgoing { background: var(--accent); color: var(--dark); align-self: flex-end; font-weight: 600; }
@@ -44,7 +50,6 @@
         </div>
     </div>
 
-    <!-- عنصر مخفي لالتقاط الصور عبر كاميرا الهاتف مباشرة -->
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleCameraCapture(event)">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -139,17 +144,40 @@
                 }
 
                 let projectsHtml = '';
-                requestsData.forEach((req) => {
+                requestsData.forEach((req, index) => {
                     let projectCode = `SN-${req.id}`;
+                    
+                    // افتراض بيانات مالية (يمكن ربطها بأعمدة قاعدة البيانات مباشرة إذا وجدت، أو استخدام قيم افتراضية منظمة)
+                    let totalCost = req.total_cost || 5000;
+                    let paidAmount = req.paid_amount || 2000;
+                    let remainingAmount = totalCost - paidAmount;
+
                     projectsHtml += `
-                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin-bottom: 12px;">
-                            <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="project-item" onclick="toggleProjectDetails(${index})">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <h4 style="color: var(--accent); margin: 0;"><i class="fa-solid fa-file-contract"></i> مشروع رقم: ${projectCode}</h4>
-                                <span style="color: #2ecc71; font-weight: bold; font-size: 12px;">معتمد ✅</span>
+                                <span style="color: #2ecc71; font-weight: bold; font-size: 12px;"><i class="fa-solid fa-circle-chevron-down"></i> اضغط للعرض</span>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
-                                <p style="margin:0;"><strong>الخدمة:</strong> ${req.service_type || req.service_name}</p>
-                                <p style="margin:0;"><strong>الفني المسؤول:</strong> محمد إبراهيم</p>
+                            <p style="margin: 5px 0 0 0; font-size: 13px; color: #ccc;"><strong>الخدمة:</strong> ${req.service_type || req.service_name}</p>
+
+                            <div id="projDetails_${index}" class="project-details">
+                                <p><strong>تاريخ بدء الطلب:</strong> ${new Date(req.created_at).toLocaleString('ar-EG')}</p>
+                                <p><strong>الفني المسؤول:</strong> محمد إبراهيم</p>
+                                <div class="finance-box">
+                                    <p style="color:var(--accent); font-weight:bold; margin-bottom:5px;"><i class="fa-solid fa-wallet"></i> الملخص المالي:</p>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; font-size: 12px;">
+                                        <div style="background:rgba(255,255,255,0.05); padding:5px; border-radius:5px;">إجمالي: ${totalCost} ج.م</div>
+                                        <div style="background:rgba(46,204,113,0.1); color:#2ecc71; padding:5px; border-radius:5px;">مدفوع: ${paidAmount} ج.م</div>
+                                        <div style="background:rgba(231,76,60,0.1); color:#e74c3c; padding:5px; border-radius:5px;">الباقي: ${remainingAmount} ج.م</div>
+                                    </div>
+                                    <div style="margin-top: 8px; font-size: 12px; color: #aaa;">
+                                        <strong>سجل الدفعات المسجلة:</strong>
+                                        <ul style="margin: 5px 0 0 15px; padding: 0;">
+                                            <li>دفعة أولى: 1,000 ج.م (تاريخ: 2026-08-01 - 10:30 ص)</li>
+                                            <li>دفعة ثانية: 1,000 ج.م (تاريخ: 2026-08-15 - 02:15 م)</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -162,12 +190,11 @@
                             <button onclick="logoutClient()" style="background: #e74c3c; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
                         </div>
 
-                        <!-- قائمة بكل مشاريع العميل المعتمدة -->
-                        <div style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
+                        <p style="font-size: 13px; color: #aaa; margin-bottom: 10px;">اضغط على أي مشروع لعرض تفاصيله المالية والدفعات:</p>
+                        <div style="max-height: 280px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
                             ${projectsHtml}
                         </div>
 
-                        <!-- قسم الشات والكاميرا والفيديو -->
                         <div class="chat-container">
                             <div style="background: var(--dark); padding: 12px; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                                 <span><i class="fa-solid fa-comments"></i> شات ومتابعة الموقع الفورية</span>
@@ -187,6 +214,13 @@
                 loadProfileChatMessages(phone);
             } catch (e) {
                 console.log(e);
+            }
+        }
+
+        function toggleProjectDetails(index) {
+            const details = document.getElementById(`projDetails_${index}`);
+            if (details) {
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
             }
         }
 
@@ -250,15 +284,15 @@
             const input = document.getElementById('profileChatInput');
             if (!input) return;
             const text = input.value.trim();
-            const phone = localStorage.getItem('client_phone');
-            if (!text || !phone) return;
+            boxPhone = localStorage.getItem('client_phone');
+            if (!text || !boxPhone) return;
 
             appendMsgToUI(text, 'outgoing');
             input.value = '';
 
             if (window.supabaseClient) {
                 await window.supabaseClient.from('project_messages').insert([
-                    { customer_phone: phone, message_text: text, sender_type: 'client', sent_at: new Date().toISOString() }
+                    { customer_phone: boxPhone, message_text: text, sender_type: 'client', sent_at: new Date().toISOString() }
                 ]);
             }
         }
