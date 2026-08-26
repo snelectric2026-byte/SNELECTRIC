@@ -25,9 +25,9 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
         .form-group input { width: 100%; padding: 12px; background: #071120; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 15px; }
-        .btn-action { width: 100%; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn-action { width: 100%; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 1[...]
         .toggle-link { text-align: center; margin-top: 15px; font-size: 13px; color: #a0aec0; cursor: pointer; text-decoration: underline; }
-        .project-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px; margin-bottom: 15px; border-right: 4px solid var(--accent); }
+        .project-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px; margin-bottom: 15px; border-right: 4px solid var(--accent);[...]
     </style>
 </head>
 <body>
@@ -75,7 +75,7 @@
 
         <!-- لوحة عرض الطلبات بعد التحقق الناجح -->
         <div id="dashboardBox" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; padding: 15px; border-radius: 12px; margin-[...]
                 <div>
                     <h3 id="clientWelcomeName" style="color: #2ecc71; margin: 0; font-size: 18px;">مرحباً بك</h3>
                     <p id="clientWelcomePhone" style="margin: 5px 0 0 0; font-size: 13px; color: #a0aec0;"></p>
@@ -210,7 +210,7 @@
                     <div class="project-card">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <strong style="color: var(--accent);">${req.service_type || 'خدمة عامة'}</strong>
-                            <span style="background: rgba(255,215,0,0.15); color: #ffd700; padding: 2px 8px; border-radius: 6px; font-size: 12px;">${req.status || 'قيد المعالجة'}</span>
+                            <span style="background: rgba(255,215,0,0.15); color: #ffd700; padding: 2px 8px; border-radius: 6px; font-size: 12px;">${req.status || 'قيد المعالجة'}</span[...]
                         </div>
                         <p style="margin: 4px 0; font-size: 14px;"><i class="fa-solid fa-location-dot"></i> العنوان: ${req.address || 'غير محدد'}</p>
                         <p style="margin: 4px 0; font-size: 14px;"><i class="fa-solid fa-money-bill"></i> التكلفة: ${req.total_price || 'حسب المعاينة'}</p>
