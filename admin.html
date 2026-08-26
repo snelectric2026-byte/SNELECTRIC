@@ -10,14 +10,14 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
     <style>
         body { background: #07101d; color: #fff; font-family: 'Cairo', sans-serif; padding: 20px; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--dark); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--dark); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bot[...]
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center; }
         .stat-card h3 { color: var(--accent); font-size: 24px; margin-top: 5px; }
         
         .requests-table-container { background: var(--dark); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 25px; }
         .admin-vertical-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-        .admin-request-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .admin-request-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 15px 20px; display: flex; flex-direction: column; ga[...]
         .admin-card-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         
         .status-badge { padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; display: inline-block; }
@@ -25,7 +25,7 @@
         .status-approved { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
         .status-rejected { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
         
-        .action-btns button, .action-btns a { padding: 8px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 5px; font-size: 13px; text-decoration: none; display: inline-block; }
+        .action-btns button, .action-btns a { padding: 8px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 5px; font-size: 13px; text-decoration: none; dis[...]
         .btn-approve { background: #2ecc71; color: #fff; }
         .btn-reject { background: #e74c3c; color: #fff; }
         .btn-chat { background: var(--accent); color: var(--dark); }
@@ -43,7 +43,7 @@
                 <h2><i class="fa-solid fa-user-shield"></i> لوحة تحكم الإدارة - SN ELECTRIC</h2>
             </div>
             <div>
-                <a href="index.html" style="background: #1e3a8a; color: #fff; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-home"></i> الرئيسية</a>
+                <a href="index.html" style="background: #1e3a8a; color: #fff; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-home"></i> ا[...]
             </div>
         </div>
 
@@ -92,7 +92,7 @@
 
         async function loadAdminClients() {
             if (!window.supabaseClient) return;
-            const { data } = await window.supabaseClient.from('clients').select('*').order('phone', { ascending: true });
+            const { data } = await window.supabaseClient.from('customers').select('*').order('phone', { ascending: true });
             const container = document.getElementById('adminClientsList');
             if (document.getElementById('statClients') && data) document.getElementById('statClients').innerText = data.length;
             if (!container) return;
@@ -109,7 +109,7 @@
                 card.innerHTML = `
                     <div class="admin-card-row">
                         <span><strong># ${index + 1} | الهاتف:</strong> <a href="tel:${client.phone}" style="color:var(--accent); text-decoration:none;">${client.phone}</a></span>
-                        <span><strong>كلمة السر:</strong> <span style="background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; font-family: monospace;">${client.password}</span></span>
+                        <span><strong>كلمة السر:</strong> <span style="background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; font-family: monospace;">${client.password || 'غير مسجل'}</span></span>
                     </div>
                     <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
                         <div class="action-btns">
@@ -131,7 +131,7 @@
         async function changeClientPassword(phone) {
             let newPass = prompt(`أدخل كلمة المرور الجديدة للرقم (${phone}):`);
             if (!newPass) return;
-            const { error } = await window.supabaseClient.from('clients').update({ password: newPass.trim() }).eq('phone', phone);
+            const { error } = await window.supabaseClient.from('customers').update({ password: newPass.trim() }).eq('phone', phone);
             if (!error) {
                 alert('تم التحديث بنجاح');
                 loadAdminClients();
@@ -189,10 +189,10 @@
         }
     </script>
 <!-- قسم سجل أرقام الهواتف والبيانات السرية للعملاء (من جدول customers) -->
-<div class="container" style="margin-top: 50px; margin-bottom: 50px; padding: 25px; background: rgba(11, 23, 42, 0.95); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+<div class="container" style="margin-top: 50px; margin-bottom: 50px; padding: 25px; background: rgba(11, 23, 42, 0.95); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30[...]
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">
-        <h3 style="color: var(--accent); margin: 0; font-size: 20px;"><i class="fa-solid fa-address-book"></i> سجل العملاء وأرقام الهواتف والأسرار المسجلة</h3>
-        <button onclick="loadAdminCustomerRecords()" style="background: var(--accent); color: var(--dark); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px;"><i class="fa-solid fa-rotate"></i> تحديث السجل</button>
+        <h3 style="color: var(--accent); margin: 0; font-size: 20px;"><i class="fa-solid fa-address-book"></i> سجل العملاء وأرقام الهواتف والأسرار المسجلة</h[...]
+        <button onclick="loadAdminCustomerRecords()" style="background: var(--accent); color: var(--dark); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;[...]
     </div>
     
     <div style="overflow-x: auto;">
@@ -231,7 +231,7 @@
                 .order('created_at', { ascending: false });
 
             if (error) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ffa500; padding: 15px;">تعذر جلب الجدول (تأكد من صلاحيات RLS أو أسماء الأعمدة)</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ffa500; padding: 15px;">تعذر جلب الجدول (تأكد من صلاحيات RLS أو أسماء ا[...]
                 return;
             }
 
