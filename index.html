@@ -11,14 +11,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
     <style>
-        .vip-badge { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        :root{
+            --accent:#FFD700;
+            --dark:#081A33;
+            --card:#0b2442;
+            --border:rgba(255,255,255,0.06);
+            --white:#ffffff;
+        }
+        body{font-family: 'Cairo', sans-serif; background: #07102b; color: #cbd5e1; margin:0;}
+        .vip-badge { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; display: inline-block; margin-right: 8px; }
         
         .chat-widget-btn { 
             position: fixed; bottom: 90px; left: 25px; background: var(--accent); color: var(--dark); 
             width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
             font-size: 24px; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.4); z-index: 1000; touch-action: none; user-select: none; 
         }
-        .chat-box { position: fixed; bottom: 160px; left: 25px; width: 350px; max-width: 90vw; height: 450px; background: #111e38; border: 2px solid var(--accent); border-radius: 15px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden; }
+        .chat-box { position: fixed; bottom: 160px; left: 25px; width: 350px; max-width: 90vw; height: 450px; background: #111e38; border: 2px solid var(--accent); border-radius: 15px; display: none; flex-direction: column; box-shadow: 0 8px 30px rgba(0,0,0,0.5); z-index: 1000; overflow: hidden; }
         .chat-header { background: var(--dark); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
         .chat-message { padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.4; }
@@ -45,7 +53,7 @@
             border-radius: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none;
             color: var(--white); font-size: 14px; font-weight: 600; scroll-snap-align: start; transition: 0.2s ease;
         }
-        .sn-bar-item.active, .sn-bar-item:hover { background: var(--secondary); border-color: var(--accent); color: var(--accent); }
+        .sn-bar-item.active, .sn-bar-item:hover { background: var(--secondary, #0f3a63); border-color: var(--accent); color: var(--accent); }
 
         .sn-bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #081A33;
@@ -58,6 +66,19 @@
         .sn-nav-item span:first-child { font-size: 20px; margin-bottom: 4px; }
         .sn-nav-item.active, .sn-nav-item:hover { color: #FFD700; }
         body { padding-bottom: 80px; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
+        .card { background: linear-gradient(180deg,#07112a 0%, #081a33 100%); padding: 14px; border-radius: 12px; border: 1px solid var(--border); }
+        .card h3 { margin: 0 0 8px 0; font-size: 16px; }
+        .card p { margin:0 0 12px 0; font-size: 14px; color:#bcd3f0; }
+        .card button { background: var(--accent); color: var(--dark); border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+        .modal { position: fixed; left: 0; top: 0; right:0; bottom:0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); z-index:2000; }
+        .modal-content { background: #07112a; padding: 18px; border-radius: 12px; width: 100%; max-width: 520px; border: 1px solid var(--border); }
+        .modal .close { float: left; font-size: 24px; cursor: pointer; }
+        .price-box { background: rgba(255,215,0,0.06); padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 4px solid var(--accent); font-weight: bold; color: #fff; }
+
     </style>
 </head>
 <body>
@@ -103,10 +124,10 @@
             <div class="services-grid">
                 <div class="card"><h3>⚡ تأسيس شقق</h3><p>تأسيس مواسير الشقق والشدادات</p><button onclick="openForm('تأسيس شقق')">اطلب الخدمة</button></div>
                 <div class="card"><h3>🏛️ تأسيس سقف</h3><p>تركيب مواسير الأسقف الكهربائية</p><button onclick="openForm('تأسيس سقف')">اطلب الخدمة</button></div>
-                <div class="card"><h3>💡 تشطيب إكسسوارات</h3><p>تركيب نقاط المفاتيح والبرايز</p><button onclick="openForm('تشطيب إكسسوارات')">اطلب الخدمة</button></div>
-                <div class="card"><h3>🔧 صيانة أجهزة منزلية</h3><p>اصلاح الغسالة والبوتاجاز والسخان</p><button onclick="openForm('صيانة أجهزة منزلية')">اطلب الخدمة</button></div>
-                <div class="card"><h3>📷 كاميرات مراقبة</h3><p>تركيب أنظمة كاميرات المراقبة</p><button onclick="openForm('كاميرات مراقبة')">اطلب الخدمة</button></div>
-                <div class="card" style="grid-column: 1 / -1; max-width: 450px; margin: 0 auto; border: 2px dashed var(--accent);"><h3>🔍 المعاينة</h3><p>زيارة وتقدير الأعمال</p><button onclick="openForm('المعاينة')">طلب معاينة</button></div>
+                <div class="card"><h3>💡 تشطيب إكسسوارات</h3><p>تركيب نقاط المفاتيح والمقابس والإضاءات</p><button onclick="openForm('تشطيب إكسسوارات')">اطلب الخدمة</button></div>
+                <div class="card"><h3>🔧 صيانة أجهزة منزلية</h3><p>إصلاح الغسالة والبوتاجاز والسخان</p><button onclick="openForm('صيانة أجهزة منزلية')">اطلب الخدمة</button></div>
+                <div class="card"><h3>📷 كاميرات مراقبة</h3><p>تركيب أنظمة كاميرات المراقبة وصيانتها</p><button onclick="openForm('كاميرات مراقبة')">اطلب الخدمة</button></div>
+                <div class="card" style="grid-column: 1 / -1; max-width: 450px; margin: 0 auto; border: 2px dashed var(--accent);"><h3>🔍 المعاينة</h3><p>زيارة وتقدير الأعمال والمعدات المطلوبة بدقة</p><button onclick="openForm('معاينة الموقع')">اطلب المعاينة</button></div>
             </div>
         </div>
     </section>
@@ -117,17 +138,17 @@
             <h2 id="formTitle">طلب خدمة</h2>
             <form id="serviceForm" onsubmit="event.preventDefault(); sendWhatsApp();">
                 <label>الاسم بالكامل</label>
-                <input type="text" id="customerName" required placeholder="أدخل اسمك">
+                <input type="text" id="customerName" required placeholder="أدخل اسمك" style="width:100%; padding:8px; margin:6px 0; border-radius:8px; border:1px solid var(--border); background:#0c1b33; color:#fff;">
                 <label>رقم الهاتف</label>
-                <input type="tel" id="customerPhone" required placeholder="أدخل رقم هاتفك">
+                <input type="tel" id="customerPhone" required placeholder="أدخل رقم هاتفك" style="width:100%; padding:8px; margin:6px 0; border-radius:8px; border:1px solid var(--border); background:#0c1b33; color:#fff;">
                 <label>العنوان</label>
-                <input type="text" id="customerAddress" required placeholder="العنوان بالتفصيل">
+                <input type="text" id="customerAddress" required placeholder="العنوان بالتفصيل" style="width:100%; padding:8px; margin:6px 0; border-radius:8px; border:1px solid var(--border); background:#0c1b33; color:#fff;">
                 
                 <div id="dynamicFields"></div>
                 <div class="calculator-section" id="calculatorSection"></div>
-                <div class="price-box" id="totalPrice" style="background: rgba(255,215,0,0.1); padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 4px solid var(--accent); font-weight: bold;">السعر التقديري: حسب المعاينة</div>
+                <div class="price-box" id="totalPrice">التكلفة: حسب المعاينة</div>
                 
-                <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 15px;">ارسال اتفاق بالطلب {سجل و واتس آب}</button>
+                <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top:12px;">إرسال الطلب</button>
             </form>
         </div>
     </div>
@@ -185,13 +206,13 @@
             if (!clientPin) {
                 clientPin = prompt("أدخل رقماً سرياً جديداً لحسابك لتتمكن من متابعة مشاريعك لاحقاً:");
                 if (!clientPin) clientPin = "1234";
-                localStorage.setItem("sn_client_pin", clientPin);
+                try { localStorage.setItem("sn_client_pin", clientPin); } catch (e) { console.warn('Cannot access localStorage', e); }
             }
 
             const titleEl = document.getElementById('formTitle');
-            const serviceType = titleEl ? titleEl.textContent.replace('طلب خدمة: ', '') : 'خدمة عامة';
+            const serviceType = titleEl ? titleEl.textContent.replace('طلب خدمة: ', '').trim() : 'خدمة عامة';
             const priceBox = document.getElementById('totalPrice');
-            const totalPriceText = priceBox ? priceBox.textContent : "حسب المعاينة";
+            const totalPriceText = priceBox ? priceBox.textContent.trim() : "حسب المعاينة";
 
             if (typeof supabase === 'undefined') {
                 alert("خطأ في الاتصال بقاعدة البيانات.");
@@ -210,7 +231,7 @@
                     return;
                 }
 
-                localStorage.setItem("sn_client_phone", phone);
+                try { localStorage.setItem("sn_client_phone", phone); } catch (e) { console.warn('Cannot access localStorage', e); }
 
                 const adminPhone = "201558837118";
                 const message = `*طلب خدمة جديد - SN ELECTRIC*%0a` +
@@ -231,6 +252,44 @@
                 alert("حدث خطأ غير متوقع.");
             }
         }
+
+        // وظائف بسيطة للتحكم بالنماذج والدردشة
+        function openForm(service) {
+            const modal = document.getElementById('formModal');
+            const title = document.getElementById('formTitle');
+            title.textContent = 'طلب خدمة: ' + service;
+            modal.style.display = 'flex';
+        }
+        function closeForm() {
+            const modal = document.getElementById('formModal');
+            modal.style.display = 'none';
+        }
+
+        function toggleChat() {
+            const box = document.getElementById('chatBox');
+            if (!box) return;
+            box.style.display = (box.style.display === 'flex' || box.style.display === 'block') ? 'none' : 'flex';
+        }
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const body = document.getElementById('chatBody');
+            if (!input || !body) return;
+            const text = input.value.trim();
+            if (!text) return;
+            const out = document.createElement('div'); out.className = 'chat-message outgoing'; out.textContent = text; body.appendChild(out);
+            input.value = '';
+            body.scrollTop = body.scrollHeight;
+            // هنا يمكنك إضافة استدعاء API للمساعدة الذكية
+        }
+
+        // تحمير العرض
+        document.addEventListener('DOMContentLoaded', function(){
+            const phone = localStorage.getItem('sn_client_phone');
+            if (phone) {
+                const area = document.getElementById('customerWelcomeArea');
+                if (area) area.innerHTML = `<span style="color:var(--accent); font-weight:700;">مرحباً مجدداً!</span> رقمك المسجل: ${phone}`;
+            }
+        });
     </script>
 </body>
 </html>
