@@ -4,9 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>تقديم طلب - SNelectric</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;direction:rtl;padding:16px}</style>
 </head>
 <body>
   <h1>تقديم طلب</h1>
+
+  <section id="auth-section">
+    <h3>تسجيل / دخول</h3>
+    <div>
+      <label>رقم الهاتف<br><input type="text" id="auth_phone" placeholder="مثال: 201012345678" /></label><br>
+      <label>كلمة المرور<br><input type="password" id="auth_password" /></label><br>
+      <button id="signup-btn">تسجيل</button>
+      <button id="signin-btn">دخول</button>
+      <div id="auth-status"></div>
+    </div>
+  </section>
+
+  <hr />
+
   <form id="order-form">
     <label>الاسم (اختياري)<br><input type="text" id="display_name" /></label><br>
     <label>رقم الهاتف<br><input type="text" id="phone" required /></label><br>
@@ -15,12 +30,37 @@
     <button type="submit">تقديم الطلب</button>
   </form>
 
+  <div id="last-action"></div>
+
+  <script src="/js/config.example.js"></script>
   <script src="/js/supabase.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/orders.js"></script>
   <script>
+    // auth UI bindings
+    document.getElementById('signup-btn').addEventListener('click', async ()=>{
+      const phone = document.getElementById('auth_phone').value.trim();
+      const pass = document.getElementById('auth_password').value;
+      if(!phone || !pass) return alert('ادخل رقم الهاتف وكلمة المرور');
+      try{
+        await signUpWithPhone(phone, pass, null);
+        document.getElementById('auth-status').innerText = 'تم التسجيل - تم تسجيل الدخول تلقائياً إذا سمحت اعدادات المشروع';
+      }catch(e){ console.error(e); alert('فشل التسجيل: '+(e.message||e)); }
+    });
+
+    document.getElementById('signin-btn').addEventListener('click', async ()=>{
+      const phone = document.getElementById('auth_phone').value.trim();
+      const pass = document.getElementById('auth_password').value;
+      if(!phone || !pass) return alert('ادخل رقم الهاتف وكلمة المرور');
+      try{
+        await signInWithPhone(phone, pass);
+        document.getElementById('auth-status').innerText = 'تم تسجيل الدخول';
+      }catch(e){ console.error(e); alert('فشل الدخول: '+(e.message||e)); }
+    });
+
+    // order submit
     const form = document.getElementById('order-form');
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const phone = document.getElementById('phone').value.trim();
       const display_name = document.getElementById('display_name').value.trim();
@@ -28,10 +68,12 @@
       const total = parseFloat(document.getElementById('total').value) || 0;
       if (!phone || !itemsText) return alert('رجاءً ادخل رقم الهاتف وتفاصيل الطلب');
 
-      // login/create user and session
-      const user = await loginWithPhone(phone, display_name);
+      // ensure local session if user not signed-in
+      try { await ensureLocalSessionForPhone(phone, display_name); } catch(e){ console.warn(e); }
+
       const items = { text: itemsText };
       await submitOrder({ items, total, phone });
+      document.getElementById('last-action').innerText = 'تم إرسال الطلب — تحقق من فتح WhatsApp';
     });
   </script>
 </body>
