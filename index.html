@@ -1,164 +1,141 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SN ELECTRIC | الخدمات الكهربائية المتكاملة</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#121212">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="./css/style.css">
-</head>
-<body>
-
-    <header class="navbar">
-        <div class="logo">
-            <i class="fa-solid fa-bolt"></i>
-            <span>SN ELECTRIC</span>
-        </div>
-        <div>
-            <button class="btn-service" onclick="openTechForm()" style="background:#3498db; color:#fff; width:auto; padding:8px 12px;">التقديم كفني</button>
-        </div>
-    </header>
-
-    <section class="hero">
-        <h1>SN ELECTRIC</h1>
-        <p>الرواد في التأسيس والتشطيب والصيانة وحلول السمارت هوم بأعلى معايير الجودة والأمان.</p>
-    </section>
-
-    <main class="container">
-        <h2 class="section-title">خدماتنا المميزة</h2>
-        <div class="services-grid">
-            <div class="service-card" onclick="openForm('تأسيس شقق')">
-                <i class="fa-solid fa-house-chimney"></i>
-                <h3>تأسيس شقق</h3>
-                <p>تأسيس مسارات الكابلات، علب الكهرباء، والداتا بأحدث الأساليب.</p>
-                <button class="btn-service">طلب الخدمة والحساب</button>
+<!-- نافذة حاسبة التكلفة الشاملة والطلب -->
+<div id="formModal" class="modal">
+    <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+        <span class="close-btn" onclick="closeForm()">&times;</span>
+        <h3 id="formTitle" style="color: #f1c40f; margin-bottom: 15px;">حاسبة التكلفة والطلب التفصيلي</h3>
+        
+        <form id="serviceForm" onsubmit="handleFormSubmit(event)">
+            <!-- بيانات العميل الأساسية -->
+            <div class="form-group">
+                <label>الاسم بالكامل *</label>
+                <input type="text" id="customerName" placeholder="أدخل اسمك الكريم" required>
             </div>
 
-            <div class="service-card" onclick="openForm('تأسيس سقف')">
-                <i class="fa-solid fa-layer-group"></i>
-                <h3>تأسيس سقف</h3>
-                <p>تمديد مواسير PVC/EMT والقورب وتجهيز إنارة السقف.</p>
-                <button class="btn-service">طلب الخدمة والحساب</button>
+            <div class="form-group">
+                <label>رقم الهاتف *</label>
+                <input type="tel" id="customerPhone" placeholder="01xxxxxxxxx" required>
             </div>
 
-            <div class="service-card" onclick="openForm('تشطيب إكسسوارات')">
-                <i class="fa-solid fa-plug"></i>
-                <h3>تشطيب إكسسوارات</h3>
-                <p>تركيب المفاتيح، البرايز، واللوحات الرئيسية والأوتوماتيك.</p>
-                <button class="btn-service">طلب الخدمة والحساب</button>
+            <div class="form-group">
+                <label>العنوان بالتفصيل *</label>
+                <input type="text" id="customerAddress" placeholder="المنطقة / الشارع / رقم العقار" required>
             </div>
 
-            <div class="service-card" onclick="openForm('صيانة أجهزة منزلية')">
-                <i class="fa-solid fa-wrench"></i>
-                <h3>صيانة أجهزة منزلية</h3>
-                <p>صيانة وإصلاح كافة الأجهزة المنزلية والكهربائية بدقة.</p>
-                <button class="btn-service">طلب الخدمة والحساب</button>
+            <div class="form-group">
+                <label>نوع المقر / المشروع *</label>
+                <select id="projectType" onchange="calculateTotal()" required style="width:100%; padding:10px; background:#07101d; color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:6px;">
+                    <option value="flat">تأسيس شقة / سقف</option>
+                    <option value="shop">تأسيس محل (خصم 5 ج.م لكل بند)</option>
+                    <option value="factory">تأسيس مصنع (يدعم مواسير MTK)</option>
+                </select>
             </div>
 
-            <div class="service-card" onclick="openForm('كاميرات مراقبة')">
-                <i class="fa-solid fa-video"></i>
-                <h3>كاميرات مراقبة</h3>
-                <p>تركيب وتمديد شبكات الكاميرات وأنظمة الأمان الحديثة.</p>
-                <button class="btn-service">طلب الخدمة والحساب</button>
-            </div>
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
 
-            <div class="service-card" onclick="openForm('طلب معاينة')">
-                <i class="fa-solid fa-clipboard-check"></i>
-                <h3>طلب معاينة</h3>
-                <p>زيارة معاينة فنية للموقع لتقدير الأحمال والتكلفة الدقيقة.</p>
-                <button class="btn-service">طلب الخدمة والحساب</button>
-            </div>
-        </div>
-
-        <!-- قسم الفنيين المعتمدين -->
-        <h2 class="section-title" style="margin-top: 40px;">فنيون معتمدون</h2>
-        <div id="techniciansContainer" class="services-grid" style="margin-top:15px;">
-            <p style="color:#aaa;">جاري تحميل قائمة الفنيين...</p>
-        </div>
-    </main>
-
-    <!-- نافذة طلب خدمة للعملاء -->
-    <div id="formModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeForm()">&times;</span>
-            <h3 id="formTitle">طلب خدمة</h3>
+            <!-- قسم 1: التاسيس والمواسير -->
+            <h4 style="color: #3498db; margin-bottom: 10px;"><i class="fa-solid fa-plug"></i> بند التأسيس والمواسير</h4>
             
-            <form id="serviceForm" onsubmit="handleFormSubmit(event)">
-                <div class="form-group">
-                    <label>الاسم بالكامل</label>
-                    <input type="text" id="customerName" placeholder="أدخل اسمك الكريم" required>
+            <div class="form-group">
+                <label>أنواع المواسير المستخدمة (يمكن اختيار أكثر من نوع):</label>
+                <div style="display:flex; gap:15px; margin-top:5px; color:#fff;">
+                    <label><input type="checkbox" id="pipeKharta" onchange="calculateTotal()"> خرطوم (20 ج/م)</label>
+                    <label><input type="checkbox" id="pipePVC" onchange="calculateTotal()"> PVC شامل اللزق (50 ج/م)</label>
+                    <label id="mtkOption" style="display:none;"><input type="checkbox" id="pipeMTK" onchange="calculateTotal()"> MTK معدني (65 ج/م)</label>
                 </div>
+            </div>
 
+            <div class="form-group">
+                <label>أمتار المواسير المطلوبة (المجموع بالمتر):</label>
+                <input type="number" id="pipeMeters" placeholder="0" oninput="calculateTotal()" min="0">
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-group">
-                    <label>رقم الهاتف (ضروري)</label>
-                    <input type="tel" id="customerPhone" placeholder="مثال: 01287837118" required>
+                    <label>عدد نقاط السقف * (25 ج)</label>
+                    <input type="number" id="roofPoints" placeholder="إجباري" oninput="calculateTotal()" required min="0">
                 </div>
-
                 <div class="form-group">
-                    <label>العنوان بالتفصيل</label>
-                    <input type="text" id="customerAddress" placeholder="المدينة / المنطقة / الشارع" required>
+                    <label>عدد اللوح * (150 ج)</label>
+                    <input type="number" id="panelsCount" placeholder="إجباري" oninput="calculateTotal()" required min="0">
                 </div>
+                <div class="form-group">
+                    <label>عدد البرايز * (60 ج)</label>
+                    <input type="number" id="socketsCount" placeholder="إجباري" oninput="calculateTotal()" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>علب السكة / البواط (40 ج)</label>
+                    <input type="number" id="junctionBoxes" placeholder="اختياري" oninput="calculateTotal()" min="0">
+                </div>
+            </div>
 
-                <button type="submit" id="submitBtn" class="btn-submit">تسجيل الطلب والإرسال</button>
-            </form>
-        </div>
-    </div>
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
 
-    <!-- نافذة التقديم كفني -->
-    <div id="techModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeTechForm()">&times;</span>
-            <h3>التقديم للانضمام كفني معتمد</h3>
+            <!-- قسم 2: التشطيب والتجهيزات -->
+            <h4 style="color: #3498db; margin-bottom: 10px;"><i class="fa-solid fa-sliders"></i> بند التشطيب</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="form-group"><label>عدد المفاتيح (20 ج):</label><input type="number" id="switchesCount" oninput="calculateTotal()" placeholder="0"></div>
+                <div class="form-group"><label>عدد المواتير (150 ج):</label><input type="number" id="motorsCount" oninput="calculateTotal()" placeholder="0"></div>
+                <div class="form-group"><label>عدد التكييفات (120 ج):</label><input type="number" id="acCount" oninput="calculateTotal()" placeholder="0"></div>
+                <div class="form-group"><label>عدد الخطوط (30 ج):</label><input type="number" id="linesCount" oninput="calculateTotal()" placeholder="0"></div>
+                <div class="form-group"><label>عدد اللمبات (15 ج):</label><input type="number" id="lampsCount" oninput="calculateTotal()" placeholder="0"></div>
+                <div class="form-group"><label>عدد النجف (100 ج):</label><input type="number" id="chandeliersCount" oninput="calculateTotal()" placeholder="0"></div>
+                <div class="form-group"><label>مراوح سقف (50 ج):</label><input type="number" id="ceilingFans" oninput="calculateTotal()" placeholder="0"></div>
+                <div class="form-group"><label>مراوح حائط (40 ج):</label><input type="number" id="wallFans" oninput="calculateTotal()" placeholder="0"></div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+
+            <!-- قسم 3: الكاميرات والأنظمة الأمنية والإطفاء -->
+            <h4 style="color: #3498db; margin-bottom: 10px;"><i class="fa-solid fa-video"></i> الأنظمة الكاميرات والانذار والإطفاء</h4>
             
-            <form id="techForm" onsubmit="handleTechSubmit(event)">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-group">
-                    <label>اسم الفني بالكامل</label>
-                    <input type="text" id="techName" placeholder="الاسم ثلاثي" required>
+                    <label>عدد الكاميرات (150 ج):</label>
+                    <input type="number" id="camsCount" oninput="calculateTotal()" placeholder="0">
                 </div>
-
                 <div class="form-group">
-                    <label>رقم الهاتف / الواتساب</label>
-                    <input type="tel" id="techPhone" placeholder="01xxxxxxxxx" required>
+                    <label>نوع الكاميرا:</label>
+                    <select id="camType" style="width:100%; padding:8px; background:#07101d; color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:6px;">
+                        <option value="داخلي">داخلي (Internal)</option>
+                        <option value="خارجي">خارجي (External)</option>
+                        <option value="بصوت">مزودة بصوت (Audio)</option>
+                        <option value="متحركة">متحركة PTZ</option>
+                    </select>
                 </div>
-
                 <div class="form-group">
-                    <label>التخصص الدقيق</label>
-                    <input type="text" id="techSpecialty" placeholder="مثال: تأسيس وتشطيب / كاميرات مراقبة" required>
+                    <label>نوع DVR / NVR:</label>
+                    <select id="dvrType" style="width:100%; padding:8px; background:#07101d; color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:6px;">
+                        <option value="4 قنوات">4 قنوات (4CH)</option>
+                        <option value="8 قنوات">8 قنوات (8CH)</option>
+                        <option value="16 قناة">16 قناة (16CH)</option>
+                        <option value="32 قناة">32 قناة (32CH)</option>
+                    </select>
                 </div>
+            </div>
 
+            <!-- انذار وحريق -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
                 <div class="form-group">
-                    <label>منطقة العمل / المحافظة</label>
-                    <input type="text" id="techArea" placeholder="مثال: القاهرة / الجيزة / الإسكندرية" required>
+                    <label>زونات إنذار (حريق/دخان) (100ج):</label>
+                    <input type="number" id="alarmZones" oninput="calculateTotal()" placeholder="0">
                 </div>
+                <div class="form-group">
+                    <label>زونات إطفاء (رشاشات/حساسات) (150ج):</label>
+                    <input type="number" id="fireZones" oninput="calculateTotal()" placeholder="0">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>أمتار مواسير الإطفاء (نحاس/حديد) (75 ج/م):</label>
+                    <input type="number" id="firePipesMeters" oninput="calculateTotal()" placeholder="0">
+                </div>
+            </div>
 
-                <button type="submit" id="techSubmitBtn" class="btn-submit" style="background:#3498db; color:#fff;">إرسال طلب الانضمام</button>
-            </form>
-        </div>
+            <!-- النتيجة الإجمالية -->
+            <div style="background: rgba(241, 196, 15, 0.15); border: 1px solid #f1c40f; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+                <span style="font-size: 15px; color: #fff;">التكلفة التقديرية الإجمالية:</span>
+                <h2 id="totalPriceDisplay" style="color: #f1c40f; font-size: 26px; margin-top: 5px;">0 ج.م</h2>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-submit">حفظ الطلب وتأكيد الإرسال</button>
+        </form>
     </div>
-
-    <!-- زر المساعد الذكي / المحادثة -->
-    <button class="chat-toggle-btn" onclick="toggleChat()" style="position:fixed; bottom:20px; left:20px; background:#f1c40f; color:#07101d; border:none; padding:15px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3);"><i class="fa-solid fa-robot"></i></button>
-    
-    <div id="chatBox" class="chat-widget" style="display:none; position:fixed; bottom:80px; left:20px; width:300px; background:#0b172a; border:1px solid #f1c40f; border-radius:12px; padding:15px; z-index:1001;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; margin-bottom:10px;">
-            <h4 style="color:#f1c40f; margin:0;"><i class="fa-solid fa-bot"></i> مساعد SN AI الذكي</h4>
-            <span onclick="toggleChat()" style="cursor:pointer; color:#fff;">&times;</span>
-        </div>
-        <div id="chatBody" style="height:200px; overflow-y:auto; font-size:13px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px;">
-            <div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:6px;">مرحباً بك! أنا مساعد SN ELECTRIC الذكي. كيف يمكنني مساعدتك في خدمات الكهرباء اليوم؟</div>
-        </div>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." style="flex:1; padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:#07101d; color:#fff; font-size:12px;">
-            <button onclick="sendChatMessage()" style="background:#f1c40f; color:#07101d; border:none; padding:8px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./js/config.js"></script>
-    <script src="./js/app.js"></script>
-</body>
-</html>
+</div>
