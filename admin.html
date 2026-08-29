@@ -56,7 +56,10 @@
         </div>
 
         <div class="requests-table-container">
-            <h3 style="margin-bottom: 15px; color: #f1c40f;"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #f1c40f; margin:0;"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات</h3>
+                <button onclick="loadAdminRequests()" style="background: #f1c40f; color: #07101d; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">تحديث الطلبات</button>
+            </div>
             <div id="adminVerticalList" class="admin-vertical-list">
                 <div style="text-align: center; padding: 20px;">جاري الجلب...</div>
             </div>
@@ -65,7 +68,7 @@
         <div class="requests-table-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="color: #3498db; margin:0;"><i class="fa-solid fa-users-gear"></i> سجل حسابات العملاء المسجلين</h3>
-                <button onclick="loadAdminCustomerRecords()" style="background: #f1c40f; color: #07101d; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">تحديث الجدول</button>
+                <button onclick="loadAdminCustomerRecords()" style="background: #3498db; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">تحديث جدول العملاء</button>
             </div>
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; text-align: right; color: #fff; font-size: 14px;">
@@ -74,12 +77,13 @@
                             <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">اسم العميل</th>
                             <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">رقم الهاتف</th>
                             <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">كلمة السر</th>
+                            <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">تاريخ التسجيل</th>
                             <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="adminCustomersTableBody">
                         <tr>
-                            <td colspan="4" style="text-align: center; padding: 20px; color: #8a9bb8;">جاري الجلب...</td>
+                            <td colspan="5" style="text-align: center; padding: 20px; color: #8a9bb8;">جاري الجلب...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -91,26 +95,41 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./js/config.js"></script>
     <script>
+        // توحيد مرجع الاتصال بـ Supabase
+        const dbClient = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminRequests();
             loadAdminCustomerRecords();
         });
 
-        // 1. جلب طلبات الخدمات
+        // 1. جلب طلبات الخدمات كاملة
         async function loadAdminRequests() {
-            if (!window.supabaseClient) return;
-            const { data, error } = await window.supabaseClient
-                .from('service_requests')
-                .select('*')
-                .order('created_at', { ascending: false });
+            const container = document.getElementById('adminVerticalList');
+            if (!dbClient) {
+                if (container) container.innerHTML = `<div style="text-align: center; color: #e74c3c; padding: 20px;">خطأ: اتصال Supabase غير متوفر</div>`;
+                return;
+            }
 
-            if (data) {
-                renderRequestsVerticalList(data);
-                updateStats(data);
+            try {
+                const { data, error } = await dbClient
+                    .from('service_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (data) {
+                    renderRequestsVerticalList(data);
+                    updateStats(data);
+                }
+            } catch (err) {
+                console.error("Fetch requests error:", err);
+                if (container) container.innerHTML = `<div style="text-align: center; color: #e74c3c; padding: 20px;">خطأ أثناء جلب الطلبات: ${err.message || err}</div>`;
             }
         }
 
-        // 2. عرض الطلبات
+        // 2. عرض كروت الطلبات بالتفاصيل الكاملة (الاسم، الهاتف، الخدمة، العنوان، التاريخ)
         function renderRequestsVerticalList(requests) {
             const container = document.getElementById('adminVerticalList');
             if (!container) return;
@@ -123,7 +142,9 @@
             requests.forEach((req, index) => {
                 let statusClass = req.status === 'موافقة' ? 'status-approved' : (req.status === 'مرفوض' ? 'status-rejected' : 'status-pending');
                 let projectCode = req.id ? `SN-${req.id}` : `SN-${index+1}`;
-                let phone = req.phone_number || req.customer_phone || 'غير مسجل';
+                let phone = req.customer_phone || req.phone_number || req.phone || 'غير مسجل';
+                let address = req.address || 'غير محدد';
+                let dateStr = req.created_at ? new Date(req.created_at).toLocaleString('ar-EG') : 'حديث';
 
                 let card = document.createElement('div');
                 card.className = 'admin-request-card';
@@ -134,8 +155,12 @@
                     </div>
                     <div class="admin-card-row">
                         <span><strong>العميل:</strong> ${req.customer_name || 'غير متوفر'}</span>
-                        <span><strong>الهاتف:</strong> ${phone}</span>
+                        <span><strong>الهاتف:</strong> <a href="tel:${phone}" style="color:#f1c40f; text-decoration:none;">${phone}</a></span>
                         <span><strong>الخدمة:</strong> ${req.service_type || req.service_name || 'طلب عام'}</span>
+                    </div>
+                    <div class="admin-card-row">
+                        <span><strong>العنوان بالتفصيل:</strong> ${address}</span>
+                        <span><strong>التاريخ والوقت:</strong> <span style="color:#8a9bb8; font-size:12px;">${dateStr}</span></span>
                     </div>
                     <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
                         <div class="action-btns">
@@ -152,8 +177,13 @@
 
         // 3. تحديث حالة الطلب
         async function updateStatus(id, status) {
-            await window.supabaseClient.from('service_requests').update({ status: status }).eq('id', id);
-            loadAdminRequests();
+            if (!id) return;
+            const { error } = await dbClient.from('service_requests').update({ status: status }).eq('id', id);
+            if (!error) {
+                loadAdminRequests();
+            } else {
+                alert("تعذر تحديث الحالة: " + error.message);
+            }
         }
 
         // 4. تحديث الإحصائيات
@@ -163,21 +193,22 @@
             document.getElementById('statApproved').innerText = requests.filter(r => r.status === 'موافقة').length;
         }
 
-        // 5. جلب جدول حسابات العملاء
+        // 5. جلب جدول حسابات العملاء المسجلين
         async function loadAdminCustomerRecords() {
             const tbody = document.getElementById('adminCustomersTableBody');
-            if (!window.supabaseClient) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #e74c3c; padding: 15px;">خطأ: اتصال Supabase غير متوفر</td></tr>`;
+            if (!dbClient) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #e74c3c; padding: 15px;">خطأ: اتصال Supabase غير متوفر</td></tr>`;
                 return;
             }
 
             try {
-                const { data, error } = await window.supabaseClient
+                const { data, error } = await dbClient
                     .from('customers')
-                    .select('*');
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
                 if (error || !data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #aaa;">لا توجد حسابات مسجلة في جدول customers</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 15px; color: #aaa;">لا توجد حسابات مسجلة في جدول العملاء</td></tr>`;
                     if(data) document.getElementById('statClients').innerText = data.length;
                     return;
                 }
@@ -188,14 +219,16 @@
                     const row = document.createElement('tr');
                     row.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
                     
-                    const clientName = client.name || client.customer_name || 'غير محدد';
+                    const clientName = client.name || client.full_name || client.customer_name || 'غير محدد';
                     const clientPhone = client.phone || client.mobile || 'غير متوفر';
-                    const clientPassword = client.password || 'غير مسجل';
+                    const clientPassword = client.password || client.pin_code || 'غير مسجل';
+                    const clientDate = client.created_at ? new Date(client.created_at).toLocaleString('ar-EG') : 'حديث';
 
                     row.innerHTML = `
                         <td style="padding: 12px; font-weight: 600;">${clientName}</td>
                         <td style="padding: 12px; font-family: monospace; color: #79c0ff;">${clientPhone}</td>
                         <td style="padding: 12px; font-family: monospace; color: #f1c40f;">${clientPassword}</td>
+                        <td style="padding: 12px; font-size: 12px; color: #8a9bb8;">${clientDate}</td>
                         <td style="padding: 12px;">
                             <button class="btn-edit-pass" onclick="changeClientPassword('${clientPhone}')" style="padding:4px 8px; font-size:11px;"><i class="fa-solid fa-key"></i> تعديل كلمة السر</button>
                         </td>
@@ -203,7 +236,7 @@
                     tbody.appendChild(row);
                 });
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #e74c3c; padding: 15px;">حدث خطأ في جلب البيانات</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #e74c3c; padding: 15px;">حدث خطأ أثناء جلب حسابات العملاء</td></tr>`;
             }
         }
 
@@ -215,12 +248,12 @@
         async function changeClientPassword(phone) {
             let newPass = prompt(`أدخل كلمة المرور الجديدة للرقم (${phone}):`);
             if (!newPass) return;
-            const { error } = await window.supabaseClient.from('customers').update({ password: newPass.trim() }).eq('phone', phone);
+            const { error } = await dbClient.from('customers').update({ password: newPass.trim() }).eq('phone', phone);
             if (!error) {
                 alert('تم التحديث بنجاح');
                 loadAdminCustomerRecords();
             } else {
-                alert('حدث خطأ أثناء التحديث');
+                alert('حدث خطأ أثناء التحديث: ' + error.message);
             }
         }
     </script>
