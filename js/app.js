@@ -2,7 +2,6 @@
     SN ELECTRIC | app.js (نسخة كاملة ومصححة لتسجيل الطلبات)
 ==================================================*/
 
-// تفعيل فحص رابط واتساب وحالة المحادثة الآمنة عند تحميل المستند
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     let phoneFromURL = urlParams.get('phone');
@@ -21,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTechnicians();
 });
 
-// التحقق من حالة الطلب في قاعدة البيانات (Supabase) لتفعيل الشات الآمن
 async function checkClientChatAccess(customerPhone) {
     if (!window.supabaseClient || !customerPhone) return;
 
@@ -41,7 +39,6 @@ async function checkClientChatAccess(customerPhone) {
     }
 }
 
-// دالة جلب وعرض بيانات صفحة العميل المعتمد (الحسابات المالية، كود المشروع، بيانات الفني)
 async function loadClientProjectDashboard(clientPhone) {
     if (!window.supabaseClient) return;
 
@@ -58,18 +55,15 @@ async function loadClientProjectDashboard(clientPhone) {
 
             let projectCode = `SN-${data.id}`;
             
-            // تعبئة البيانات في واجهة العميل إن وجدت العناصر
             if (document.getElementById('dashClientName')) document.getElementById('dashClientName').innerText = data.customer_name || 'غير متوفر';
             if (document.getElementById('dashClientPhone')) document.getElementById('dashClientPhone').innerText = data.customer_phone || '';
             if (document.getElementById('dashClientAddress')) document.getElementById('dashClientAddress').innerText = data.address || 'غير محدد';
             if (document.getElementById('dashProjectCode')) document.getElementById('dashProjectCode').innerText = projectCode;
 
-            // بيانات المنفذ (الفني) - افتراضية أو مسجلة
             if (document.getElementById('dashTechName')) document.getElementById('dashTechName').innerText = data.tech_name || 'محمد إبراهيم';
             if (document.getElementById('dashTechPhone')) document.getElementById('dashTechPhone').innerText = data.tech_phone || '01287837118';
             if (document.getElementById('dashTechRating')) document.getElementById('dashTechRating').innerText = data.tech_rating || '4.9';
 
-            // الحسابات المالية والاتفاق
             if (document.getElementById('dashOpPayment')) document.getElementById('dashOpPayment').innerText = data.op_payment || '0';
             if (document.getElementById('dashRemainingAmount')) document.getElementById('dashRemainingAmount').innerText = data.remaining_amount || data.estimated_price || '0';
             if (document.getElementById('dashPaymentStatus')) document.getElementById('dashPaymentStatus').innerText = data.payment_status || 'قيد التنفيذ';
@@ -83,7 +77,6 @@ async function loadClientProjectDashboard(clientPhone) {
     }
 }
 
-// دالة إرسال صور المشروع إلى واتساب الشركة (المضافة بناءً على طلبك)
 function sendProjectImagesToWhatsApp() {
     const projectCode = document.getElementById('dashProjectCode')?.innerText || 'SN-000';
     const clientName = document.getElementById('dashClientName')?.innerText || '';
@@ -96,7 +89,6 @@ function sendProjectImagesToWhatsApp() {
     window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
 }
 
-// إظهار زر محادثة المشروع الآمنة الحصري للعميل المعتمد
 function showSecureChatButton() {
     let container = document.getElementById('floatingSecureChatContainer');
     if (container && !document.getElementById('secureChatToggleBtn')) {
@@ -104,7 +96,6 @@ function showSecureChatButton() {
     }
 }
 
-// إرسال وحفظ رسالة العميل في قاعدة البيانات مباشرة
 async function sendApprovedMessage() {
     const input = document.getElementById('approvedChatInput');
     if (!input) return;
@@ -132,7 +123,6 @@ async function sendApprovedMessage() {
     }
 }
 
-// جلب رسائل المشروع السابقة وعرضها داخل الدردشة
 async function loadChatMessages(customerPhone) {
     if (!window.supabaseClient) return;
 
@@ -156,7 +146,6 @@ async function loadChatMessages(customerPhone) {
     }
 }
 
-// رسم الرسالة في واجهة الشات الآمن
 function appendApprovedMessage(text, sender) {
     const body = document.getElementById('approvedChatBody');
     if (!body) return;
@@ -170,7 +159,6 @@ function appendApprovedMessage(text, sender) {
     body.scrollTop = body.scrollHeight;
 }
 
-// تبديل إظهار وإخفاء صندوق المحادثة الآمنة
 function toggleApprovedChat() {
     const chat = document.getElementById('approvedChatWidget');
     if (chat) {
@@ -501,7 +489,6 @@ async function checkCustomerStatus(name) {
     } catch(err) { console.log('Error checking customer:', err); }
 }
 
-// الدالة المسؤولة عن الإرسال وقاعدة البيانات والواتساب
 async function sendWhatsApp() {
     const name = document.getElementById('customerName')?.value || '';
     const phone = document.getElementById('customerPhone')?.value || '';
@@ -523,7 +510,7 @@ async function sendWhatsApp() {
 
     const currentTimestamp = new Date().toISOString();
 
-    const db = window.supabaseClient || window.supabase;
+    const db = window.supabaseClient;
     if (db) {
         try {
             const { error } = await db.from('service_requests').insert([
