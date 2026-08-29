@@ -5,34 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SN ELECTRIC | الخدمات الكهربائية المتكاملة</title>
     
-    <!-- PWA & Favicon -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
     
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Main Stylesheet (استخدام مسار نسبي ليعمل على Vercel و GitHub Pages) -->
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
 
-    <!-- Header / Navbar -->
     <header class="navbar">
         <div class="logo">
             <i class="fa-solid fa-bolt"></i>
             <span>SN ELECTRIC</span>
         </div>
-        <div id="customerWelcomeArea"></div>
+        <div>
+            <button class="btn-service" onclick="openTechForm()" style="background:#3498db; color:#fff; width:auto; padding:8px 12px;">التقديم كفني</button>
+        </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero">
         <h1>SN ELECTRIC</h1>
         <p>الرواد في التأسيس والتشطيب والصيانة وحلول السمارت هوم بأعلى معايير الجودة والأمان.</p>
     </section>
 
-    <!-- Services Grid -->
     <main class="container">
         <h2 class="section-title">خدماتنا المميزة</h2>
         <div class="services-grid">
@@ -79,25 +74,14 @@
             </div>
         </div>
 
-        <!-- Technicians Section -->
+        <!-- قسم الفنيين المعتمدين -->
         <h2 class="section-title" style="margin-top: 40px;">فنيون معتمدون</h2>
-        <div id="techniciansContainer" class="tech-grid"></div>
-
-        <!-- Client Dashboard -->
-        <div id="clientProjectDashboard" class="project-dashboard" style="display:none; margin-top:40px; background:var(--card-bg); padding:20px; border-radius:12px; border:1px solid var(--accent);">
-            <h3 style="color:var(--accent);"><i class="fa-solid fa-diagram-project"></i> لوحة متابعة المشروع الخاص بك</h3>
-            <p><strong>كود المشروع:</strong> <span id="dashProjectCode">-</span></p>
-            <p><strong>الاسم:</strong> <span id="dashClientName">-</span> | <strong>الهاتف:</strong> <span id="dashClientPhone">-</span></p>
-            <p><strong>العنوان:</strong> <span id="dashClientAddress">-</span></p>
-            <hr style="border-color:rgba(255,255,255,0.1); margin:10px 0;">
-            <p><strong>الفني المسؤول:</strong> <span id="dashTechName">-</span> (<span id="dashTechPhone">-</span>) - تقييم: <span id="dashTechRating">-</span> ⭐</p>
-            <p><strong>المدفوعات التشغيلية:</strong> <span id="dashOpPayment">0</span> ج.م | <strong>المتبقي:</strong> <span id="dashRemainingAmount">0</span> ج.م (<span id="dashPaymentStatus">-</span>)</p>
-            <p><strong>هدية العميل:</strong> <span id="dashClientGift">-</span></p>
-            <button onclick="sendProjectImagesToWhatsApp()" class="btn-submit" style="margin-top:10px; background:#25D366;"><i class="fa-brands fa-whatsapp"></i> إرسال صور الموقع بالفيديو/الصور</button>
+        <div id="techniciansContainer" class="services-grid" style="margin-top:15px;">
+            <p style="color:#aaa;">جاري تحميل قائمة الفنيين...</p>
         </div>
     </main>
 
-    <!-- Dynamic Form Modal -->
+    <!-- نافذة طلب خدمة للعملاء -->
     <div id="formModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeForm()">&times;</span>
@@ -119,38 +103,62 @@
                     <input type="text" id="customerAddress" placeholder="المدينة / المنطقة / الشارع" required>
                 </div>
 
-                <!-- Dynamic Inputs & Calculations -->
-                <div id="dynamicFields"></div>
-                <div id="calculatorSection" class="calc-box"></div>
-                <div id="totalPrice" class="total-price-box">التكلفة: حسب المعاينة</div>
-
                 <button type="submit" id="submitBtn" class="btn-submit">تسجيل الطلب والإرسال</button>
             </form>
         </div>
     </div>
 
-    <!-- Floating Chat -->
-    <button class="chat-toggle-btn" onclick="toggleChat()"><i class="fa-solid fa-comments"></i></button>
-    <div id="chatBox" class="chat-widget" style="display:none;">
-        <div class="chat-header">
-            <h4>دعم SN ELECTRIC</h4>
-            <span onclick="toggleChat()">&times;</span>
-        </div>
-        <div id="chatBody" class="chat-body">
-            <div class="chat-message incoming">مرحباً بك! كيف يمكننا مساعدتك اليوم؟</div>
-        </div>
-        <div class="chat-footer">
-            <input type="text" id="chatInput" placeholder="اكتب استفسارك...">
-            <button onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    <!-- نافذة التقديم كفني -->
+    <div id="techModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeTechForm()">&times;</span>
+            <h3>التقديم للانضمام كفني معتمد</h3>
+            
+            <form id="techForm" onsubmit="handleTechSubmit(event)">
+                <div class="form-group">
+                    <label>اسم الفني بالكامل</label>
+                    <input type="text" id="techName" placeholder="الاسم ثلاثي" required>
+                </div>
+
+                <div class="form-group">
+                    <label>رقم الهاتف / الواتساب</label>
+                    <input type="tel" id="techPhone" placeholder="01xxxxxxxxx" required>
+                </div>
+
+                <div class="form-group">
+                    <label>التخصص الدقيق</label>
+                    <input type="text" id="techSpecialty" placeholder="مثال: تأسيس وتشطيب / كاميرات مراقبة" required>
+                </div>
+
+                <div class="form-group">
+                    <label>منطقة العمل / المحافظة</label>
+                    <input type="text" id="techArea" placeholder="مثال: القاهرة / الجيزة / الإسكندرية" required>
+                </div>
+
+                <button type="submit" id="techSubmitBtn" class="btn-submit" style="background:#3498db; color:#fff;">إرسال طلب الانضمام</button>
+            </form>
         </div>
     </div>
 
-    <!-- Scripts Arrangement -->
+    <!-- زر المساعد الذكي / المحادثة -->
+    <button class="chat-toggle-btn" onclick="toggleChat()" style="position:fixed; bottom:20px; left:20px; background:#f1c40f; color:#07101d; border:none; padding:15px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3);"><i class="fa-solid fa-robot"></i></button>
+    
+    <div id="chatBox" class="chat-widget" style="display:none; position:fixed; bottom:80px; left:20px; width:300px; background:#0b172a; border:1px solid #f1c40f; border-radius:12px; padding:15px; z-index:1001;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; margin-bottom:10px;">
+            <h4 style="color:#f1c40f; margin:0;"><i class="fa-solid fa-bot"></i> مساعد SN AI الذكي</h4>
+            <span onclick="toggleChat()" style="cursor:pointer; color:#fff;">&times;</span>
+        </div>
+        <div id="chatBody" style="height:200px; overflow-y:auto; font-size:13px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px;">
+            <div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:6px;">مرحباً بك! أنا مساعد SN ELECTRIC الذكي. كيف يمكنني مساعدتك في خدمات الكهرباء اليوم؟</div>
+        </div>
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." style="flex:1; padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:#07101d; color:#fff; font-size:12px;">
+            <button onclick="sendChatMessage()" style="background:#f1c40f; color:#07101d; border:none; padding:8px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./js/config.js"></script>
-    <script src="./js/supabase.js"></script>
     <script src="./js/app.js"></script>
-    <script src="./js/pwa.js"></script>
-
 </body>
 </html>
