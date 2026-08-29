@@ -3,293 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1e3a8a">
-    <meta name="description" content="تطبيق خدمات كهربائية احترافية - تأسيس، تشطيب، صيانة وكاميرات مراقبة">
+    <title>SN ELECTRIC | الخدمات الكهربائية المتكاملة</title>
+    
+    <!-- PWA & Favicon -->
     <link rel="manifest" href="manifest.json">
-    <title>SN ELECTRIC</title>
+    <meta name="theme-color" content="#121212">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
-    <style>
-        :root{
-            --accent:#FFD700;
-            --dark:#081A33;
-            --card:#0b2442;
-            --border:rgba(255,255,255,0.06);
-            --white:#ffffff;
-        }
-        body{font-family: 'Cairo', sans-serif; background: #07102b; color: #cbd5e1; margin:0;}
-        .vip-badge { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; display: inline-block; margin-right: 8px; }
-        
-        .chat-widget-btn { 
-            position: fixed; bottom: 90px; left: 25px; background: var(--accent); color: var(--dark); 
-            width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-size: 24px; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.4); z-index: 1000; touch-action: none; user-select: none; 
-        }
-        .chat-box { position: fixed; bottom: 160px; left: 25px; width: 350px; max-width: 90vw; height: 450px; background: #111e38; border: 2px solid var(--accent); border-radius: 15px; display: none; flex-direction: column; box-shadow: 0 8px 30px rgba(0,0,0,0.5); z-index: 1000; overflow: hidden; }
-        .chat-header { background: var(--dark); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
-        .chat-message { padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.4; }
-        .chat-message.incoming { background: rgba(255,255,255,0.08); color: #fff; align-self: flex-start; }
-        .chat-message.outgoing { background: var(--accent); color: var(--dark); align-self: flex-end; font-weight: 600; }
-        .chat-footer { padding: 10px; background: var(--dark); display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .chat-footer input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0d1729; color: #fff; }
-        .chat-footer button { background: var(--accent); color: var(--dark); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        
-        .calculator-section { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .visitor-counter-box { margin-top: 8px; font-size: 14px; color: var(--accent); opacity: 0.9; }
-
-        .sn-horizontal-bar-wrapper {
-            width: 100%; background: rgba(8, 26, 51, 0.95); border-bottom: 1px solid var(--border);
-            padding: 12px 0; position: sticky; top: 70px; z-index: 900; backdrop-filter: blur(10px);
-        }
-        .sn-horizontal-scroll {
-            display: flex; overflow-x: auto; gap: 12px; padding: 0 16px; scroll-snap-type: x mandatory;
-            scrollbar-width: none; -webkit-overflow-scrolling: touch;
-        }
-        .sn-horizontal-scroll::-webkit-scrollbar { display: none; }
-        .sn-bar-item {
-            flex: 0 0 auto; background: var(--card); border: 1px solid var(--border); padding: 10px 18px;
-            border-radius: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none;
-            color: var(--white); font-size: 14px; font-weight: 600; scroll-snap-align: start; transition: 0.2s ease;
-        }
-        .sn-bar-item.active, .sn-bar-item:hover { background: var(--secondary, #0f3a63); border-color: var(--accent); color: var(--accent); }
-
-        .sn-bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #081A33;
-            border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-around;
-            align-items: center; z-index: 999; padding: 0 10px; backdrop-filter: blur(10px);
-        }
-        .sn-nav-item {
-            display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #8a9bb8; font-size: 11px; transition: 0.3s ease;
-        }
-        .sn-nav-item span:first-child { font-size: 20px; margin-bottom: 4px; }
-        .sn-nav-item.active, .sn-nav-item:hover { color: #FFD700; }
-        body { padding-bottom: 80px; }
-
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
-        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
-        .card { background: linear-gradient(180deg,#07112a 0%, #081a33 100%); padding: 14px; border-radius: 12px; border: 1px solid var(--border); }
-        .card h3 { margin: 0 0 8px 0; font-size: 16px; }
-        .card p { margin:0 0 12px 0; font-size: 14px; color:#bcd3f0; }
-        .card button { background: var(--accent); color: var(--dark); border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-
-        .modal { position: fixed; left: 0; top: 0; right:0; bottom:0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); z-index:2000; }
-        .modal-content { background: #07112a; padding: 18px; border-radius: 12px; width: 100%; max-width: 520px; border: 1px solid var(--border); }
-        .modal .close { float: left; font-size: 24px; cursor: pointer; }
-        .price-box { background: rgba(255,215,0,0.06); padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 4px solid var(--accent); font-weight: bold; color: #fff; }
-
-    </style>
 </head>
 <body>
 
-    <header>
-        <div class="container nav" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;">
-            <a href="#" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
-                <img src="icon.png" alt="SN ELECTRIC" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px;">
-                <span style="color: var(--accent); font-weight: 800; font-size: 16px;">SN ELECTRIC</span>
-            </a>
-            <div style="color: var(--accent); font-size: 14px; font-weight: 600;"><i class="fa-solid fa-bolt"></i> Power & Control</div>
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-bolt"></i>
+            <span>SN ELECTRIC</span>
         </div>
+        <div id="customerWelcomeArea"></div>
     </header>
 
-    <div class="sn-horizontal-bar-wrapper">
-        <div class="sn-horizontal-scroll">
-            <a href="#" class="sn-bar-item active"><span class="icon">🏠</span><span class="text">الرئيسية</span></a>
-            <a href="#services" class="sn-bar-item"><span class="icon">⚡</span><span class="text">خدماتنا والأسعار</span></a>
-            <a href="contract.html" class="sn-bar-item"><span class="icon">📄</span><span class="text">عقد الاتفاق</span></a>
-            <a href="profile.html" class="sn-bar-item"><span class="icon">👤</span><span class="text">حسابي الشخصي</span></a>
-            <a href="#tech-list" class="sn-bar-item"><span class="icon">⭐</span><span class="text">الفنيين والتقييمات</span></a>
-            <a href="#join-tech" class="sn-bar-item"><span class="icon">🛠️</span><span class="text">انضم كفني</span></a>
-            <a href="#contact" class="sn-bar-item"><span class="icon">📞</span><span class="text">تواصل معنا</span></a>
-        </div>
-    </div>
-
+    <!-- Hero Section -->
     <section class="hero">
-        <div class="container hero-content" style="text-align: center; padding: 40px 0;">
-            <div class="hero-text">
-                <h1><span>SN ELECTRIC</span></h1>
-                <p><i class="fa-solid fa-plug"></i> كهربائي محترف - Power & Control</p>
-                <div id="customerWelcomeArea" style="margin-top: 15px;"></div>
-            </div>
-        </div>
+        <h1>SN ELECTRIC</h1>
+        <p>الرواد في التأسيس والتشطيب والصيانة وحلول السمارت هوم بأعلى معايير الجودة والأمان.</p>
     </section>
 
-    <section id="services">
-        <div class="container">
-            <div class="section-title">
-                <h2>خدماتنا والأسعار المعتمدة</h2>
-                <p>نقدم أفضل خدمات التركيب والصيانة بأعلى معايير الجودة والأمان</p>
+    <!-- Services Grid -->
+    <main class="container">
+        <h2 class="section-title">خدماتنا المميزة</h2>
+        <div class="services-grid">
+            <div class="service-card" onclick="openForm('تأسيس شقق')">
+                <i class="fa-solid fa-house-chimney"></i>
+                <h3>تأسيس شقق</h3>
+                <p>تأسيس مسارات الكابلات، علب الكهرباء، والداتا بأحدث الأساليب.</p>
+                <button class="btn-service">طلب الخدمة والحساب</button>
             </div>
-            <div class="services-grid">
-                <div class="card"><h3>⚡ تأسيس شقق</h3><p>تأسيس مواسير الشقق والشدادات</p><button onclick="openForm('تأسيس شقق')">اطلب الخدمة</button></div>
-                <div class="card"><h3>🏛️ تأسيس سقف</h3><p>تركيب مواسير الأسقف الكهربائية</p><button onclick="openForm('تأسيس سقف')">اطلب الخدمة</button></div>
-                <div class="card"><h3>💡 تشطيب إكسسوارات</h3><p>تركيب نقاط المفاتيح والمقابس والإضاءات</p><button onclick="openForm('تشطيب إكسسوارات')">اطلب الخدمة</button></div>
-                <div class="card"><h3>🔧 صيانة أجهزة منزلية</h3><p>إصلاح الغسالة والبوتاجاز والسخان</p><button onclick="openForm('صيانة أجهزة منزلية')">اطلب الخدمة</button></div>
-                <div class="card"><h3>📷 كاميرات مراقبة</h3><p>تركيب أنظمة كاميرات المراقبة وصيانتها</p><button onclick="openForm('كاميرات مراقبة')">اطلب الخدمة</button></div>
-                <div class="card" style="grid-column: 1 / -1; max-width: 450px; margin: 0 auto; border: 2px dashed var(--accent);"><h3>🔍 المعاينة</h3><p>زيارة وتقدير الأعمال والمعدات المطلوبة بدقة</p><button onclick="openForm('معاينة الموقع')">اطلب المعاينة</button></div>
+
+            <div class="service-card" onclick="openForm('تأسيس سقف')">
+                <i class="fa-solid fa-layer-group"></i>
+                <h3>تأسيس سقف</h3>
+                <p>تمديد مواسير PVC/EMT والقورب وتجهيز إنارة السقف.</p>
+                <button class="btn-service">طلب الخدمة والحساب</button>
+            </div>
+
+            <div class="service-card" onclick="openForm('تشطيب إكسسوارات')">
+                <i class="fa-solid fa-plug"></i>
+                <h3>تشطيب إكسسوارات</h3>
+                <p>تركيب المفاتيح، البرايز، واللوحات الرئيسية والأوتوماتيك.</p>
+                <button class="btn-service">طلب الخدمة والحساب</button>
+            </div>
+
+            <div class="service-card" onclick="openForm('صيانة أجهزة منزلية')">
+                <i class="fa-solid fa-wrench"></i>
+                <h3>صيانة أجهزة منزلية</h3>
+                <p>صيانة وإصلاح كافة الأجهزة المنزلية والكهربائية بدقة.</p>
+                <button class="btn-service">طلب الخدمة والحساب</button>
+            </div>
+
+            <div class="service-card" onclick="openForm('كاميرات مراقبة')">
+                <i class="fa-solid fa-video"></i>
+                <h3>كاميرات مراقبة</h3>
+                <p>تركيب وتمديد شبكات الكاميرات وأنظمة الأمان الحديثة.</p>
+                <button class="btn-service">طلب الخدمة والحساب</button>
+            </div>
+
+            <div class="service-card" onclick="openForm('المعاينة')">
+                <i class="fa-solid fa-clipboard-check"></i>
+                <h3>طلب معاينة</h3>
+                <p>زيارة معايشة فنية للموقع لتقدير الاحمال والتكلفة الدقيقة.</p>
+                <button class="btn-service">طلب الخدمة والحساب</button>
             </div>
         </div>
-    </section>
 
+        <!-- Technicians Section -->
+        <h2 class="section-title" style="margin-top: 40px;">فنيون معتمدون</h2>
+        <div id="techniciansContainer" class="tech-grid"></div>
+
+        <!-- Client Dashboard (ظهر تلقائياً للعميل عند وجود طلب مقبول) -->
+        <div id="clientProjectDashboard" class="project-dashboard" style="display:none; margin-top:40px; background:var(--card-bg); padding:20px; border-radius:12px; border:1px solid var(--accent);">
+            <h3 style="color:var(--accent);"><i class="fa-solid fa-diagram-project"></i> لوحة متابعة المشروع الخاص بك</h3>
+            <p><strong>كود المشروع:</strong> <span id="dashProjectCode">-</span></p>
+            <p><strong>الاسم:</strong> <span id="dashClientName">-</span> | <strong>الهاتف:</strong> <span id="dashClientPhone">-</span></p>
+            <p><strong>العنوان:</strong> <span id="dashClientAddress">-</span></p>
+            <hr style="border-color:rgba(255,255,255,0.1); margin:10px 0;">
+            <p><strong>الفني المسؤول:</strong> <span id="dashTechName">-</span> (<span id="dashTechPhone">-</span>) - تقييم: <span id="dashTechRating">-</span> ⭐</p>
+            <p><strong>المدفوعات التشغيلية:</strong> <span id="dashOpPayment">0</span> ج.م | <strong>المتبقي:</strong> <span id="dashRemainingAmount">0</span> ج.م (<span id="dashPaymentStatus">-</span>)</p>
+            <p><strong>هدية العميل:</strong> <span id="dashClientGift">-</span></p>
+            <button onclick="sendProjectImagesToWhatsApp()" class="btn-submit" style="margin-top:10px; background:#25D366;"><i class="fa-brands fa-whatsapp"></i> إرسال صور الموقع بالفيديو/الصور</button>
+        </div>
+    </main>
+
+    <!-- Dynamic Form & Calculator Modal -->
     <div id="formModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeForm()">&times;</span>
-            <h2 id="formTitle">طلب خدمة</h2>
+            <span class="close-btn" onclick="closeForm()">&times;</span>
+            <h3 id="formTitle">طلب خدمة</h3>
+            
             <form id="serviceForm" onsubmit="event.preventDefault(); sendWhatsApp();">
-                <label>الاسم بالكامل</label>
-                <input type="text" id="customerName" required placeholder="أدخل اسمك" style="width:100%; padding:8px; margin:6px 0; border-radius:8px; border:1px solid var(--border); background:#0c1b33; color:#fff;">
-                <label>رقم الهاتف</label>
-                <input type="tel" id="customerPhone" required placeholder="أدخل رقم هاتفك" style="width:100%; padding:8px; margin:6px 0; border-radius:8px; border:1px solid var(--border); background:#0c1b33; color:#fff;">
-                <label>العنوان</label>
-                <input type="text" id="customerAddress" required placeholder="العنوان بالتفصيل" style="width:100%; padding:8px; margin:6px 0; border-radius:8px; border:1px solid var(--border); background:#0c1b33; color:#fff;">
-                
+                <div class="form-group">
+                    <label>الاسم بالكامل</label>
+                    <input type="text" id="customerName" placeholder="أدخل اسمك الكريم" onchange="checkCustomerStatus(this.value)">
+                </div>
+
+                <div class="form-group">
+                    <label>رقم الهاتف (ضروري)</label>
+                    <input type="tel" id="customerPhone" placeholder="مثال: 01287837118" required>
+                </div>
+
+                <div class="form-group">
+                    <label>العنوان بالتفصيل</label>
+                    <input type="text" id="customerAddress" placeholder="المدينة / المنطقة / الشارع">
+                </div>
+
+                <!-- Dynamic Calculator Inputs -->
                 <div id="dynamicFields"></div>
-                <div class="calculator-section" id="calculatorSection"></div>
-                <div class="price-box" id="totalPrice">التكلفة: حسب المعاينة</div>
-                
-                <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); color: var(--dark); border: none; border-radius: 8px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top:12px;">إرسال الطلب</button>
+
+                <!-- Calculator Breakdown Section -->
+                <div id="calculatorSection" class="calc-box"></div>
+
+                <div id="vipDiscountNotice" style="display:none; color:#2ecc71; font-weight:bold; margin-top:10px; font-size:14px;"></div>
+                <div id="totalPrice" class="total-price-box">السعر التقديري: 0 جنيه</div>
+
+                <button type="submit" class="btn-submit">تسجيل الطلب والإرسال عبر الواتساب</button>
             </form>
         </div>
     </div>
 
-    <div class="chat-widget-btn" id="draggableChatBtn" onclick="toggleChat()">
-        <i class="fa-solid fa-comments"></i>
+    <!-- Floating Approved Chat Button Container -->
+    <div id="floatingSecureChatContainer"></div>
+
+    <!-- Approved Chat Widget -->
+    <div id="approvedChatWidget" class="chat-widget" style="display:none;">
+        <div class="chat-header">
+            <h4><i class="fa-solid fa-shield-halved"></i> المحادثة الآمنة للمشروع</h4>
+            <span onclick="toggleApprovedChat()">&times;</span>
+        </div>
+        <div id="approvedChatBody" class="chat-body"></div>
+        <div class="chat-footer">
+            <input type="text" id="approvedChatInput" placeholder="اكتب رسالتك للادارة والفني...">
+            <button onclick="sendApprovedMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
     </div>
 
-    <div class="chat-box" id="chatBox">
+    <!-- General Support Floating Chat -->
+    <button class="chat-toggle-btn" onclick="toggleChat()"><i class="fa-solid fa-comments"></i></button>
+    <div id="chatBox" class="chat-widget" style="display:none;">
         <div class="chat-header">
-            <span style="font-weight: bold; color: var(--accent);"><i class="fa-solid fa-headset"></i> خدمة عملاء SN ELECTRIC</span>
-            <span style="cursor: pointer; font-size: 18px;" onclick="toggleChat()">&times;</span>
+            <h4>دعم SN ELECTRIC</h4>
+            <span onclick="toggleChat()">&times;</span>
         </div>
-        <div class="chat-body" id="chatBody">
-            <div class="chat-message incoming">أهلاً بك! أنا المساعد الذكي للإدارة. كيف يمكننا مساعدتك اليوم؟</div>
+        <div id="chatBody" class="chat-body">
+            <div class="chat-message incoming">مرحباً بك! كيف يمكننا مساعدتك اليوم؟</div>
         </div>
         <div class="chat-footer">
-            <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-            <button onclick="sendChatMessage()">إرسال</button>
+            <input type="text" id="chatInput" placeholder="اكتب استفسارك...">
+            <button onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <footer>
-        <div class="container" style="text-align: center;">
-            <div class="copyright">جميع الحقوق محفوظة © 2026 SN ELECTRIC</div>
-            <div class="visitor-counter-box"><i class="fa-solid fa-eye"></i> عدد مشاهدات الموقع: <span id="view-count">جاري التحميل...</span></div>
-        </div>
-    </footer>
+    <!-- ================================================== -->
+    <!--          السطور البرمجية والربط الصحيح           -->
+    <!-- ================================================== -->
 
-    <nav class="sn-bottom-nav">
-        <a href="profile.html" class="sn-nav-item"><span>👤</span><span>حسابي</span></a>
-        <a href="contract.html" class="sn-nav-item"><span>📄</span><span>عقد</span></a>
-        <a href="index.html" class="sn-nav-item active"><span>🏠</span><span>رئيسية</span></a>
-        <a href="#services" class="sn-nav-item"><span>⚡</span><span>خدمات</span></a>
-        <a href="#" class="sn-nav-item" onclick="toggleChat(); return false;"><span>🤖</span><span>محادثة AI</span></a>
-    </nav>
+    <!-- 1. استدعاء مكتبة Supabase JS الرسمية من الـ CDN أولاً -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!-- 2. استدعاء ملف الإعدادات والمفتاح -->
+    <script src="js/config.js"></script>
+
+    <!-- 3. استدعاء ملف الاتصال بـ Supabase -->
     <script src="js/supabase.js"></script>
+
+    <!-- 4. استدعاء ملف التطبيق الرئيسي -->
     <script src="js/app.js"></script>
-    
-    <script>
-        // إرسال الطلب واعتماد الجلسة المخزنة إن وجدت دون طلب كلمة سر متكررة
-        async function sendWhatsApp() {
-            const name = document.getElementById('customerName').value.trim();
-            const phone = document.getElementById('customerPhone').value.trim();
-            const address = document.getElementById('customerAddress').value.trim();
-            
-            if (!name || !phone || !address) {
-                alert("الرجاء ملء جميع البيانات الأساسية.");
-                return;
-            }
 
-            let clientPin = localStorage.getItem("sn_client_pin");
-            if (!clientPin) {
-                clientPin = prompt("أدخل رقماً سرياً جديداً لحسابك لتتمكن من متابعة مشاريعك لاحقاً:");
-                if (!clientPin) clientPin = "1234";
-                try { localStorage.setItem("sn_client_pin", clientPin); } catch (e) { console.warn('Cannot access localStorage', e); }
-            }
+    <!-- 5. تسجيل الـ PWA Service Worker -->
+    <script src="js/pwa.js"></script>
 
-            const titleEl = document.getElementById('formTitle');
-            const serviceType = titleEl ? titleEl.textContent.replace('طلب خدمة: ', '').trim() : 'خدمة عامة';
-            const priceBox = document.getElementById('totalPrice');
-            const totalPriceText = priceBox ? priceBox.textContent.trim() : "حسب المعاينة";
-
-            if (typeof supabase === 'undefined') {
-                alert("خطأ في الاتصال بقاعدة البيانات.");
-                return;
-            }
-
-            try {
-                await supabase.from('customers').upsert([{ phone, name, password: clientPin }], { onConflict: 'phone' });
-
-                const { error: reqError } = await supabase.from('service_requests').insert([{
-                    name, phone, service_type: serviceType, address, total_price: totalPriceText, status: 'قيد المعالجة'
-                }]);
-
-                if (reqError) {
-                    alert("خطأ أثناء حفظ الطلب: " + reqError.message);
-                    return;
-                }
-
-                try { localStorage.setItem("sn_client_phone", phone); } catch (e) { console.warn('Cannot access localStorage', e); }
-
-                const adminPhone = "201558837118";
-                const message = `*طلب خدمة جديد - SN ELECTRIC*%0a` +
-                                `👤 *الاسم:* ${name}%0a` +
-                                `📞 *الهاتف:* ${phone}%0a` +
-                                `🔒 *الرقم السري:* ${clientPin}%0a` +
-                                `⚡ *الخدمة:* ${serviceType}%0a` +
-                                `📍 *العنوان:* ${address}%0a` +
-                                `💰 *التكلفة:* ${totalPriceText}%0a`;
-
-                alert("تم حفظ طلبك وحسابك بنجاح!");
-                window.open(`https://wa.me/${adminPhone}?text=${message}`, '_blank');
-                closeForm();
-                window.location.href = "profile.html";
-
-            } catch (err) {
-                console.error(err);
-                alert("حدث خطأ غير متوقع.");
-            }
-        }
-
-        // وظائف بسيطة للتحكم بالنماذج والدردشة
-        function openForm(service) {
-            const modal = document.getElementById('formModal');
-            const title = document.getElementById('formTitle');
-            title.textContent = 'طلب خدمة: ' + service;
-            modal.style.display = 'flex';
-        }
-        function closeForm() {
-            const modal = document.getElementById('formModal');
-            modal.style.display = 'none';
-        }
-
-        function toggleChat() {
-            const box = document.getElementById('chatBox');
-            if (!box) return;
-            box.style.display = (box.style.display === 'flex' || box.style.display === 'block') ? 'none' : 'flex';
-        }
-        function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const body = document.getElementById('chatBody');
-            if (!input || !body) return;
-            const text = input.value.trim();
-            if (!text) return;
-            const out = document.createElement('div'); out.className = 'chat-message outgoing'; out.textContent = text; body.appendChild(out);
-            input.value = '';
-            body.scrollTop = body.scrollHeight;
-            // هنا يمكنك إضافة استدعاء API للمساعدة الذكية
-        }
-
-        // تحمير العرض
-        document.addEventListener('DOMContentLoaded', function(){
-            const phone = localStorage.getItem('sn_client_phone');
-            if (phone) {
-                const area = document.getElementById('customerWelcomeArea');
-                if (area) area.innerHTML = `<span style="color:var(--accent); font-weight:700;">مرحباً مجدداً!</span> رقمك المسجل: ${phone}`;
-            }
-        });
-    </script>
 </body>
 </html>
