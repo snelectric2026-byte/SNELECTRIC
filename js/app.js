@@ -22,14 +22,14 @@ function closeTechForm() {
     document.getElementById('techModal').style.display = 'none';
 }
 
-// دالة حساب الأسعار والحسابات التلقائية
+// دالة حساب الأسعار والحسابات التلقائية لحظياً
 function calculateTotal() {
     const projectTypeSelect = document.getElementById('projectType');
     if (!projectTypeSelect) return 0;
 
     const projectType = projectTypeSelect.value;
     
-    // إظهار MTK للمصنع فقط
+    // إظهار نوع مواسير MTK للمصانع فقط
     const mtkOption = document.getElementById('mtkOption');
     if (projectType === 'factory') {
         mtkOption.style.display = 'inline-block';
@@ -38,7 +38,7 @@ function calculateTotal() {
         document.getElementById('pipeMTK').checked = false;
     }
 
-    // خصم 5 جنيهات لكل بند تجاري للمحل
+    // خصم 5 جنيهات لكل بند تجاري في حالة المحل
     const discount = (projectType === 'shop') ? 5 : 0;
 
     // أسعار البنود الأصلية مطروح منها الخصم
@@ -72,7 +72,7 @@ function calculateTotal() {
     const ceilingFansCost = (parseFloat(document.getElementById('ceilingFans').value) || 0) * 50;
     const wallFansCost = (parseFloat(document.getElementById('wallFans').value) || 0) * 40;
 
-    // 4. الكاميرات والأنظمة
+    // 4. الكاميرات والأنظمة والإطفاء
     const camsCost = (parseFloat(document.getElementById('camsCount').value) || 0) * 150;
     const alarmCost = (parseFloat(document.getElementById('alarmZones').value) || 0) * 100;
     const fireZonesCost = (parseFloat(document.getElementById('fireZones').value) || 0) * 150;
@@ -87,7 +87,7 @@ function calculateTotal() {
     return grandTotal;
 }
 
-// إرسال الطلب وحفظ البيانات
+// دالة حفظ الطلب وإرسال التقرير الشامل للأدمن والواتساب
 async function handleFormSubmit(event) {
     event.preventDefault();
 
@@ -104,12 +104,70 @@ async function handleFormSubmit(event) {
         return;
     }
 
+    // 1. تجميع واستخراج البيانات التفصيلية
+    const pipeMeters = document.getElementById('pipeMeters').value || 0;
+    const pipesSelected = [];
+    if (document.getElementById('pipeKharta').checked) pipesSelected.push('خرطوم');
+    if (document.getElementById('pipePVC').checked) pipesSelected.push('PVC');
+    if (document.getElementById('pipeMTK').checked) pipesSelected.push('MTK');
+
+    const roofPoints = document.getElementById('roofPoints').value || 0;
+    const panelsCount = document.getElementById('panelsCount').value || 0;
+    const socketsCount = document.getElementById('socketsCount').value || 0;
+    const junctionBoxes = document.getElementById('junctionBoxes').value || 0;
+
+    const switchesCount = document.getElementById('switchesCount').value || 0;
+    const motorsCount = document.getElementById('motorsCount').value || 0;
+    const acCount = document.getElementById('acCount').value || 0;
+    const linesCount = document.getElementById('linesCount').value || 0;
+    const lampsCount = document.getElementById('lampsCount').value || 0;
+    const chandeliersCount = document.getElementById('chandeliersCount').value || 0;
+    const ceilingFans = document.getElementById('ceilingFans').value || 0;
+    const wallFans = document.getElementById('wallFans').value || 0;
+
+    const camsCount = document.getElementById('camsCount').value || 0;
+    const camType = document.getElementById('camType').value;
+    const dvrType = document.getElementById('dvrType').value;
+
+    const alarmZones = document.getElementById('alarmZones').value || 0;
+    const fireZones = document.getElementById('fireZones').value || 0;
+    const firePipesMeters = document.getElementById('firePipesMeters').value || 0;
+
+    // 2. صياغة التقرير المنظم
+    const fullReportText = 
+`📌 *طلب جديد من موقع SN ELECTRIC*
+----------------------------------
+👤 *بيانات العميل:*
+• الاسم: ${name}
+• الهاتف: ${phone}
+• العنوان: ${address}
+• نوع المقر: ${projectType}
+• نوع الخدمة: ${serviceTitle}
+
+🔌 *تفاصيل التأسيس والمواسير:*
+• أمتار المواسير: ${pipeMeters} متر (${pipesSelected.join(', ') || 'لم يحدد'})
+• نقاط السقف: ${roofPoints}
+• عدد اللوح: ${panelsCount}
+• عدد البرايز: ${socketsCount}
+• علب السكة/البواط: ${junctionBoxes}
+
+💡 *تفاصيل التشطيب:*
+• المفاتيح: ${switchesCount} | المواتير: ${motorsCount} | التكييفات: ${acCount}
+• الخطوط: ${linesCount} | اللمبات: ${lampsCount} | النجف: ${chandeliersCount}
+• مراوح سقف: ${ceilingFans} | مراوح حائط: ${wallFans}
+
+📹 *الأنظمة الكاميرات والإطفاء:*
+• الكاميرات: ${camsCount} (نوع: ${camType}) | جهاز DVR: ${dvrType}
+• زونات إنذار حريق: ${alarmZones} | زونات إطفاء: ${fireZones}
+• أمتار مواسير الإطفاء: ${firePipesMeters} متر
+
+💰 *الإجمالي التقديري:* ${calculatedPrice.toLocaleString('ar-EG')} ج.م`;
+
     submitBtn.disabled = true;
-    submitBtn.innerText = "جاري حفظ الطلب...";
+    submitBtn.innerText = "جاري الحفظ والتحويل للواتساب...";
 
     try {
-        const detailsSummary = `نوع المقر: ${projectType} | نقاط السقف: ${document.getElementById('roofPoints').value || 0} | اللوح: ${document.getElementById('panelsCount').value || 0} | البرايز: ${document.getElementById('socketsCount').value || 0} | الكاميرات: ${document.getElementById('camsCount').value || 0} | التكلفة التقديرية: ${calculatedPrice} ج.م`;
-
+        // 3. إرسال لـ Supabase لصفحة الأدمن
         const { error } = await supabaseClient
             .from('service_requests')
             .insert([{
@@ -117,27 +175,26 @@ async function handleFormSubmit(event) {
                 customer_phone: phone,
                 address: address,
                 service_type: serviceTitle,
-                notes: detailsSummary,
+                notes: fullReportText,
                 status: 'قيد الانتظار'
             }]);
 
         if (error) throw error;
 
-        alert(`تم تسجيل طلبك بنجاح!\nالتكلفة التقديرية: ${calculatedPrice} ج.م`);
-
         localStorage.setItem('user_phone', phone);
 
-        const textMessage = `طلب جديد عبر الحاسبة التفصيلية:\n\n👤 الاسم: ${name}\n📞 الهاتف: ${phone}\n📍 العنوان: ${address}\n🛠️ الخدمة: ${serviceTitle}\n🏢 نوع المقر: ${projectType}\n💰 التكلفة التقديرية: ${calculatedPrice} ج.م\n\n📝 ملخص التفاصيل:\n${detailsSummary}`;
-
-        window.open(`https://api.whatsapp.com/send?phone=201287837118&text=${encodeURIComponent(textMessage)}`, '_blank');
+        // 4. تحويل العميل مباشرة لواتساب الإدارة (01287837118)
+        const adminWhatsappNumber = "201287837118";
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${adminWhatsappNumber}&text=${encodeURIComponent(fullReportText)}`;
 
         closeForm();
         document.getElementById('serviceForm').reset();
         calculateTotal();
-        checkApprovedChats();
+
+        window.open(whatsappUrl, '_blank');
 
     } catch (err) {
-        alert("تعذر حفظ الطلب: " + (err.message || err));
+        alert("حدث خطأ أثناء حفظ الطلب: " + (err.message || err));
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "حفظ الطلب وتأكيد الإرسال";
@@ -206,7 +263,7 @@ async function loadTechnicians() {
     }
 }
 
-// التحقق من موافقة الطلب لإظهار محادثة الإدارة
+// التحقق من موافقة الأدمن لإظهار شات المحادثة للعميل
 async function checkApprovedChats() {
     const phone = localStorage.getItem('user_phone');
     const chatDirectBtn = document.getElementById('directChatBtn');
