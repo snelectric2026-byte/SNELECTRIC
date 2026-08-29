@@ -8,46 +8,56 @@ function closeForm() {
     document.getElementById('formModal').style.display = 'none';
 }
 
-// دالة التحكم بإرسال النموذج، الحفظ بالفيسباس أولاً ثم تحويل الواتساب
+// دالة التعامل مع تقديم النموذج وحفظ البيانات في Supabase
 async function handleFormSubmit(event) {
     event.preventDefault();
 
     const submitBtn = document.getElementById('submitBtn');
-    const name = document.getElementById('customerName').value;
-    const phone = document.getElementById('customerPhone').value;
-    const address = document.getElementById('customerAddress').value;
+    const name = document.getElementById('customerName').value.trim();
+    const phone = document.getElementById('customerPhone').value.trim();
+    const address = document.getElementById('customerAddress').value.trim();
     const serviceTitle = document.getElementById('formTitle').innerText;
 
     if (!name || !phone || !address) {
-        alert("يرجى ملء جميع البيانات المطلوبة");
+        alert("يرجى ملء جميع البيانات المطلوبة (الاسم، رقم الهاتف، والعنوان)");
         return;
     }
 
-    // تعطيل الزر لمنع الإرسال المكرر
+    // تعطيل الزر أثناء المعالجة
     submitBtn.disabled = true;
     submitBtn.innerText = "جاري حفظ الطلب...";
 
     try {
-        // 1. الحفظ في قاعدة البيانات Supabase أولاً
+        // إرسال كائن البيانات كاملاً لتغطية جميع مسميات الأعمدة المتوقعة في قاعدة البيانات
+        const payload = {
+            customer_name: name,
+            customer_phone: phone,
+            phone_number: phone,
+            phone: phone,
+            address: address,
+            service_type: serviceTitle,
+            service_name: serviceTitle,
+            status: 'قيد الانتظار',
+            created_at: new Date().toISOString()
+        };
+
         const { data, error } = await supabaseClient
             .from('service_requests')
-            .insert([
-                { 
-                    customer_name: name, 
-                    phone_number: phone, 
-                    address: address, 
-                    service_type: serviceTitle,
-                    status: 'pending' 
-                }
-            ]);
+            .insert([payload]);
 
         if (error) throw error;
 
-        alert("تم تسجيل طلبك بنجاح وسيتواصل معك المسؤول لإتمامه!");
+        alert("تم تسجيل طلبك بنجاح وسيتواصل معك الفريق الفني لإتمامه!");
 
-        // 2. تحويل اختياري إلى الواتساب عبر رابط متصفح آمن دون إجبار التطبيق
-        const textMessage = `طلب جديد:\nالاسم: ${name}\nالهاتف: ${phone}\nالخدمة: ${serviceTitle}\nالعنوان: ${address}`;
-        const waUrl = `https://web.whatsapp.com/send?phone=201287837118&text=${encodeURIComponent(textMessage)}`;
+        // تجهيز نص رسالة الواتساب التفصيلية
+        const textMessage = `طلب خدمة جديد من الموقع:\n\n` +
+                            `👤 الاسم: ${name}\n` +
+                            `📞 الهاتف: ${phone}\n` +
+                            `🛠️ الخدمة المطلوبة: ${serviceTitle}\n` +
+                            `📍 العنوان: ${address}\n` +
+                            `⏰ التاريخ: ${new Date().toLocaleDateString('ar-EG')}`;
+
+        const waUrl = `https://api.whatsapp.com/send?phone=201287837118&text=${encodeURIComponent(textMessage)}`;
         
         // فتح الواتساب في نافذة جديدة
         window.open(waUrl, '_blank');
@@ -57,14 +67,14 @@ async function handleFormSubmit(event) {
 
     } catch (err) {
         console.error("Supabase Save Error:", err);
-        alert("تعذر حفظ الطلب في قاعدة البيانات. التأكد من الاتصال أو إعدادات Supabase: " + (err.message || err));
+        alert("تعذر حفظ الطلب في قاعدة البيانات: " + (err.message || err));
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "تسجيل الطلب والإرسال";
     }
 }
 
-// التبديل لعرض الشات
+// التبديل لعرض وإخفاء الشات
 function toggleChat() {
     const chatBox = document.getElementById('chatBox');
     chatBox.style.display = (chatBox.style.display === 'none' || !chatBox.style.display) ? 'block' : 'none';
