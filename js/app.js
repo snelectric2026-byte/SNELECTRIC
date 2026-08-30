@@ -1,339 +1,697 @@
+/*==================================================
+    SN ELECTRIC | app.js (النسخة الكاملة والشاملة)
+==================================================*/
+
+// تفعيل فحص رابط واتساب وحالة المحادثة الآمنة عند تحميل المستند
 document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    let phoneFromURL = urlParams.get('phone');
+
+    if (phoneFromURL) {
+        localStorage.setItem('client_phone', phoneFromURL);
+        checkClientChatAccess(phoneFromURL);
+        loadClientProjectDashboard(phoneFromURL);
+    } else {
+        let savedPhone = localStorage.getItem('client_phone');
+        if (savedPhone) {
+            checkClientChatAccess(savedPhone);
+            loadClientProjectDashboard(savedPhone);
+        }
+    }
     loadTechnicians();
-    checkApprovedChats();
 });
 
-// فتح وإغلاق النواذج
+// التحقق من حالة الطلب في قاعدة البيانات (Supabase) لتفعيل الشات الآمن
+async function checkClientChatAccess(customerPhone) {
+    if (!window.supabaseClient || !customerPhone) return;
+
+    try {
+        const { data } = await window.supabaseClient
+            .from('service_requests')
+            .select('status')
+            .eq('customer_phone', customerPhone)
+            .single();
+
+        if (data && data.status === 'موافقة') {
+            showSecureChatButton();
+            loadChatMessages(customerPhone);
+        }
+    } catch (err) {
+        console.log('Access check note:', err);
+    }
+}
+
+// دالة جلب وعرض بيانات صفحة العميل المعتمد (الحسابات المالية، كود المشروع، بيانات الفني)
+async function loadClientProjectDashboard(clientPhone) {
+    if (!window.supabaseClient) return;
+
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('service_requests')
+            .select('*')
+            .eq('customer_phone', clientPhone)
+            .single();
+
+        const dashboardElement = document.getElementById('clientProjectDashboard');
+        if (data && data.status === 'موافقة') {
+            if (dashboardElement) dashboardElement.style.display = 'block';
+
+            let projectCode = `SN-${data.id}`;
+            
+            // تعبئة البيانات في واجهة العميل
+            if (document.getElementById('dashClientName')) document.getElementById('dashClientName').innerText = data.customer_name || 'غير متوفر';
+            if (document.getElementById('dashClientPhone')) document.getElementById('dashClientPhone').innerText = data.customer_phone || '';
+            if (document.getElementById('dashClientAddress')) document.getElementById('dashClientAddress').innerText = data.address || 'غير محدد';
+            if (document.getElementById('dashProjectCode')) document.getElementById('dashProjectCode').innerText = projectCode;
+
+            // بيانات المنفذ (الفني)
+            if (document.getElementById('dashTechName')) document.getElementById('dashTechName').innerText = data.tech_name || 'محمد إبراهيم';
+            if (document.getElementById('dashTechPhone')) document.getElementById('dashTechPhone').innerText = data.tech_phone || '01287837118';
+            if (document.getElementById('dashTechRating')) document.getElementById('dashTechRating').innerText = data.tech_rating || '4.9';
+
+            // الحسابات المالية والاتفاق
+            if (document.getElementById('dashOpPayment')) document.getElementById('dashOpPayment').innerText = data.op_payment || '0';
+            if (document.getElementById('dashRemainingAmount')) document.getElementById('dashRemainingAmount').innerText = data.remaining_amount || data.estimated_price || '0';
+            if (document.getElementById('dashPaymentStatus')) document.getElementById('dashPaymentStatus').innerText = data.payment_status || 'قيد التنفيذ';
+            if (document.getElementById('dashClientGift')) document.getElementById('dashClientGift').innerText = data.client_gift || 'تراضٍ شخصي بين الطرفين';
+
+        } else {
+            if (dashboardElement) dashboardElement.style.display = 'none';
+        }
+    } catch (err) {
+        console.log('Error loading client dashboard:', err);
+    }
+}
+
+// دالة إرسال صور المشروع إلى واتساب الشركة
+function sendProjectImagesToWhatsApp() {
+    const projectCode = document.getElementById('dashProjectCode')?.innerText || 'SN-000';
+    const clientName = document.getElementById('dashClientName')?.innerText || '';
+    
+    let msg = `السلام عليكم، أرسل صور المشروع الخاصة بي:%0a` +
+              `كود المشروع: ${projectCode}%0a` +
+              `اسم العميل: ${clientName}%0a` +
+              `(يرجى إرفاق الصور المحددة في المحادثة أدناه)`;
+
+    window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
+}
+
+// إظهار زر محادثة المشروع الآمنة الحصري للعميل المعتمد
+function showSecureChatButton() {
+    let container = document.getElementById('floatingSecureChatContainer');
+    if (container && !document.getElementById('secureChatToggleBtn')) {
+        container.innerHTML = `<button id="secureChatToggleBtn" onclick="toggleApprovedChat()" style="position: fixed; bottom: 25px; left: 25px; background: var(--accent); color: var(--dark); border: none; padding: 12px 20px; border-radius: 30px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 999;"><i class="fa-solid fa-lock"></i> محادثة المشروع الآمنة</button>`;
+    }
+}
+
+// إرسال وحفظ رسالة العميل في قاعدة البيانات مباشرة (لتصل للأدمن)
+async function sendApprovedMessage() {
+    const input = document.getElementById('approvedChatInput');
+    if (!input) return;
+    const text = input.value.trim();
+    const customerPhone = localStorage.getItem('client_phone');
+
+    if (!text || !customerPhone) return;
+
+    appendApprovedMessage(text, 'outgoing');
+    input.value = '';
+
+    if (window.supabaseClient) {
+        try {
+            await window.supabaseClient.from('project_messages').insert([
+                {
+                    customer_phone: customerPhone,
+                    message_text: text,
+                    sender_type: 'client',
+                    sent_at: new Date().toISOString()
+                }
+            ]);
+        } catch (e) {
+            console.log('Error saving message to DB:', e);
+        }
+    }
+}
+
+// جلب رسائل المشروع السابقة وعرضها داخل الدردشة
+async function loadChatMessages(customerPhone) {
+    if (!window.supabaseClient) return;
+
+    try {
+        const { data } = await window.supabaseClient
+            .from('project_messages')
+            .select('*')
+            .eq('customer_phone', customerPhone)
+            .order('sent_at', { ascending: true });
+
+        const body = document.getElementById('approvedChatBody');
+        if (data && data.length > 0 && body) {
+            body.innerHTML = '';
+            data.forEach(msg => {
+                let senderClass = msg.sender_type === 'client' ? 'outgoing' : 'incoming';
+                appendApprovedMessage(msg.message_text, senderClass);
+            });
+        }
+    } catch (err) {
+        console.log('Error loading messages:', err);
+    }
+}
+
+// رسم الرسالة في واجهة الشات الآمن
+function appendApprovedMessage(text, sender) {
+    const body = document.getElementById('approvedChatBody');
+    if (!body) return;
+    const div = document.createElement('div');
+    div.className = `chat-message ${sender}`;
+    div.style.cssText = sender === 'outgoing' 
+        ? 'background: var(--accent); color: var(--dark); padding: 8px 12px; border-radius: 8px; max-width: 80%; align-self: flex-end; font-weight: 600;' 
+        : 'background: rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 8px; max-width: 80%; align-self: flex-start;';
+    div.innerText = text;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+}
+
+// تبديل إظهار وإخفاء صندوق المحادثة الآمنة
+function toggleApprovedChat() {
+    const chat = document.getElementById('approvedChatWidget');
+    if (chat) {
+        chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+    }
+}
+
 function openForm(serviceName) {
-    document.getElementById('formTitle').innerText = serviceName;
-    document.getElementById('formModal').style.display = 'block';
-    calculateTotal();
+    const modal = document.getElementById('formModal');
+    const title = document.getElementById('formTitle');
+    const dynamicFields = document.getElementById('dynamicFields');
+    const calcSection = document.getElementById('calculatorSection');
+    
+    if (!modal) return;
+    
+    title.innerText = serviceName;
+    modal.style.display = 'block';
+    
+    let fieldsHTML = '';
+    let calcHTML = '';
+    
+    if (serviceName === 'تأسيس شقق') {
+        fieldsHTML = `
+            <label>طبيعة العمل</label>
+            <select id="calcApartmentType" onchange="calculatePrice()">
+                <option value="دور واحد">دور واحد</option>
+                <option value="متعدد الأدوار">متعدد الأدوار</option>
+            </select>
+            <label>نوع المواسير المستخدمة</label>
+            <select id="calcPipeType" onchange="calculatePrice()">
+                <option value="PVC">PVC (باللحام البارد والتكحيل)</option>
+                <option value="EMT">EMT (مواسير معدنية بتركيب الجلب)</option>
+            </select>
+            <label>عدد أمتار المواسير</label>
+            <input type="number" id="calcPipeLength" value="50" min="0" oninput="calculatePrice()">
+            <label>عدد أمتار التكحيل</label>
+            <input type="number" id="calcTakhilLength" value="10" min="0" oninput="calculatePrice()">
+            <label>عدد أمتار الشداد (إن وجد)</label>
+            <input type="number" id="calcShedadLength" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد أمتار تكسير حوائط (المتر 25 جنيه)</label>
+            <input type="number" id="calcWallBreakMeters" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد أمتار نحت خرسانة (المتر المسطح 50 جنيه)</label>
+            <input type="number" id="calcConcreteChiselMeters" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد أمتار فتحات الجبس للأسبوت (الفتحة 5 جنيه)</label>
+            <input type="number" id="calcGypsumSpotHoles" value="0" min="0" oninput="calculatePrice()">
+
+            <label>عدد اللوحات الرئيسية (تأسيس - 600 جنيه للوحة)</label>
+            <input type="number" id="calcPanelsCount" value="1" min="0" oninput="calculatePrice()">
+            
+            <label>عدد علب الكهرباء (العلبة 40 جنيه)</label>
+            <input type="number" id="calcElectricBoxes" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد علب الداتا (تليفزيون، انترنت، وحدة صوت - العلبه 40 جنيه)</label>
+            <input type="number" id="calcDataBoxes" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد مخارج الإنارة - لمبات السقف (المخرج 20 جنيه)</label>
+            <input type="number" id="calcLightOutputs" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد النجف على خطين (النجفة 30 جنيه)</label>
+            <input type="number" id="calcChandeliers" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد سماعات السقف</label>
+            <input type="number" id="calcSpeakers" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد أسبوطات السقف</label>
+            <input type="number" id="calcSpotlights" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد وحدات الإنارة المتحركة بالسقف</label>
+            <input type="number" id="calcMovingLights" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>طريقة تركيب ليد بروفايل</label>
+            <select id="calcLedType" onchange="calculatePrice()">
+                <option value="بدون حفر">بدون حفر (25 جنيه للمتر)</option>
+                <option value="بالحفر">بالحفر (60 جنيه للمتر)</option>
+            </select>
+            
+            <label>عدد أمتار ليد بروفايل</label>
+            <input type="number" id="calcLedMeters" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد بريزات تركيب الإكسسوار (البريزة 10 جنيه)</label>
+            <input type="number" id="calcAccessoryOutlets" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>عدد المفاتيح (المفتاح 10 جنيه)</label>
+            <input type="number" id="calcSwitches" value="0" min="0" oninput="calculatePrice()">
+            
+            <label>شاشة تحكم السمارت هوم</label>
+            <select id="calcSmartScreen" onchange="calculatePrice()">
+                <option value="لا">لا يوجد</option>
+                <option value="نعم">يوجد (تركيب 500 جنيه)</option>
+            </select>
+        `;
+    } else if (serviceName === 'تأسيس سقف') {
+        fieldsHTML = `
+            <label>نوع المواسير المستخدمة</label>
+            <select id="calcPipeType" onchange="calculatePrice()">
+                <option value="PVC">PVC (سعر المتر 35 ج)</option>
+                <option value="EMT">EMT (مواسير معدنية - سعر المتر 60 ج)</option>
+            </select>
+            <label>عدد أمتار المواسير</label>
+            <input type="number" id="calcPipeLength" value="40" min="0" oninput="calculatePrice()">
+            <label>عدد أمتار التكحيل أو (عدد القورب المفتوحة والمغلقة، الأسقاط أو المسار)</label>
+            <input type="number" id="calcTakhilLength" value="10" min="0" oninput="calculatePrice()">
+            <label>عدد أمتار الشداد (إن وجد)</label>
+            <input type="number" id="calcShedadLength" value="0" min="0" oninput="calculatePrice()">
+            <label>نوع التأسيس</label>
+            <select id="calcInstallNature">
+                <option value="داخلي">داخلي</option>
+                <option value="خارجي">خارجي</option>
+                <option value="الاثنين">الاثنين (مع مراعاة المسارات والرسوم الهندسية)</option>
+            </select>
+        `;
+    } else if (serviceName === 'تشطيب إكسسوارات') {
+        fieldsHTML = `
+            <label>عدد النقاط المراد تركيبها</label>
+            <input type="number" id="calcPoints" value="5" min="1" oninput="calculatePrice()">
+            <label>عدد العلب والبرايز</label>
+            <input type="number" id="calcBoxes" value="5" min="0" oninput="calculatePrice()">
+            <label>عدد اللوحات الرئيسية (لوحة مفاتيح)</label>
+            <input type="number" id="calcPanels" value="1" min="0" oninput="calculatePrice()">
+            <label>عدد المفاتيح الأوتوماتيكية</label>
+            <input type="number" id="calcAutomatic" value="3" min="0" oninput="calculatePrice()">
+        `;
+    } else if (serviceName === 'صيانة أجهزة منزلية') {
+        fieldsHTML = `
+            <label>نوع الجهاز المراد صيانته</label>
+            <select id="calcAppliance" onchange="calculatePrice()">
+                <option value="غسالة">غسالة أوتوماتيك</option>
+                <option value="بوتاجاز">بوتاجاز</option>
+                <option value="ثلاجة">ثلاجة / ديب فريزر</option>
+                <option value="سخان">سخان كهربائي</option>
+                <option value="ميكروويف">ميكروويف</option>
+                <option value="خلاط">خلاط أو جهاز صغير</option>
+            </select>
+        `;
+    } else if (serviceName === 'كاميرات مراقبة') {
+        fieldsHTML = `
+            <label>عدد الكاميرات المطلوب تركيبها</label>
+            <input type="number" id="calcCameras" value="2" min="1" oninput="calculatePrice()">
+            <label>طول كابلات التوصيل (متر)</label>
+            <input type="number" id="calcCableLength" value="30" min="0" oninput="calculatePrice()">
+            <label>نوع التمديد والتركيب</label>
+            <select id="calcInstallationType" onchange="calculatePrice()">
+                <option value="عادي">عادي (داخل قنوات بلاستيكية ظاهرة)</option>
+                <option value="متقدم">متقدم (دفن داخل الجدران / مسافات بعيدة)</option>
+            </select>
+        `;
+    } else if (serviceName === 'المعاينة') {
+        fieldsHTML = `<p style="color:var(--accent); font-weight:bold;">زيارة معايشة فنية لتقدير المتطلبات والأحمال بالمنزل أو موقع العمل.</p>`;
+    }
+    
+    dynamicFields.innerHTML = fieldsHTML;
+    calcHTML = `
+        <h4 style="color:var(--accent); margin-bottom:10px;"><i class="fa-solid fa-calculator"></i> حاسبة التكلفة التقديرية</h4>
+        <div id="priceBreakdown" class="calc-breakdown"></div>
+    `;
+    calcSection.innerHTML = calcHTML;
+    calculatePrice();
 }
 
 function closeForm() {
-    document.getElementById('formModal').style.display = 'none';
+    const modal = document.getElementById('formModal');
+    if (modal) modal.style.display = 'none';
 }
 
-function openTechForm() {
-    document.getElementById('techModal').style.display = 'block';
-}
-
-function closeTechForm() {
-    document.getElementById('techModal').style.display = 'none';
-}
-
-// دالة حساب الأسعار والحسابات التلقائية لحظياً
-function calculateTotal() {
-    const projectTypeSelect = document.getElementById('projectType');
-    if (!projectTypeSelect) return 0;
-
-    const projectType = projectTypeSelect.value;
+function calculatePrice() {
+    const titleElement = document.getElementById('formTitle');
+    if (!titleElement) return;
+    const title = titleElement.innerText;
+    let total = 0;
+    let breakdown = '';
     
-    // إظهار نوع مواسير MTK للمصانع فقط
-    const mtkOption = document.getElementById('mtkOption');
-    if (projectType === 'factory') {
-        mtkOption.style.display = 'inline-block';
-    } else {
-        mtkOption.style.display = 'none';
-        document.getElementById('pipeMTK').checked = false;
+    if (title === 'تأسيس شقق') {
+        const pipeType = document.getElementById('calcPipeType')?.value || 'PVC';
+        const pipeLength = parseInt(document.getElementById('calcPipeLength')?.value || 0);
+        const takhilLength = parseInt(document.getElementById('calcTakhilLength')?.value || 0);
+        const shedadLength = parseInt(document.getElementById('calcShedadLength')?.value || 0);
+        
+        const wallBreakMeters = parseInt(document.getElementById('calcWallBreakMeters')?.value || 0);
+        const concreteChiselMeters = parseInt(document.getElementById('calcConcreteChiselMeters')?.value || 0);
+        const gypsumSpotHoles = parseInt(document.getElementById('calcGypsumSpotHoles')?.value || 0);
+        
+        const panelsCount = parseInt(document.getElementById('calcPanelsCount')?.value || 0);
+        const electricBoxes = parseInt(document.getElementById('calcElectricBoxes')?.value || 0);
+        const dataBoxes = parseInt(document.getElementById('calcDataBoxes')?.value || 0);
+        const lightOutputs = parseInt(document.getElementById('calcLightOutputs')?.value || 0);
+        const chandeliers = parseInt(document.getElementById('calcChandeliers')?.value || 0);
+        const speakers = parseInt(document.getElementById('calcSpeakers')?.value || 0);
+        const spotlights = parseInt(document.getElementById('calcSpotlights')?.value || 0);
+        const movingLights = parseInt(document.getElementById('calcMovingLights')?.value || 0);
+        
+        const ledType = document.getElementById('calcLedType')?.value || 'بدون حفر';
+        const ledMeters = parseInt(document.getElementById('calcLedMeters')?.value || 0);
+        
+        const accessoryOutlets = parseInt(document.getElementById('calcAccessoryOutlets')?.value || 0);
+        const switches = parseInt(document.getElementById('calcSwitches')?.value || 0);
+        const smartScreen = document.getElementById('calcSmartScreen')?.value === 'نعم';
+
+        let pipeUnitPrice = pipeType === 'EMT' ? 60 : 40;
+        let takhilUnitPrice = pipeType === 'EMT' ? 25 : 20;
+        let shedadUnitPrice = pipeType === 'EMT' ? 10 : 5;
+
+        const pipeTotal = pipeLength * pipeUnitPrice;
+        const takhilTotal = takhilLength * takhilUnitPrice;
+        const shedadTotal = shedadLength * shedadUnitPrice;
+        
+        const wallBreakTotal = wallBreakMeters * 25;
+        const concreteChiselTotal = concreteChiselMeters * 50;
+        const gypsumSpotTotal = gypsumSpotHoles * 5;
+        
+        const panelsTotal = panelsCount * 600;
+        const boxesTotal = (electricBoxes + dataBoxes) * 40;
+        const lightOutputsTotal = lightOutputs * 20;
+        const chandeliersTotal = chandeliers * 30;
+        
+        const speakersTotal = speakers * 30;
+        const spotlightsTotal = spotlights * 20;
+        const movingLightsTotal = movingLights * 30;
+
+        let ledUnitPrice = ledType === 'بالحفر' ? 60 : 25;
+        const ledTotal = ledMeters * ledUnitPrice;
+
+        const accessoryTotal = accessoryOutlets * 10;
+        const switchesTotal = switches * 10;
+        const smartScreenTotal = smartScreen ? 500 : 0;
+
+        total = pipeTotal + takhilTotal + shedadTotal + wallBreakTotal + concreteChiselTotal + 
+                gypsumSpotTotal + panelsTotal + boxesTotal + lightOutputsTotal + chandeliersTotal + 
+                speakersTotal + spotlightsTotal + movingLightsTotal + ledTotal + accessoryTotal + 
+                switchesTotal + smartScreenTotal;
+        
+        breakdown = `<small style="line-height: 1.6; display: block;">
+            - مواسير ${pipeType} (${pipeLength}م × ${pipeUnitPrice}ج) = ${pipeTotal} ج.م<br>
+            - التكحيل (${takhilLength}م × ${takhilUnitPrice}ج) = ${takhilTotal} ج.م<br>
+            - الشداد (${shedadLength}م × ${shedadUnitPrice}ج) = ${shedadTotal} ج.م<br>
+            ${wallBreakMeters > 0 ? `- تكسير حوائط (${wallBreakMeters}م × 25ج) = ${wallBreakTotal} ج.م<br>` : ''}
+            ${concreteChiselMeters > 0 ? `- نحت خرسانة (${concreteChiselMeters}م × 50ج) = ${concreteChiselTotal} ج.م<br>` : ''}
+            ${gypsumSpotHoles > 0 ? `- فتحات جبس للأسبوت (${gypsumSpotHoles} × 5ج) = ${gypsumSpotTotal} ج.م<br>` : ''}
+            - لوحات تأسيس (${panelsCount} × 600ج) = ${panelsTotal} ج.م<br>
+            - علب كهرباء وداتا (${electricBoxes + dataBoxes} × 40ج) = ${boxesTotal} ج.م<br>
+            - مخارج إنارة سقف (${lightOutputs} × 20ج) = ${lightOutputsTotal} ج.م<br>
+            - نجف على خطين (${chandeliers} × 30ج) = ${chandeliersTotal} ج.م<br>
+            ${speakers > 0 ? `- سماعات سقف (${speakers} × 30ج) = ${speakersTotal} ج.م<br>` : ''}
+            ${spotlights > 0 ? `- أسبوطات سقف (${spotlights} × 20ج) = ${spotlightsTotal} ج.م<br>` : ''}
+            ${movingLights > 0 ? `- إنارة متحركة (${movingLights} × 30ج) = ${movingLightsTotal} ج.م<br>` : ''}
+            - ليد بروفايل ${ledType} (${ledMeters}م × ${ledUnitPrice}ج) = ${ledTotal} ج.م<br>
+            - بريزات إكسسوار (${accessoryOutlets} × 10ج) = ${accessoryTotal} ج.م<br>
+            - مفاتيح (${switches} × 10ج) = ${switchesTotal} ج.م<br>
+            ${smartScreen ? `- شاشة تحكم سمارت هوم = 500 ج.م` : ''}
+        </small>`;
+
+    } else if (title === 'تأسيس سقف') {
+        const pipeType = document.getElementById('calcPipeType')?.value || 'PVC';
+        const pipeLength = parseInt(document.getElementById('calcPipeLength')?.value || 0);
+        const takhilLength = parseInt(document.getElementById('calcTakhilLength')?.value || 0);
+        const shedadLength = parseInt(document.getElementById('calcShedadLength')?.value || 0);
+
+        let pipeUnitPrice = pipeType === 'EMT' ? 60 : 35;
+        let takhilUnitPrice = pipeType === 'EMT' ? 25 : 10;
+        let shedadUnitPrice = pipeType === 'EMT' ? 10 : 5;
+
+        const pipeTotal = pipeLength * pipeUnitPrice;
+        const takhilTotal = takhilLength * takhilUnitPrice;
+        const shedadTotal = shedadLength * shedadUnitPrice;
+
+        total = pipeTotal + takhilTotal + shedadTotal;
+        breakdown = `<small>
+            - مواسير ${pipeType} (${pipeLength}م × ${pipeUnitPrice}ج) = ${pipeTotal} ج.م<br>
+            - التكحيل / القورب (${takhilLength}م × ${takhilUnitPrice}ج) = ${takhilTotal} ج.م<br>
+            - الشداد (${shedadLength}م × ${shedadUnitPrice}ج) = ${shedadTotal} ج.م
+        </small>`;
+
+    } else if (title === 'تشطيب إكسسوارات') {
+        const points = parseInt(document.getElementById('calcPoints')?.value || 0);
+        const boxes = parseInt(document.getElementById('calcBoxes')?.value || 0);
+        const panels = parseInt(document.getElementById('calcPanels')?.value || 0);
+        const automatic = parseInt(document.getElementById('calcAutomatic')?.value || 0);
+        
+        total = (points * 50) + (boxes * 40) + (panels * 200) + (automatic * 50);
+        breakdown = `<small>تجميع حساب النقاط واللوحات والإكسسوارات</small>`;
+    } else if (title === 'صيانة أجهزة منزلية') {
+        const appliance = document.getElementById('calcAppliance')?.value;
+        const prices = { 'غسالة': 350, 'بوتاجاز': 300, 'ثلاجة': 400, 'سخان': 250, 'ميكروويف': 200, 'خلاط': 150 };
+        total = appliance && prices[appliance] ? prices[appliance] : 200;
+        breakdown = `<small>صيانة ${appliance}: ${total} ج.م (تقديري)</small>`;
+    } else if (title === 'كاميرات مراقبة') {
+        const cameras = parseInt(document.getElementById('calcCameras')?.value || 1);
+        const cableLength = parseInt(document.getElementById('calcCableLength')?.value || 0);
+        total = (cameras * 300) + (cableLength * 5);
+        breakdown = `<small>${cameras} كاميرات مع التمديدات</small>`;
+    } else if (title === 'المعاينة') {
+        total = 100;
+        breakdown = `<small>رسوم المعاينة الميدانية داخل النطاق</small>`;
     }
-
-    // خصم 5 جنيهات لكل بند تجاري في حالة المحل
-    const discount = (projectType === 'shop') ? 5 : 0;
-
-    // أسعار البنود الأصلية مطروح منها الخصم
-    const priceRoofPoint = Math.max(0, 25 - discount);
-    const pricePanel = Math.max(0, 150 - discount);
-    const priceSocket = Math.max(0, 60 - discount);
-    const priceJunction = Math.max(0, 40 - discount);
-
-    // 1. أمتار المواسير
-    const pipeMeters = parseFloat(document.getElementById('pipeMeters').value) || 0;
-    let pipePricePerMeter = 0;
-    if (document.getElementById('pipeKharta').checked) pipePricePerMeter += (20 - discount);
-    if (document.getElementById('pipePVC').checked) pipePricePerMeter += (50 - discount);
-    if (document.getElementById('pipeMTK').checked && projectType === 'factory') pipePricePerMeter += (65 - discount);
-
-    const totalPipesCost = pipeMeters * pipePricePerMeter;
-
-    // 2. بنود التأسيس
-    const roofPointsCost = (parseFloat(document.getElementById('roofPoints').value) || 0) * priceRoofPoint;
-    const panelsCost = (parseFloat(document.getElementById('panelsCount').value) || 0) * pricePanel;
-    const socketsCost = (parseFloat(document.getElementById('socketsCount').value) || 0) * priceSocket;
-    const junctionsCost = (parseFloat(document.getElementById('junctionBoxes').value) || 0) * priceJunction;
-
-    // 3. بنود التشطيب
-    const switchesCost = (parseFloat(document.getElementById('switchesCount').value) || 0) * 20;
-    const motorsCost = (parseFloat(document.getElementById('motorsCount').value) || 0) * 150;
-    const acCost = (parseFloat(document.getElementById('acCount').value) || 0) * 120;
-    const linesCost = (parseFloat(document.getElementById('linesCount').value) || 0) * 30;
-    const lampsCost = (parseFloat(document.getElementById('lampsCount').value) || 0) * 15;
-    const chandeliersCost = (parseFloat(document.getElementById('chandeliersCount').value) || 0) * 100;
-    const ceilingFansCost = (parseFloat(document.getElementById('ceilingFans').value) || 0) * 50;
-    const wallFansCost = (parseFloat(document.getElementById('wallFans').value) || 0) * 40;
-
-    // 4. الكاميرات والأنظمة والإطفاء
-    const camsCost = (parseFloat(document.getElementById('camsCount').value) || 0) * 150;
-    const alarmCost = (parseFloat(document.getElementById('alarmZones').value) || 0) * 100;
-    const fireZonesCost = (parseFloat(document.getElementById('fireZones').value) || 0) * 150;
-    const firePipesCost = (parseFloat(document.getElementById('firePipesMeters').value) || 0) * 75;
-
-    // الإجمالي النهائي
-    const grandTotal = totalPipesCost + roofPointsCost + panelsCost + socketsCost + junctionsCost +
-                       switchesCost + motorsCost + acCost + linesCost + lampsCost + chandeliersCost + 
-                       ceilingFansCost + wallFansCost + camsCost + alarmCost + fireZonesCost + firePipesCost;
-
-    document.getElementById('totalPriceDisplay').innerText = grandTotal.toLocaleString('ar-EG') + " ج.م";
-    return grandTotal;
+    
+    let finalTotal = total;
+    if (window.isVipCustomer) {
+        finalTotal = Math.round(total * 0.95);
+    }
+    
+    if (document.getElementById('priceBreakdown')) document.getElementById('priceBreakdown').innerHTML = breakdown;
+    if (document.getElementById('totalPrice')) document.getElementById('totalPrice').innerText = 'السعر التقديري: ' + finalTotal + ' جنيه';
+    window.finalCalculatedPrice = finalTotal;
+    window.currentBreakdownText = breakdown.replace(/<br\s*[\/]?>/gi, "\n").replace(/<[^>]+>/g, '');
+    
+    if (window.isVipCustomer && document.getElementById('vipDiscountNotice')) {
+        document.getElementById('vipDiscountNotice').style.display = 'block';
+        document.getElementById('vipDiscountNotice').innerText = '✓ تم تطبيق خصم 5% للعملاء المميزين (VIP)! السعر الأصلي: ' + total + ' ج.م';
+    }
 }
 
-// دالة حفظ الطلب وإرسال التقرير الشامل للأدمن والواتساب
-async function handleFormSubmit(event) {
-    event.preventDefault();
+async function checkCustomerStatus(name) {
+    if (!name || !window.supabaseClient) return;
+    try {
+        const { data } = await window.supabaseClient.from('service_requests').select('*').eq('customer_name', name);
+        if (data && data.length >= 1) {
+            window.isVipCustomer = true;
+            const welcomeArea = document.getElementById('customerWelcomeArea');
+            if (welcomeArea) {
+                welcomeArea.innerHTML = `<span class="vip-badge"><i class="fa-solid fa-crown"></i> عميل مميز VIP (إجمالي طلباتك السابقة: ${data.length})</span>`;
+            }
+            calculatePrice();
+        } else {
+            window.isVipCustomer = false;
+            if (document.getElementById('vipDiscountNotice')) document.getElementById('vipDiscountNotice').style.display = 'none';
+        }
+    } catch(err) { console.log('Error checking customer:', err); }
+}
 
-    const submitBtn = document.getElementById('submitBtn');
-    const name = document.getElementById('customerName').value.trim();
-    const phone = document.getElementById('customerPhone').value.trim();
-    const address = document.getElementById('customerAddress').value.trim();
-    const serviceTitle = document.getElementById('formTitle').innerText;
-    const projectType = document.getElementById('projectType').value;
-    const calculatedPrice = calculateTotal();
-
-    if (!name || !phone || !address) {
-        alert("يرجى إدخال البيانات المطلوبة كاملة (الاسم، الهاتف، والعنوان)");
+// الدالة المسؤولة عن تسجيل الطلب وإرساله لـ Supabase للوح الأدمن وتوجيه للواتساب
+async function sendWhatsApp() {
+    const name = document.getElementById('customerName')?.value || '';
+    const phone = document.getElementById('customerPhone')?.value || '';
+    const address = document.getElementById('customerAddress')?.value || '';
+    const serviceTitle = document.getElementById('formTitle')?.innerText || 'خدمة';
+    const finalPrice = window.finalCalculatedPrice || 0;
+    const detailsNote = window.currentBreakdownText || 'لا توجد تفاصيل إضافية';
+    
+    if (!phone) {
+        alert('يرجى إدخال رقم الهاتف على الأقل لتسجيل الطلب.');
         return;
     }
 
-    // 1. تجميع واستخراج البيانات التفصيلية
-    const pipeMeters = document.getElementById('pipeMeters').value || 0;
-    const pipesSelected = [];
-    if (document.getElementById('pipeKharta').checked) pipesSelected.push('خرطوم');
-    if (document.getElementById('pipePVC').checked) pipesSelected.push('PVC');
-    if (document.getElementById('pipeMTK').checked) pipesSelected.push('MTK');
+    const submitBtn = document.querySelector('#serviceForm button[type="submit"]') || document.querySelector('.btn-submit');
+    const originalBtnText = submitBtn ? submitBtn.innerText : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ جاري حفظ الطلب في قاعدة البيانات...';
+    }
 
-    const roofPoints = document.getElementById('roofPoints').value || 0;
-    const panelsCount = document.getElementById('panelsCount').value || 0;
-    const socketsCount = document.getElementById('socketsCount').value || 0;
-    const junctionBoxes = document.getElementById('junctionBoxes').value || 0;
+    const currentTimestamp = new Date().toISOString();
 
-    const switchesCount = document.getElementById('switchesCount').value || 0;
-    const motorsCount = document.getElementById('motorsCount').value || 0;
-    const acCount = document.getElementById('acCount').value || 0;
-    const linesCount = document.getElementById('linesCount').value || 0;
-    const lampsCount = document.getElementById('lampsCount').value || 0;
-    const chandeliersCount = document.getElementById('chandeliersCount').value || 0;
-    const ceilingFans = document.getElementById('ceilingFans').value || 0;
-    const wallFans = document.getElementById('wallFans').value || 0;
+    const db = window.supabaseClient || window.supabase;
+    if (db) {
+        try {
+            const { error } = await db.from('service_requests').insert([
+                { 
+                    customer_name: name, 
+                    customer_phone: phone, 
+                    address: address, 
+                    service_type: serviceTitle, 
+                    estimated_price: finalPrice, 
+                    notes: detailsNote,
+                    status: 'قيد الانتظار',
+                    created_at: currentTimestamp
+                }
+            ]);
 
-    const camsCount = document.getElementById('camsCount').value || 0;
-    const camType = document.getElementById('camType').value;
-    const dvrType = document.getElementById('dvrType').value;
+            if (error) {
+                console.error('Supabase Insert Error Details:', error);
+                alert('خطأ في حفظ الطلب بالقاعدة: ' + error.message);
+            } else {
+                console.log('تم حفظ الطلب في Supabase بنجاح تام وسيظهر في لوحة الأدمن!');
+                localStorage.setItem('client_phone', phone);
+            }
+        } catch(e) { 
+            console.error('Unexpected database error:', e); 
+        }
+    } else {
+        console.warn('غير متصل بقاعدة بيانات Supabase');
+    }
 
-    const alarmZones = document.getElementById('alarmZones').value || 0;
-    const fireZones = document.getElementById('fireZones').value || 0;
-    const firePipesMeters = document.getElementById('firePipesMeters').value || 0;
-
-    // 2. صياغة التقرير المنظم
-    const fullReportText = 
-`📌 *طلب جديد من موقع SN ELECTRIC*
-----------------------------------
-👤 *بيانات العميل:*
-• الاسم: ${name}
-• الهاتف: ${phone}
-• العنوان: ${address}
-• نوع المقر: ${projectType}
-• نوع الخدمة: ${serviceTitle}
-
-🔌 *تفاصيل التأسيس والمواسير:*
-• أمتار المواسير: ${pipeMeters} متر (${pipesSelected.join(', ') || 'لم يحدد'})
-• نقاط السقف: ${roofPoints}
-• عدد اللوح: ${panelsCount}
-• عدد البرايز: ${socketsCount}
-• علب السكة/البواط: ${junctionBoxes}
-
-💡 *تفاصيل التشطيب:*
-• المفاتيح: ${switchesCount} | المواتير: ${motorsCount} | التكييفات: ${acCount}
-• الخطوط: ${linesCount} | اللمبات: ${lampsCount} | النجف: ${chandeliersCount}
-• مراوح سقف: ${ceilingFans} | مراوح حائط: ${wallFans}
-
-📹 *الأنظمة الكاميرات والإطفاء:*
-• الكاميرات: ${camsCount} (نوع: ${camType}) | جهاز DVR: ${dvrType}
-• زونات إنذار حريق: ${alarmZones} | زونات إطفاء: ${fireZones}
-• أمتار مواسير الإطفاء: ${firePipesMeters} متر
-
-💰 *الإجمالي التقديري:* ${calculatedPrice.toLocaleString('ar-EG')} ج.م`;
-
-    submitBtn.disabled = true;
-    submitBtn.innerText = "جاري الحفظ والتحويل للواتساب...";
-
-    try {
-        // 3. إرسال لـ Supabase لصفحة الأدمن
-        const { error } = await supabaseClient
-            .from('service_requests')
-            .insert([{
-                customer_name: name,
-                customer_phone: phone,
-                address: address,
-                service_type: serviceTitle,
-                notes: fullReportText,
-                status: 'قيد الانتظار'
-            }]);
-
-        if (error) throw error;
-
-        localStorage.setItem('user_phone', phone);
-
-        // 4. تحويل العميل مباشرة لواتساب الإدارة (01287837118)
-        const adminWhatsappNumber = "201287837118";
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${adminWhatsappNumber}&text=${encodeURIComponent(fullReportText)}`;
-
-        closeForm();
-        document.getElementById('serviceForm').reset();
-        calculateTotal();
-
-        window.open(whatsappUrl, '_blank');
-
-    } catch (err) {
-        alert("حدث خطأ أثناء حفظ الطلب: " + (err.message || err));
-    } finally {
+    if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.innerText = "حفظ الطلب وتأكيد الإرسال";
+        submitBtn.innerText = originalBtnText;
     }
+
+    let msg = `السلام عليكم، أطلب تسجيل اتفاق بالطلب وليس تعاقد: ${serviceTitle}%0aالاسم: ${name}%0aالهاتف: ${phone}%0aالعنوان: ${address}%0aتفاصيل الحساب:%0a${encodeURIComponent(detailsNote)}%0aالسعر التقديري النهائي: ${finalPrice} ج.م%0a(حالة الطلب: قيد الانتظار 🟡)`;
+    if (window.isVipCustomer) msg += `%0a✓ تم تطبيق خصم 5% للعميل المميز VIP`;
+    
+    window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
+    closeForm();
 }
 
-// إرسال طلب الفني
-async function handleTechSubmit(event) {
-    event.preventDefault();
-
-    const btn = document.getElementById('techSubmitBtn');
-    const name = document.getElementById('techName').value.trim();
-    const phone = document.getElementById('techPhone').value.trim();
-    const specialty = document.getElementById('techSpecialty').value.trim();
-    const area = document.getElementById('techArea').value.trim();
-
-    btn.disabled = true;
-
-    try {
-        const { error } = await supabaseClient
-            .from('technicians')
-            .insert([{ name, phone, specialty, area, status: 'pending' }]);
-
-        if (error) throw error;
-
-        alert("تم إرسال طلب انضمامك كفني بنجاح!");
-        closeTechForm();
-        document.getElementById('techForm').reset();
-    } catch (err) {
-        alert("حدث خطأ أثناء التقديم: " + err.message);
-    } finally {
-        btn.disabled = false;
-    }
+function addExperienceField() {
+    const container = document.getElementById('experiencesContainer');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'exp-group';
+    div.style.cssText = 'background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.08);';
+    div.innerHTML = `
+        <label style="display:block; margin-bottom:5px; font-weight:700;">اسم الوظيفة / الدور</label>
+        <input type="text" class="exp-title" required placeholder="مثال: فني تنفيذ رئيسي" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
+        <label style="display:block; margin-bottom:5px; font-weight:700;">اسم المكان / الشركة / المشروع</label>
+        <input type="text" class="exp-workplace" required placeholder="مثال: شركة النور" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
+        <label style="display:block; margin-bottom:5px; font-weight:700;">المدة (الفترة الزمنية)</label>
+        <input type="text" class="exp-duration" required placeholder="مثال: من 2021 إلى 2024" style="width:100%; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:15px;">
+    `;
+    container.appendChild(div);
 }
 
-// جلب الفنيين
+async function submitTechWithExp() {
+    const name = document.getElementById('tName')?.value || '';
+    const phone = document.getElementById('tPhone')?.value || '';
+    const specialty = document.getElementById('tSpecialty')?.value || '';
+    const area = document.getElementById('tArea')?.value || '';
+    
+    if (window.supabaseClient) {
+        try {
+            const { data: techData } = await window.supabaseClient.from('technicians').insert([
+                { name: name, phone: phone, specialty: specialty, area: area, total_stars: 0 }
+            ]).select();
+            if (techData && techData.length > 0) {
+                const techId = techData[0].id;
+                for (let group of document.querySelectorAll('.exp-group')) {
+                    await window.supabaseClient.from('technician_experiences').insert([{
+                        technician_id: techId,
+                        job_title: group.querySelector('.exp-title').value,
+                        workplace: group.querySelector('.exp-workplace').value,
+                        duration: group.querySelector('.exp-duration').value
+                    }]);
+                }
+            }
+        } catch(e) { console.log('Tech error:', e); }
+    }
+    alert('تم إرسال طلب انضمامك كفني بنجاح!');
+    loadTechnicians();
+}
+
 async function loadTechnicians() {
     const container = document.getElementById('techniciansContainer');
-    if (!container || typeof supabaseClient === 'undefined') return;
-
-    try {
-        const { data, error } = await supabaseClient
-            .from('technicians')
-            .select('*');
-
-        if (error || !data || data.length === 0) {
-            container.innerHTML = `<div style="color:#aaa; text-align:center; grid-column:1/-1;">لا يوجد فنيون مسجلون حالياً</div>`;
-            return;
-        }
-
-        container.innerHTML = '';
-        data.forEach(tech => {
-            const card = document.createElement('div');
-            card.className = 'service-card';
-            card.innerHTML = `
-                <i class="fa-solid fa-user-gear" style="color:#3498db;"></i>
-                <h3>${tech.name}</h3>
-                <p><strong>التخصص:</strong> ${tech.specialty || 'كهربائي معتمد'}</p>
-                <p><strong>المنطقة:</strong> ${tech.area || 'غير محدد'}</p>
-                <a href="https://wa.me/2${tech.phone}" target="_blank" class="btn-service" style="background:#2ecc71; color:#fff; text-decoration:none; display:block; margin-top:10px;">تواصل مع الفني</a>
-            `;
-            container.appendChild(card);
-        });
-    } catch (err) {
-        container.innerHTML = `<div style="color:#aaa; text-align:center; grid-column:1/-1;">تعذر جلب قائمة الفنيين</div>`;
+    if (!container) return;
+    
+    let techs = [
+        { id: 1, name: 'محمد إبراهيم', specialty: 'تأسيس شقق وصيانة', area: 'القاهرة والجيزة', total_stars: 9 },
+        { id: 2, name: 'محمود عبد الفتاح', specialty: 'تأسيس سقف وكاميرات مراقبة', area: 'الإسكندرية', total_stars: 10 },
+        { id: 3, name: 'محمد علي', specialty: 'صيانة أجهزة منزلية', area: 'الإسكندرية / العجمي', total_stars: 8 },
+        { id: 4, name: 'أحمد رزق', specialty: 'كاميرات مراقبة وإكسسوارات', area: 'الجيزة', total_stars: 8 }
+    ];
+    
+    if (window.supabaseClient) {
+        try {
+            const { data } = await window.supabaseClient.from('technicians').select('*');
+            if (data && data.length > 0) techs = data;
+        } catch(e) {}
     }
+    
+    container.innerHTML = '';
+    techs.forEach(tech => {
+        let stars = tech.total_stars || 0;
+        let bonusBadge = stars >= 10 ? `<div style="color: #2ecc71; font-weight: bold; margin-top: 5px;"><i class="fa-solid fa-award"></i> مؤهل لحافز 3% أجر إضافي (تجاوز 10 نجوم)</div>` : '';
+        
+        let card = document.createElement('div');
+        card.className = 'tech-card';
+        card.innerHTML = `
+            <h3 style="color: var(--accent); margin-bottom: 5px;">${tech.name}</h3>
+            <p style="margin-bottom: 5px;"><strong>التخصص:</strong> ${tech.specialty}</p>
+            <p style="margin-bottom: 10px;"><strong>المنطقة:</strong> ${tech.area}</p>
+            <p><strong>النجوم:</strong> <span>${stars}</span> ⭐</p>
+            ${bonusBadge}
+            <div class="rating-stars">
+                <i class="fa-star fa-solid" onclick="rateTech(${tech.id}, 1)"></i>
+                <i class="fa-star fa-solid" onclick="rateTech(${tech.id}, 3)"></i>
+                <i class="fa-star fa-solid" onclick="rateTech(${tech.id}, 5)"></i>
+            </div>
+        `;
+        container.appendChild(card);
+    });
 }
 
-// التحقق من موافقة الأدمن لإظهار شات المحادثة للعميل
-async function checkApprovedChats() {
-    const phone = localStorage.getItem('user_phone');
-    const chatDirectBtn = document.getElementById('directChatBtn');
-    if (!phone || !chatDirectBtn) return;
-
-    try {
-        const { data } = await supabaseClient
-            .from('service_requests')
-            .select('status')
-            .eq('customer_phone', phone)
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-        if (data && data.length > 0 && data[0].status === 'موافقة') {
-            chatDirectBtn.style.display = 'block';
-        } else {
-            chatDirectBtn.style.display = 'none';
-        }
-    } catch (e) {
-        console.log("Chat check fail", e);
+async function rateTech(techId, starsGiven) {
+    alert(`شكراً لتقييمك! تم منح الفني ${starsGiven} نجوم.`);
+    if (window.supabaseClient) {
+        try {
+            const { data } = await window.supabaseClient.from('technicians').select('total_stars').eq('id', techId).single();
+            let newTotal = (data ? (data.total_stars || 0) : 0) + starsGiven;
+            await window.supabaseClient.from('technicians').update({ total_stars: newTotal }).eq('id', techId);
+        } catch(e) {}
     }
+    loadTechnicians();
 }
 
-// الذكاء الاصطناعي SN AI
 function toggleChat() {
-    const chatBox = document.getElementById('chatBox');
-    chatBox.style.display = (chatBox.style.display === 'none' || !chatBox.style.display) ? 'block' : 'none';
+    const chat = document.getElementById('chatBox');
+    if (chat) {
+        chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+    }
 }
 
 function sendChatMessage() {
     const input = document.getElementById('chatInput');
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    const chatBody = document.getElementById('chatBody');
-
-    const userDiv = document.createElement('div');
-    userDiv.style.cssText = "background:rgba(241, 196, 15, 0.2); color:#f1c40f; padding:8px 12px; border-radius:8px; align-self:flex-end; max-width:85%; font-size:13px;";
-    userDiv.innerText = msg;
-    chatBody.appendChild(userDiv);
-
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    
+    const body = document.getElementById('chatBody');
+    if (!body) return;
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-message outgoing';
+    userMsg.innerText = text;
+    body.appendChild(userMsg);
     input.value = '';
+    body.scrollTop = body.scrollHeight;
 
     setTimeout(() => {
-        const aiDiv = document.createElement('div');
-        aiDiv.style.cssText = "background:rgba(255,255,255,0.08); color:#fff; padding:8px 12px; border-radius:8px; align-self:flex-start; max-width:85%; font-size:13px; line-height:1.5;";
-        aiDiv.innerHTML = processAIQuery(msg);
-        chatBody.appendChild(aiDiv);
-        chatBody.scrollTop = chatBody.scrollHeight;
-    }, 400);
-}
-
-function processAIQuery(query) {
-    const q = query.toLowerCase();
-
-    if (q.includes("سعر") || q.includes("تكلفة") || q.includes("حساب") || q.includes("بكام")) {
-        return "يقدم الموقع حاسبة تفصيلية تلقائية! يمكنك اختيار نوع الخدمة (شقة، سقف، محل، أو مصنع) وسيتم حساب التكلفة الإجمالية فوراً.";
-    } 
-    if (q.includes("تأسيس") || q.includes("شقة") || q.includes("سقف") || q.includes("مواسير")) {
-        return "نوفر تأسيس خرطوم (20 ج/م)، PVC (50 ج/م)، وللمصانع مواسير MTK معدنية (65 ج/م)، مع خصم 5 جنيهات لكل بند في تأسيس المحلات.";
-    } 
-    if (q.includes("كاميرات") || q.includes("مراقبة") || q.includes("ديفيار") || q.includes("dvr")) {
-        return "نوفر تركيب جميع أنواع الكاميرات (داخلي، خارجي، بصوت، ومتحركة) بأجهزة 4, 8, 16, 32 قناة بتكلفة 150 ج/كاميرا.";
-    } 
-    if (q.includes("إنذار") || q.includes("اطفاء") || q.includes("حريق")) {
-        return "ننفذ أنظمة إنذار الدخان والحريق وزونات الإطفاء ومواسير النحاس والحديد بتكلفة 75 ج/م للمواسير و150 ج لزون الإطفاء.";
-    } 
-    if (q.includes("سلام") || q.includes("مرحبا") || q.includes("أهلا")) {
-        return "أهلاً بك في منصة <b>SN ELECTRIC</b>! كيف يمكنني مساعدتك اليوم؟";
-    }
-
-    return "يمكنني مساعدتك في استفسارات التأسيس، التشطيب، الكاميرات، أنظمة الحريق، أو التقديم كفني معتمد!";
+        const replyMsg = document.createElement('div');
+        replyMsg.className = 'chat-message incoming';
+        replyMsg.innerText = 'شكراً لتواصلك مع SN ELECTRIC. تم استلام رسالتك وسيتم الرد عليك قريباً.';
+        body.appendChild(replyMsg);
+        body.scrollTop = body.scrollHeight;
+    }, 1000);
 }
