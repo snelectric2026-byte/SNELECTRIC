@@ -584,32 +584,71 @@ function addExperienceField() {
     container.appendChild(div);
 }
 
+// دالة تقديم الفني وإضافة الخبرات (المحدثة والمصححة)
 async function submitTechWithExp() {
-    const name = document.getElementById('tName')?.value || '';
-    const phone = document.getElementById('tPhone')?.value || '';
-    const specialty = document.getElementById('tSpecialty')?.value || '';
-    const area = document.getElementById('tArea')?.value || '';
-    
-    if (window.supabaseClient) {
+    const nameInput = document.getElementById('tName') || document.getElementById('techName');
+    const phoneInput = document.getElementById('tPhone') || document.getElementById('techPhone');
+    const specialtyInput = document.getElementById('tSpecialty') || document.getElementById('techSpecialty');
+    const areaInput = document.getElementById('tArea') || document.getElementById('techArea');
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+    const specialty = specialtyInput ? specialtyInput.value.trim() : '';
+    const area = areaInput ? areaInput.value.trim() : '';
+
+    if (!name || !phone) {
+        alert('يرجى كتابة الاسم ورقم الهاتف على الأقل للتقديم.');
+        return;
+    }
+
+    const submitBtn = document.getElementById('techSubmitBtn') || document.querySelector('#techForm button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'جاري إرسال الطلب...';
+    }
+
+    const db = window.supabaseClient || window.supabase;
+
+    if (db) {
         try {
-            const { data: techData } = await window.supabaseClient.from('technicians').insert([
+            const { data: techData, error } = await db.from('technicians').insert([
                 { name: name, phone: phone, specialty: specialty, area: area, total_stars: 0 }
             ]).select();
+
+            if (error) throw error;
+
             if (techData && techData.length > 0) {
                 const techId = techData[0].id;
-                for (let group of document.querySelectorAll('.exp-group')) {
-                    await window.supabaseClient.from('technician_experiences').insert([{
-                        technician_id: techId,
-                        job_title: group.querySelector('.exp-title').value,
-                        workplace: group.querySelector('.exp-workplace').value,
-                        duration: group.querySelector('.exp-duration').value
-                    }]);
+                const expGroups = document.querySelectorAll('.exp-group');
+                for (let group of expGroups) {
+                    const title = group.querySelector('.exp-title')?.value;
+                    const workplace = group.querySelector('.exp-workplace')?.value;
+                    const duration = group.querySelector('.exp-duration')?.value;
+
+                    if (title && workplace) {
+                        await db.from('technician_experiences').insert([{
+                            technician_id: techId,
+                            job_title: title,
+                            workplace: workplace,
+                            duration: duration
+                        }]);
+                    }
                 }
             }
-        } catch(e) { console.log('Tech error:', e); }
+            alert('تم إرسال طلب انضمامك كفني بنجاح وسيظهر في لوحة التحكم!');
+            if (typeof closeTechForm === 'function') closeTechForm();
+            loadTechnicians();
+        } catch(e) { 
+            alert('حدث خطأ أثناء حفظ طلب الفني: ' + e.message); 
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'تقديم الطلب';
+            }
+        }
+    } else {
+        alert('غير متصل بقاعدة بيانات Supabase');
     }
-    alert('تم إرسال طلب انضمامك كفني بنجاح!');
-    loadTechnicians();
 }
 
 async function loadTechnicians() {
