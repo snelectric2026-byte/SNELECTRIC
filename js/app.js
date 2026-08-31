@@ -4,29 +4,45 @@ if (typeof supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined' && ty
     db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
+const ADMIN_WHATSAPP = "201287837118"; // رقم الواتساب الخاص بالتحويل
+
 document.addEventListener('DOMContentLoaded', () => {
     loadApprovedTechnicians();
 });
 
-// 1. فتح وإغلاق النوافذ المنبثقة (Modals)
+// 1. فتح وإغلاق النوافذ المنبثقة
 function openTasissModal(type) {
     document.getElementById('tasissType').value = type;
     document.getElementById('tasissTitle').innerText = 'تأسيس ' + type;
     document.getElementById('tasissModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
-function closeTasissModal() { document.getElementById('tasissModal').style.display = 'none'; }
+function closeTasissModal() {
+    document.getElementById('tasissModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
 
 function openApplianceModal(appliance) {
     document.getElementById('applianceType').value = appliance;
     document.getElementById('applianceTitle').innerText = 'صيانة ' + appliance;
     document.getElementById('applianceModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
-function closeApplianceModal() { document.getElementById('applianceModal').style.display = 'none'; }
+function closeApplianceModal() {
+    document.getElementById('applianceModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
 
-function openTechModal() { document.getElementById('techModal').style.display = 'block'; }
-function closeTechModal() { document.getElementById('techModal').style.display = 'none'; }
+function openTechModal() {
+    document.getElementById('techModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+function closeTechModal() {
+    document.getElementById('techModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
 
-// 2. معالجة طلب التأسيس وإظهار الرسالة التأكيدية
+// 2. إرسال طلب التأسيس (حفظ في Supabase + تحويل للواتساب)
 async function handleTasissSubmit(e) {
     e.preventDefault();
     const type = document.getElementById('tasissType').value;
@@ -40,17 +56,32 @@ async function handleTasissSubmit(e) {
 
     const notes = `تأسيس ${type} | علب: ${boxes} | لينيات: ${lines} | لوح: ${panels} | نظام الإمداد: ${supply}`;
 
-    if (db) {
-        await db.from('service_requests').insert([{
-            customer_name: name, customer_phone: phone, address: address, service_type: 'تأسيس ' + type, notes: notes, status: 'قيد الانتظار'
-        }]);
+    // 1. التخزين في قاعدة البيانات للأدمن
+    try {
+        if (db) {
+            await db.from('service_requests').insert([{
+                customer_name: name, customer_phone: phone, address: address, service_type: 'تأسيس ' + type, notes: notes, status: 'قيد الانتظار'
+            }]);
+        }
+    } catch (err) {
+        console.error("خطأ في قاعدة البيانات:", err);
     }
 
     closeTasissModal();
-    alert(`شكراً لك يا ${name}! تم تسجيل طلب تأسيس (${type}) بنجاح، وستتواصل معك الإدارة لمراجعة التفاصيل وتأكيد الموعد.`);
+
+    // 2. التحويل المباشر للواتساب
+    const msg = `🏗️ *طلب تأسيس جديد (SN ELECTRIC)*%0a` +
+                `----------------------------------%0a` +
+                `👤 *الاسم:* ${name}%0a` +
+                `📞 *الهاتف:* ${phone}%0a` +
+                `📍 *العنوان:* ${address}%0a` +
+                `🛠️ *النوع:* تأسيس ${type}%0a` +
+                `📦 *التفاصيل:* علب (${boxes}) - لينيات (${lines}) - لوح (${panels}) - إمداد (${supply})`;
+
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 3. تحويل صورة عطل الكهرباء إلى كود مرجعي فريد
+// 3. تحويل صورة عطل الكهرباء
 function processFaultImage() {
     const fileInput = document.getElementById('electricFaultImg');
     if (!fileInput.files || fileInput.files.length === 0) {
@@ -67,10 +98,10 @@ function processFaultImage() {
                 `📏 *حجم الملف:* ${(file.size / 1024).toFixed(1)} KB%0a` +
                 `يرجى المتابعة واستلام تفاصيل العطل.`;
 
-    window.open(`https://wa.me/201287837118?text=${msg}`, '_blank');
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 4. معالجة طلب صيانة الأجهزة
+// 4. إرسال طلب صيانة الأجهزة (حفظ + تحويل للواتساب)
 async function handleApplianceSubmit(e) {
     e.preventDefault();
     const appliance = document.getElementById('applianceType').value;
@@ -82,17 +113,30 @@ async function handleApplianceSubmit(e) {
 
     const notes = `صيانة جهاز: ${appliance} | الماركة: ${brand} | الوصف: ${desc}`;
 
-    if (db) {
-        await db.from('service_requests').insert([{
-            customer_name: name, customer_phone: phone, address: address, service_type: 'صيانة ' + appliance, notes: notes, status: 'قيد الانتظار'
-        }]);
+    try {
+        if (db) {
+            await db.from('service_requests').insert([{
+                customer_name: name, customer_phone: phone, address: address, service_type: 'صيانة ' + appliance, notes: notes, status: 'قيد الانتظار'
+            }]);
+        }
+    } catch (err) {
+        console.error("خطأ:", err);
     }
 
     closeApplianceModal();
-    alert('تم إرسال طلب صيانة الجهاز بنجاح! سيتواصل معك الفني المختص فوراً.');
+
+    const msg = `🔧 *طلب صيانة جهاز (SN ELECTRIC)*%0a` +
+                `----------------------------------%0a` +
+                `👤 *الاسم:* ${name}%0a` +
+                `📞 *الهاتف:* ${phone}%0a` +
+                `📍 *العنوان:* ${address}%0a` +
+                `🔌 *الجهاز:* ${appliance} (${brand})%0a` +
+                `📝 *وصف المشكلة:* ${desc}`;
+
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 5. طلب المعاينة بحدد المحافظة أو GPS
+// 5. طلب المعاينة (حفظ + تحويل للواتساب)
 function toggleLocationInputs() {
     const val = document.getElementById('inspLocType').value;
     document.getElementById('govGroup').style.display = (val === 'gov') ? 'block' : 'none';
@@ -107,7 +151,7 @@ function getGPSLocation() {
             alert('تم جلب الموقع بنجاح!');
         }, () => { alert('تعذر جلب الموقع تلقائياً، يرجى لصق الرابط يدويًا.'); });
     } else {
-        alert('التحتيد الجغرافي غير مدعوم في متصفحك.');
+        alert('التحديد الجغرافي غير مدعوم في متصفحك.');
     }
 }
 
@@ -118,66 +162,106 @@ async function handleInspectionSubmit(e) {
     const locType = document.getElementById('inspLocType').value;
     const location = (locType === 'gov') ? document.getElementById('inspGovDetails').value : document.getElementById('inspMapLink').value;
 
-    if (db) {
-        await db.from('service_requests').insert([{
-            customer_name: name, customer_phone: phone, address: location, service_type: 'طلب معاينة موقع', notes: 'نوع التحديد: ' + locType, status: 'قيد الانتظار'
-        }]);
+    try {
+        if (db) {
+            await db.from('service_requests').insert([{
+                customer_name: name, customer_phone: phone, address: location, service_type: 'طلب معاينة موقع', notes: 'نوع التحديد: ' + locType, status: 'قيد الانتظار'
+            }]);
+        }
+    } catch (err) {
+        console.error("خطأ:", err);
     }
 
-    alert('تم تقديم طلب المعاينة بنجاح، وستقو الإدارة بالاتصال بك لترتيب زيارة المهندس.');
+    const msg = `🔍 *طلب معاينة موقع جديدة*%0a` +
+                `----------------------------------%0a` +
+                `👤 *الاسم:* ${name}%0a` +
+                `📞 *الهاتف:* ${phone}%0a` +
+                `📍 *الموقع / التفاصيل:* ${location}`;
+
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 6. الاستفسارات العامة
+// 6. الاستفسارات العامة (حفظ + تحويل للواتساب)
 async function handleInquirySubmit(e) {
     e.preventDefault();
     const name = document.getElementById('inqName').value.trim();
     const address = document.getElementById('inqAddress').value.trim();
     const text = document.getElementById('inqText').value.trim();
 
-    if (db) {
-        await db.from('service_requests').insert([{
-            customer_name: name, customer_phone: 'غير محدد', address: address, service_type: 'استفسار عام', notes: text, status: 'تم الاستلام'
-        }]);
+    try {
+        if (db) {
+            await db.from('service_requests').insert([{
+                customer_name: name, customer_phone: 'غير محدد', address: address, service_type: 'استفسار عام', notes: text, status: 'تم الاستلام'
+            }]);
+        }
+    } catch (err) {
+        console.error("خطأ:", err);
     }
 
-    alert('تم إرسال استفسارك بنجاح وسنقوم بالرد عليك في أقرب وقت.');
+    const msg = `❓ *استفسار جديد من الموقع*%0a` +
+                `----------------------------------%0a` +
+                `👤 *الاسم:* ${name}%0a` +
+                `📍 *العنوان:* ${address}%0a` +
+                `💬 *السؤال:* ${text}`;
+
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 7. دليل الفنيين المعترف بهم وإدارة النجوم والهواتف
+// 7. تحميل الفنيين المعتمدين
 async function loadApprovedTechnicians() {
     const container = document.getElementById('techniciansContainer');
-    if (!db) {
-        container.innerHTML = '<p style="color:#aaa;">تعذر الاتصال بقاعدة البيانات.</p>';
-        return;
-    }
+    if (!container) return;
 
-    const { data, error } = await db.from('technicians').select('*');
-    if (error || !data || data.length === 0) {
-        container.innerHTML = '<p style="color:#aaa; text-align:center; grid-column:1/-1;">لا يوجد فنيون مسجلون حالياً.</p>';
-        return;
-    }
+    try {
+        if (!db) throw new Error("لم يتم الاتصال بـ Supabase");
 
-    let html = '';
-    data.forEach(tech => {
-        const isApproved = tech.approved === true;
-        const phoneDisplay = isApproved ? `<a href="tel:${tech.phone}" style="color:#2ecc71; text-decoration:none;"><i class="fa-solid fa-phone"></i> ${tech.phone}</a>` : `<span style="color:#e74c3c; font-size:12px;"><i class="fa-solid fa-lock"></i> يتطلب اعتماد الأدمن لإظهار الهاتف</span>`;
-        const avatar = tech.photo_url || 'https://via.placeholder.com/80/1e293b/ffffff?text=SN';
+        const { data, error } = await db.from('technicians').select('*');
+        if (error) throw error;
 
-        html += `
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="color:#aaa; text-align:center; grid-column:1/-1;">لا يوجد فنيون مسجلون حالياً.</p>';
+            return;
+        }
+
+        let html = '';
+        data.forEach(tech => {
+            const isApproved = tech.approved === true;
+            const phoneDisplay = isApproved 
+                ? `<a href="tel:${tech.phone}" style="color:#2ecc71; text-decoration:none;"><i class="fa-solid fa-phone"></i> ${tech.phone}</a>` 
+                : `<span style="color:#e74c3c; font-size:12px;"><i class="fa-solid fa-lock"></i> يتطلب اعتماد الأدمن لإظهار الهاتف</span>`;
+            
+            const avatar = tech.photo_url || 'https://via.placeholder.com/80/1e293b/ffffff?text=SN';
+
+            html += `
+                <div class="service-card" style="text-align:center;">
+                    <img src="${avatar}" style="width:70px; height:70px; border-radius:50%; object-fit:cover; margin-bottom:10px; border:2px solid #f1c40f;">
+                    <h3>${tech.name}</h3>
+                    <p style="color:#f1c40f; margin:4px 0;"><b>${tech.total_stars || 5}</b> ⭐</p>
+                    <p style="font-size:13px; color:#ddd;">التخصص: ${tech.specialty || 'كهرباء عامة'}</p>
+                    <p style="font-size:13px; color:#ddd;">المنطقة: ${tech.area || 'غير محدد'}</p>
+                    <div style="margin-top:10px; font-weight:bold;">${phoneDisplay}</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+
+    } catch (err) {
+        container.innerHTML = `
             <div class="service-card" style="text-align:center;">
-                <img src="${avatar}" style="width:70px; height:70px; border-radius:50%; object-fit:cover; margin-bottom:10px; border:2px solid #f1c40f;">
-                <h3>${tech.name}</h3>
-                <p style="color:#f1c40f; margin:4px 0;"><b>${tech.total_stars || 5}</b> ⭐</p>
-                <p style="font-size:13px; color:#ddd;">التخصص: ${tech.specialty || 'كهرباء عامة'}</p>
-                <p style="font-size:13px; color:#ddd;">المنطقة: ${tech.area || 'غير محدد'}</p>
-                <div style="margin-top:10px; font-weight:bold;">${phoneDisplay}</div>
+                <i class="fa-solid fa-user-gear" style="font-size:40px; color:#f1c40f; margin-bottom:10px;"></i>
+                <h3>م. أحمد علي</h3>
+                <p style="color:#f1c40f; margin:4px 0;"><b>5</b> ⭐</p>
+                <p style="font-size:13px; color:#ddd;">التخصص: تأسيس وصيانة</p>
+                <p style="font-size:13px; color:#ddd;">المنطقة: القاهرة</p>
+                <div style="margin-top:10px; font-weight:bold;">
+                    <a href="tel:01287837118" style="color:#2ecc71; text-decoration:none;"><i class="fa-solid fa-phone"></i> 01287837118</a>
+                </div>
             </div>
         `;
-    });
-    container.innerHTML = html;
+    }
 }
 
-// التقديم كفني مع إمكانية رفع الصورة
+// 8. التقديم كفني (حفظ + تحويل للواتساب)
 async function handleTechSubmit(e) {
     e.preventDefault();
     const name = document.getElementById('techName').value.trim();
@@ -187,27 +271,39 @@ async function handleTechSubmit(e) {
     const imgInput = document.getElementById('techImg');
 
     let photoUrl = '';
-    if (db && imgInput.files.length > 0) {
-        const file = imgInput.files[0];
-        const filePath = `techs/${Date.now()}_${file.name}`;
-        const { data, error } = await db.storage.from('tech-photos').upload(filePath, file);
-        if (!error && data) {
-            const { data: pubData } = db.storage.from('tech-photos').getPublicUrl(filePath);
-            photoUrl = pubData.publicUrl;
+    try {
+        if (db && imgInput.files.length > 0) {
+            const file = imgInput.files[0];
+            const filePath = `techs/${Date.now()}_${file.name}`;
+            const { data, error } = await db.storage.from('tech-photos').upload(filePath, file);
+            if (!error && data) {
+                const { data: pubData } = db.storage.from('tech-photos').getPublicUrl(filePath);
+                photoUrl = pubData.publicUrl;
+            }
         }
-    }
 
-    if (db) {
-        await db.from('technicians').insert([{
-            name: name, phone: phone, specialty: spec, area: area, photo_url: photoUrl, total_stars: 5, approved: false
-        }]);
+        if (db) {
+            await db.from('technicians').insert([{
+                name: name, phone: phone, specialty: spec, area: area, photo_url: photoUrl, total_stars: 5, approved: false
+            }]);
+        }
+    } catch (err) {
+        console.error("خطأ التقديم كفني:", err);
     }
 
     closeTechModal();
-    alert('تم إرسال طلب انضمامك كفني بنجاح! سيتم مراجعة بياناتك واعتماد ظهور رقم هاتفك بواسطة الأدمن.');
+
+    const msg = `👷‍♂️ *طلب انضمام فني جديد*%0a` +
+                `----------------------------------%0a` +
+                `👤 *الاسم:* ${name}%0a` +
+                `📞 *الهاتف:* ${phone}%0a` +
+                `🛠️ *التخصص:* ${spec}%0a` +
+                `📍 *المنطقة:* ${area}`;
+
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 8. الشات الذكي
+// 9. الشات الذكي
 function toggleChat() {
     const box = document.getElementById('chatBox');
     box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
