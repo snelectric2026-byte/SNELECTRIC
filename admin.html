@@ -7,114 +7,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-client@2"></script>
     <style>
-        :root {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #f1c40f;
-            --text: #f8fafc;
-            --border: #334155;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-        }
-        .login-box {
-            max-width: 380px;
-            margin: 80px auto;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            text-align: center;
-        }
-        .login-box input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: #0f172a;
-            color: #fff;
-            box-sizing: border-box;
-        }
-        .btn-action {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent);
-            color: #000;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            max-width: 1000px;
-            margin: 40px auto;
-        }
-        .main-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .main-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-        }
-        .main-card i {
-            font-size: 50px;
-            color: var(--accent);
-            margin-bottom: 15px;
-        }
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: var(--card-bg);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .data-table th, .data-table td {
-            padding: 12px;
-            border: 1px solid var(--border);
-            text-align: right;
-        }
-        .data-table th {
-            background: #334155;
-            color: var(--accent);
-        }
-        .stars-input {
-            width: 60px;
-            padding: 5px;
-            background: #0f172a;
-            border: 1px solid var(--border);
-            color: #fff;
-            border-radius: 4px;
-        }
-        .btn-small {
-            padding: 5px 10px;
-            background: var(--accent);
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        :root { --bg: #0f172a; --card-bg: #1e293b; --accent: #f1c40f; --text: #f8fafc; --border: #334155; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .login-box { max-width: 380px; margin: 80px auto; background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; box-sizing: border-box; }
+        .btn-action { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .cards-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1000px; margin: 40px auto; }
+        .main-card { background: var(--card-bg); border: 1px solid var(--border); padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; }
+        .main-card i { font-size: 50px; color: var(--accent); margin-bottom: 15px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--card-bg); border-radius: 10px; overflow: hidden; }
+        .data-table th, .data-table td { padding: 12px; border: 1px solid var(--border); text-align: right; }
+        .data-table th { background: #334155; color: var(--accent); }
+        .stars-input { width: 60px; padding: 5px; background: #0f172a; border: 1px solid var(--border); color: #fff; border-radius: 4px; }
+        .btn-small { padding: 5px 10px; background: var(--accent); border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-approve { padding: 5px 10px; background: #2ecc71; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-reject { padding: 5px 10px; background: #e74c3c; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- 1. شاشة تسجيل الدخول -->
     <div id="loginSection" class="login-box">
         <h2><i class="fa-solid fa-lock"></i> تسجيل الدخول الأدمن</h2>
         <input type="text" id="adminUser" placeholder="اسم المستخدم">
@@ -122,7 +33,6 @@
         <button class="btn-action" onclick="login()">دخول</button>
     </div>
 
-    <!-- 2. الشاشة الرئيسية الكروت -->
     <div id="dashboardSection" style="display:none;">
         <h2 style="text-align:center;"><i class="fa-solid fa-gauge"></i> لوحة التحكم الإدارية</h2>
         <div class="cards-container">
@@ -133,17 +43,16 @@
             </div>
             <div class="main-card" onclick="showSection('techs')">
                 <i class="fa-solid fa-user-gear"></i>
-                <h3>بيانات الفنيين والنجوم</h3>
-                <p>التحكم في بيانات الفنيين وتقييم النجوم</p>
+                <h3>إدارة الفنيين والاعتماد</h3>
+                <p>الموافقة/الرفض وتعديل التقييم والنجوم</p>
             </div>
         </div>
         <button onclick="logout()" class="btn-action" style="max-width:200px; margin: 0 auto; display:block; background:#e74c3c; color:#fff;">تسجيل الخروج</button>
     </div>
 
-    <!-- 3. جدول بيانات العملاء -->
     <div id="clientsSection" style="display:none; max-width:1100px; margin:20px auto;">
         <button onclick="backToDashboard()" class="btn-small"><i class="fa-solid fa-arrow-right"></i> عودة للكروت</button>
-        <h3><i class="fa-solid fa-users"></i> كافة طلبات العملاء</h3>
+        <h3><i class="fa-solid fa-users"></i> كافة طلبات العملاء والمعاينات</h3>
         <table class="data-table">
             <thead>
                 <tr>
@@ -152,8 +61,7 @@
                     <th>الهاتف</th>
                     <th>العنوان</th>
                     <th>نوع الخدمة</th>
-                    <th>التكلفة</th>
-                    <th>التفاصيل/الملاحظات</th>
+                    <th>الملاحظات والتفاصيل</th>
                     <th>الحالة</th>
                 </tr>
             </thead>
@@ -161,10 +69,9 @@
         </table>
     </div>
 
-    <!-- 4. جدول بيانات الفنيين والتحكم بالنجوم -->
     <div id="techsSection" style="display:none; max-width:1100px; margin:20px auto;">
         <button onclick="backToDashboard()" class="btn-small"><i class="fa-solid fa-arrow-right"></i> عودة للكروت</button>
-        <h3><i class="fa-solid fa-user-gear"></i> إدارة الفنيين والنجوم</h3>
+        <h3><i class="fa-solid fa-user-gear"></i> إدارة واعتماد الفنيين</h3>
         <table class="data-table">
             <thead>
                 <tr>
@@ -173,8 +80,9 @@
                     <th>الهاتف</th>
                     <th>التخصص</th>
                     <th>المنطقة</th>
-                    <th>عدد النجوم ⭐</th>
-                    <th>تعديل النجوم</th>
+                    <th>النجوم ⭐</th>
+                    <th>حالة الاعتماد</th>
+                    <th>الإجراءات</th>
                 </tr>
             </thead>
             <tbody id="techsTableBody"></tbody>
@@ -182,15 +90,13 @@
     </div>
 
     <script>
-        // إعداد اتصال Supabase
-        const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_URL.supabase.co"; // استبدل بما لديك
-        const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY"; // استبدل بما لديك
+        const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_URL.supabase.co";
+        const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         function login() {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value.trim();
-
             if (user === 'admin' && pass === '000000') {
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('dashboardSection').style.display = 'block';
@@ -221,18 +127,14 @@
             }
         }
 
-        // جلب بيانات العملاء
         async function loadClientsData() {
             const tbody = document.getElementById('clientsTableBody');
-            tbody.innerHTML = '<tr><td colspan="8">جاري التحميل...</td></tr>';
-
+            tbody.innerHTML = '<tr><td colspan="7">جاري التحميل...</td></tr>';
             const { data, error } = await db.from('service_requests').select('*').order('created_at', { ascending: false });
-
             if (error || !data) {
-                tbody.innerHTML = '<tr><td colspan="8">خطأ في جلب البيانات أو لا توجد طلبات</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7">لا توجد طلبات مسجلة</td></tr>';
                 return;
             }
-
             tbody.innerHTML = '';
             data.forEach(item => {
                 tbody.innerHTML += `
@@ -242,7 +144,6 @@
                         <td>${item.customer_phone || ''}</td>
                         <td>${item.address || ''}</td>
                         <td>${item.service_type || ''}</td>
-                        <td>${item.estimated_price || 0} ج.م</td>
                         <td><pre style="font-family:inherit; white-space:pre-wrap;">${item.notes || ''}</pre></td>
                         <td>${item.status || 'قيد الانتظار'}</td>
                     </tr>
@@ -250,20 +151,17 @@
             });
         }
 
-        // جلب بيانات الفنيين
         async function loadTechsData() {
             const tbody = document.getElementById('techsTableBody');
-            tbody.innerHTML = '<tr><td colspan="7">جاري التحميل...</td></tr>';
-
+            tbody.innerHTML = '<tr><td colspan="8">جاري التحميل...</td></tr>';
             const { data, error } = await db.from('technicians').select('*');
-
             if (error || !data) {
-                tbody.innerHTML = '<tr><td colspan="7">لا يوجد فنيون مسجلون</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8">لا يوجد فنيون مسجلون</td></tr>';
                 return;
             }
-
             tbody.innerHTML = '';
             data.forEach(tech => {
+                const isApproved = tech.approved === true;
                 tbody.innerHTML += `
                     <tr>
                         <td>${tech.id}</td>
@@ -271,27 +169,29 @@
                         <td>${tech.phone}</td>
                         <td>${tech.specialty || '-'}</td>
                         <td>${tech.area || '-'}</td>
-                        <td><b>${tech.total_stars || 0}</b> ⭐</td>
                         <td>
-                            <input type="number" id="starInput_${tech.id}" class="stars-input" value="${tech.total_stars || 0}">
+                            <input type="number" id="starInput_${tech.id}" class="stars-input" value="${tech.total_stars || 5}">
                             <button class="btn-small" onclick="updateStars(${tech.id})">حفظ</button>
+                        </td>
+                        <td>${isApproved ? '<b style="color:#2ecc71;">معتمد (إظهار الرقم)</b>' : '<b style="color:#e74c3c;">قيد المراجعة</b>'}</td>
+                        <td>
+                            <button class="btn-approve" onclick="toggleApproval(${tech.id}, true)">موافقة</button>
+                            <button class="btn-reject" onclick="toggleApproval(${tech.id}, false)">رفض/حجب</button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        // تحديث عدد النجوم للفني مباشرة من لوحة الأدمن
         async function updateStars(techId) {
             const newStars = parseInt(document.getElementById(`starInput_${techId}`).value) || 0;
             const { error } = await db.from('technicians').update({ total_stars: newStars }).eq('id', techId);
+            if (!error) { alert('تم تحديث نجوم الفني!'); loadTechsData(); }
+        }
 
-            if (error) {
-                alert('حدث خطأ أثناء حفظ النجوم: ' + error.message);
-            } else {
-                alert('تم تحديث نجوم الفني بنجاح!');
-                loadTechsData();
-            }
+        async function toggleApproval(techId, status) {
+            const { error } = await db.from('technicians').update({ approved: status }).eq('id', techId);
+            if (!error) { alert('تم تحديث حالة اعتماد الفني بنجاح!'); loadTechsData(); }
         }
     </script>
 </body>
