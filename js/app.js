@@ -4,13 +4,13 @@ if (typeof supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined' && ty
     db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
-const ADMIN_WHATSAPP = "201287837118"; // رقم الواتساب الخاص بالتحويل
+const ADMIN_WHATSAPP = "201287837118";
 
 document.addEventListener('DOMContentLoaded', () => {
     loadApprovedTechnicians();
 });
 
-// 1. فتح وإغلاق النوافذ المنبثقة
+// 1. إدارة النوافذ المنبثقة
 function openTasissModal(type) {
     document.getElementById('tasissType').value = type;
     document.getElementById('tasissTitle').innerText = 'تأسيس ' + type;
@@ -42,7 +42,7 @@ function closeTechModal() {
     document.body.style.overflow = 'auto';
 }
 
-// 2. إرسال طلب التأسيس (حفظ في Supabase + تحويل للواتساب)
+// 2. إرسال طلب التأسيس (حفظ في قاعدة البيانات + توجيه للواتساب)
 async function handleTasissSubmit(e) {
     e.preventDefault();
     const type = document.getElementById('tasissType').value;
@@ -56,7 +56,6 @@ async function handleTasissSubmit(e) {
 
     const notes = `تأسيس ${type} | علب: ${boxes} | لينيات: ${lines} | لوح: ${panels} | نظام الإمداد: ${supply}`;
 
-    // 1. التخزين في قاعدة البيانات للأدمن
     try {
         if (db) {
             await db.from('service_requests').insert([{
@@ -64,12 +63,11 @@ async function handleTasissSubmit(e) {
             }]);
         }
     } catch (err) {
-        console.error("خطأ في قاعدة البيانات:", err);
+        console.error("خطأ قاعدة البيانات:", err);
     }
 
     closeTasissModal();
 
-    // 2. التحويل المباشر للواتساب
     const msg = `🏗️ *طلب تأسيس جديد (SN ELECTRIC)*%0a` +
                 `----------------------------------%0a` +
                 `👤 *الاسم:* ${name}%0a` +
@@ -81,7 +79,7 @@ async function handleTasissSubmit(e) {
     window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 3. تحويل صورة عطل الكهرباء
+// 3. تحويل بلاغ عطل الكهرباء المصور للواتساب
 function processFaultImage() {
     const fileInput = document.getElementById('electricFaultImg');
     if (!fileInput.files || fileInput.files.length === 0) {
@@ -101,7 +99,7 @@ function processFaultImage() {
     window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 4. إرسال طلب صيانة الأجهزة (حفظ + تحويل للواتساب)
+// 4. إرسال طلب صيانة الجهاز (حفظ + توجيه للواتساب)
 async function handleApplianceSubmit(e) {
     e.preventDefault();
     const appliance = document.getElementById('applianceType').value;
@@ -136,7 +134,7 @@ async function handleApplianceSubmit(e) {
     window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 5. طلب المعاينة (حفظ + تحويل للواتساب)
+// 5. طلب المعاينة
 function toggleLocationInputs() {
     const val = document.getElementById('inspLocType').value;
     document.getElementById('govGroup').style.display = (val === 'gov') ? 'block' : 'none';
@@ -181,7 +179,7 @@ async function handleInspectionSubmit(e) {
     window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 6. الاستفسارات العامة (حفظ + تحويل للواتساب)
+// 6. الاستفسارات العامة
 async function handleInquirySubmit(e) {
     e.preventDefault();
     const name = document.getElementById('inqName').value.trim();
@@ -261,7 +259,7 @@ async function loadApprovedTechnicians() {
     }
 }
 
-// 8. التقديم كفني (حفظ + تحويل للواتساب)
+// 8. التقديم كفني
 async function handleTechSubmit(e) {
     e.preventDefault();
     const name = document.getElementById('techName').value.trim();
@@ -303,7 +301,64 @@ async function handleTechSubmit(e) {
     window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
 }
 
-// 9. الشات الذكي
+// 9. وحدة "ارسم بيتك" للحساب التلقائي
+function startDrawing() {
+    document.getElementById('drawInfoNotice').style.display = 'none';
+    document.getElementById('drawCanvasArea').style.display = 'block';
+    generateRoomLayout();
+}
+
+function generateRoomLayout() {
+    const w = parseFloat(document.getElementById('roomWidth').value) || 4;
+    const h = parseFloat(document.getElementById('roomHeight').value) || 5;
+
+    const area = w * h;
+    const perimeter = 2 * (w + h);
+
+    const socketsCount = Math.max(4, Math.ceil(perimeter / 2));
+    const switchesCount = Math.max(1, Math.ceil(area / 15));
+    const lightsCount = Math.max(1, Math.ceil(area / 10));
+
+    document.getElementById('outDetails').innerHTML = `
+        المساحة: <b>${area}</b> م² | المحيط: <b>${perimeter}</b> م<br>
+        🔌 عدد البرايز المقترحة: <b style="color:#f1c40f;">${socketsCount}</b> | 
+        💡 نقاط الإضاءة: <b style="color:#f1c40f;">${lightsCount}</b> | 
+        🔘 المفاتيح الرئيسية: <b style="color:#f1c40f;">${switchesCount}</b>
+    `;
+
+    const canvas = document.getElementById('roomCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const pad = 40;
+    const cWidth = canvas.width - (pad * 2);
+    const cHeight = canvas.height - (pad * 2);
+
+    ctx.strokeStyle = '#f1c40f';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(pad, pad, cWidth, cHeight);
+
+    ctx.fillStyle = '#2ecc71';
+    for (let i = 0; i < socketsCount; i++) {
+        let x, y;
+        const step = i % 4;
+        if (step === 0) { x = pad + (i * 20) % cWidth; y = pad; }
+        else if (step === 1) { x = pad + cWidth; y = pad + (i * 20) % cHeight; }
+        else if (step === 2) { x = pad + (i * 20) % cWidth; y = pad + cHeight; }
+        else { x = pad; y = pad + (i * 20) % cHeight; }
+
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 10, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// 10. الشات الذكي
 function toggleChat() {
     const box = document.getElementById('chatBox');
     box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
