@@ -175,53 +175,42 @@ body {
     cursor: pointer;
 }
 
-/* Modals */
+/* Modals مع التمرير بالسحب */
 .modal {
     display: none;
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
     z-index: 2000;
+    overflow-y: auto;
+    padding: 20px 10px;
 }
 
 .modal-content {
     background: var(--card-bg);
     max-width: 500px;
-    margin: 50px auto;
+    margin: 30px auto;
     padding: 25px;
     border-radius: 12px;
     position: relative;
     border: 1px solid var(--accent);
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
 .close-btn {
     position: absolute;
-    top: 10px; left: 15px;
+    top: 10px;
+    left: 15px;
     font-size: 24px;
     cursor: pointer;
     color: #fff;
 }
 
-/* Contact Section */
-.contact-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    padding: 20px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.contact-card a {
-    color: #fff;
-    text-decoration: none;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
+/* Widget Chat */
 .chat-toggle-btn {
     position: fixed;
     bottom: 20px;
