@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNelectric - مولد المساحات والمخططات المعمارية الذكية</title>
+
+    <!-- مكتبة Fabric.js للتصميم الهندسي -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+            background: #0b0f19; 
+            color: #ffffff;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(0,242,254,0.3) 0%, rgba(79,172,254,0) 70%);
+            top: -50px; right: 10%;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(247,37,133,0.25) 0%, rgba(114,9,183,0) 70%);
+            bottom: -50px; left: 5%;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .top-bar {
+            min-height: 65px; 
+            background: rgba(18, 25, 41, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 2px solid rgba(0, 242, 254, 0.4);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 8px 16px; 
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 8px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+        }
+        .brand { font-size: 18px; font-weight: 900; letter-spacing: 0.5px; white-space: nowrap; }
+        .logo-sn { color: #0066ff; text-shadow: 0 0 10px rgba(0,102,255,0.7); } 
+        .logo-bolt { color: #ff0000; text-shadow: 0 0 14px #ff0000; } 
+        .logo-electric { color: #00f2fe; text-shadow: 0 0 14px #00f2fe; }
+        
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-top { 
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 2px solid rgba(0, 242, 254, 0.6); 
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(79, 172, 254, 0.35) 100%); 
+            color: #fff;
+            backdrop-filter: blur(8px);
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+        }
+        .btn-top:hover {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            border-color: #00f2fe;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.9);
+            transform: scale(1.05);
+        }
+        .btn-top:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            box-shadow: none;
+            border-color: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+            color: #fff;
+            transform: none;
+        }
+
+        .app-layout { display: flex; flex: 1; height: calc(100vh - 65px); position: relative; overflow: hidden; z-index: 10; }
+
+        .canvas-container-wrapper {
+            flex: 1; width: 100%; height: 100%; position: relative; 
+            background-color: #0d1322;
+            background-image: linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
+            background-size: 25px 25px;
+        }
+
+        .sidebar {
+            width: 340px; 
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 2px solid rgba(0, 242, 254, 0.3); 
+            padding: 12px;
+            overflow-y: auto; display: flex; flex-direction: column; gap: 10px; z-index: 20; 
+            transition: transform 0.3s ease;
+            box-shadow: -12px 0 35px rgba(0,0,0,0.7);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { position: absolute; top: 0; right: 0; bottom: 0; width: 85%; max-width: 340px; transform: translateX(100%); }
+            .sidebar.active { transform: translateX(0); }
+        }
+
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        .btn-oval {
+            padding: 10px 8px; border-radius: 12px; 
+            border: 2px solid rgba(255, 255, 255, 0.2); 
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff; font-size: 13px; cursor: pointer; text-align: center; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 700;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+        }
+        .btn-oval:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(0, 242, 254, 0.8);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+            transform: translateY(-1px);
+        }
+        .btn-oval.active { 
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); 
+            color: #000000; font-weight: 900; border-color: #00f2fe; 
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.8); 
+        }
+        .btn-oval-danger { background: rgba(247, 37, 133, 0.2); color: #ff4d6d; border-color: rgba(247, 37, 133, 0.6); }
+        .btn-oval-danger:hover { background: rgba(247, 37, 133, 0.4); box-shadow: 0 0 20px rgba(247, 37, 133, 0.8); }
+        
+        .btn-oval-warning { background: rgba(255, 183, 3, 0.2); color: #ffb703; border-color: rgba(255, 183, 3, 0.6); }
+        .btn-oval-warning:hover { background: rgba(255, 183, 3, 0.4); box-shadow: 0 0 20px rgba(255, 183, 3, 0.8); }
+
+        .menu-item {
+            position: relative; cursor: pointer; padding: 10px 12px; 
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px; border: 2px solid rgba(255, 255, 255, 0.12); 
+            font-size: 13px; display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s; font-weight: 700;
+        }
+        .menu-item:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(0, 242, 254, 0.6); }
+
+        .menu-dropdown {
+            display: none; position: absolute; top: 100%; right: 0; left: 0; 
+            background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px);
+            border: 2px solid rgba(0, 242, 254, 0.5); border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 50; margin-top: 4px; max-height: 180px; overflow-y: auto;
+        }
+        .menu-dropdown.show { display: block; }
+        .menu-option { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); color: #e2e8f0; font-weight: 700; }
+        .menu-option:hover { background: rgba(0, 242, 254, 0.3); color: #00f2fe; }
+
+        .color-circle-btn {
+            width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ffffff;
+            box-shadow: 0 0 10px rgba(0,242,254,0.9); background: #00f2fe; cursor: pointer; display: inline-block;
+        }
+
+        .accordion-header { 
+            background: linear-gradient(90deg, rgba(114,9,183,0.3) 0%, rgba(0,242,254,0.2) 100%); 
+            padding: 10px 12px; 
+            border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; 
+            display: flex; justify-content: space-between; align-items: center;
+            border: 2px solid rgba(0, 242, 254, 0.4); color: #00f2fe;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+        }
+        .accordion-header:hover { border-color: rgba(0, 242, 254, 0.8); box-shadow: 0 0 15px rgba(0, 242, 254, 0.6); }
+
+        .accordion-content { display: none; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 6px; }
+        .accordion-content.show { display: grid; }
+        .accordion-content button { 
+            padding: 9px 8px; font-size: 12px; background: rgba(255, 255, 255, 0.05); 
+            color: #ffffff; border: 2px solid rgba(255, 255, 255, 0.12); border-radius: 10px; cursor: pointer; 
+            transition: all 0.2s; text-align: right; display: flex; align-items: center; gap: 6px; font-weight: 700;
+        }
+        .accordion-content button:hover { 
+            background: rgba(0, 242, 254, 0.3); border-color: #00f2fe; color: #fff; box-shadow: 0 0 12px rgba(0,242,254,0.6);
+            transform: translateY(-1px);
+        }
+
+        .inventory-panel {
+            background: rgba(10, 15, 28, 0.85);
+            border: 2px solid rgba(0, 242, 254, 0.35);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+        }
+        .inventory-title {
+            font-size: 13px;
+            font-weight: 900;
+            color: #00f2fe;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .inventory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-weight: 700;
+        }
+        .inventory-item span:last-child {
+            color: #ff007f;
+            font-weight: 900;
+            background: rgba(255, 0, 127, 0.15);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .floating-action-group {
+            position: absolute; display: none; z-index: 100;
+            transform: translate(-50%, -130%);
+            gap: 8px;
+            align-items: center;
+        }
+        .floating-btn {
+            background: rgba(18, 25, 41, 0.95);
+            border: 2px solid rgba(0, 242, 254, 0.7);
+            color: white; border-radius: 50%; width: 40px; height: 40px; 
+            font-size: 16px; cursor: pointer; box-shadow: 0 0 18px rgba(0, 242, 254, 0.6); 
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .floating-btn:hover { transform: scale(1.15); background: rgba(0, 242, 254, 0.5); }
+        .floating-btn.delete {
+            background: linear-gradient(135deg, #ff007f 0%, #7209b7 100%);
+            border-color: #ff007f;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.9);
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 25, 0.88); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-card {
+            background: #121929; border: 2px solid rgba(0, 242, 254, 0.5);
+            border-radius: 16px; width: 90%; max-width: 550px; max-height: 85vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 242, 254, 0.4);
+        }
+        .modal-header {
+            padding: 14px 16px; background: rgba(0, 242, 254, 0.15);
+            font-weight: 800; font-size: 15px; color: #00f2fe;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-body {
+            padding: 14px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+        }
+        .element-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.04); padding: 10px 14px;
+            border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 10px;
+        }
+        .element-row span { font-size: 13px; color: #e2e8f0; flex: 1; font-weight: 700; }
+        .modal-footer {
+            padding: 14px 16px; background: rgba(0,0,0,0.4);
+            display: flex; justify-content: flex-end; gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="floatingActionGroup" class="floating-action-group">
+        <label id="floatingColorBtn" class="floating-btn" title="تغيير لون هذا العنصر أو الجدار" style="cursor:pointer; font-size:16px; background:rgba(0,242,254,0.3);">🎨<input type="color" id="elementColorPicker" style="opacity:0; width:0; height:0; position:absolute;"></label>
+        <button id="floatingDuplicateBtn" class="floating-btn" title="نسخ وتكرار الشكل">📋</button>
+        <button id="floatingDeleteBtn" class="floating-btn delete" title="حذف العنصر المحدد">🗑️</button>
+    </div>
+
+    <!-- نافذة إدخال أبعاد الغرفة عند الإضافة -->
+    <div class="modal-overlay" id="roomInputModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span id="roomModalTitle">🏠 إدخال أبعاد الحجرة</span>
+                <button onclick="closeRoomModal()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:18px;">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="font-size: 13px; color: #cbd5e1; font-weight: 600;">
+                    أدخل المقاسات الحقيقية (بالمتر) للطول والعرض ليتم كتابتها مباشرة على الرسم:
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 8px;">
+                    <div style="flex:1; display:flex; flex-direction:column; gap:5px;">
+                        <label style="font-size:12px; color:#00f2fe; font-weight:bold;">الطول (متر):</label>
+                        <input type="number" id="inputRoomLength" value="4.0" step="0.5" min="0.5" style="width:100%; padding:10px; border-radius:8px; border:2px solid rgba(0,242,254,0.6); background:#000; color:#fff; text-align:center; font-size:15px; font-weight:bold;">
+                    </div>
+                    <div style="flex:1; display:flex; flex-direction:column; gap:5px;">
+                        <label style="font-size:12px; color:#00f2fe; font-weight:bold;">العرض (متر):</label>
+                        <input type="number" id="inputRoomWidth" value="3.0" step="0.5" min="0.5" style="width:100%; padding:10px; border-radius:8px; border:2px solid rgba(0,242,254,0.6); background:#000; color:#fff; text-align:center; font-size:15px; font-weight:bold;">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px;" onclick="closeRoomModal()">إلغاء</button>
+                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color:#000; font-weight:900;" onclick="confirmAddRoom()">إضافة للرسم 📐</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التدقيق وعدد المدخلات النهائية قبل الحفظ -->
+    <div class="modal-overlay" id="dimensionsModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span>📊 ملخص المقاسات وعدد العناصر قبل الحفظ</span>
+                <button onclick="closeModal()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:18px;">✕</button>
+            </div>
+            <div class="modal-body" id="summaryModalBody">
+                <div style="font-size: 13px; color: #cbd5e1; line-height: 1.5; font-weight: 600;">
+                    مراجعة المساحات المدخلة وعدد الرموز التلقائية قبل اعتماد وحفظ الصورة النهائية:
+                </div>
+                <div id="elementsListContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px;" onclick="closeModal()">إلغاء</button>
+                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color:#000; font-weight:900;" onclick="saveFinalImage()">اعتماد وحفظ الرسم 💾</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="top-bar">
+        <div class="brand">
+            <span class="logo-sn">S</span><span class="logo-bolt">⚡</span><span class="logo-sn">N</span> <span class="logo-electric">(electric)</span>
+        </div>
+        <div class="top-actions">
+            <button id="btnInstall" class="btn-top" title="تثبيت التطبيق على الجهاز ⬇️" style="display:none; background:linear-gradient(135deg, #ff007f 0%, #7209b7 100%); border-color:#ff007f;">⬇️</button>
+            <button id="btnPanorama" class="btn-top" title="العرض البانورامي الملون 🌟">🌈</button>
+            <button id="btnUndo" class="btn-top" disabled title="تراجع (Undo)">↩️</button>
+            <button id="btnRedo" class="btn-top" disabled title="إعادة (Redo)">↪️</button>
+            <button id="btnToggleSidebar" class="btn-top" title="الأدوات 🛠️">🛠️</button>
+            <button id="btnSave" class="btn-top" title="عرض المقاسات والحفظ 💾">💾</button>
+            <button id="btnFullscreen" class="btn-top" title="ملء الشاشة 📺">📺</button>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <main class="canvas-container-wrapper" id="canvasContainer">
+            <canvas id="drawCanvas"></canvas>
+        </main>
+
+        <aside class="sidebar" id="sidebar">
+
+            <div class="tools-grid">
+                <button id="btnSelect" class="btn-oval active">🖐️ تحديد ونقل</button>
+                <button id="btnDeleteSegment" class="btn-oval btn-oval-warning">✂️ ممحاة ضلع</button>
+                <button id="btnPencil" class="btn-oval">✏️ رسم حر</button>
+                <button id="btnText" class="btn-oval">T إضافة نص</button>
+            </div>
+            <button id="btnClear" class="btn-oval btn-oval-danger" style="width: 100%;">🗑️ مسح اللوحة بالكامل</button>
+
+            <div class="inventory-panel">
+                <div class="inventory-title">
+                    <span>📊 الحصر الآلي للرموز والكميات</span>
+                    <span id="totalItemsCount" style="font-size:11px; color:#00f2fe;">0 عنصر</span>
+                </div>
+                <div id="inventoryListContainer" style="display: flex; flex-direction: column; gap: 5px; max-height: 150px; overflow-y: auto;">
+                    <div style="font-size:11px; color:#94a3b8; text-align:center; padding: 8px;">لم يتم إضافة عناصر بعد...</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="toggleDropdown('fontDropdown')">
+                <span id="fontLabel">الخط: Arial ▾</span>
+                <div class="menu-dropdown" id="fontDropdown">
+                    <div class="menu-option" onclick="setFont('Arial', 'Arial')">Arial</div>
+                    <div class="menu-option" onclick="setFont('Tahoma', 'Tahoma')">Tahoma</div>
+                    <div class="menu-option" onclick="setFont('Cairo', 'Cairo')">Cairo</div>
+                    <div class="menu-option" onclick="setFont('Amiri', 'Amiri')">Amiri</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="toggleDropdown('brushDropdown')">
+                <span id="brushLabel">نوع القلم: ✏️ عادي ▾</span>
+                <div class="menu-dropdown" id="brushDropdown">
+                    <div class="menu-option" onclick="setBrush('pencil', '✏️ عادي')">✏️ عادي</div>
+                    <div class="menu-option" onclick="setBrush('dotted', '💬 تنقيط نيون')">💬 تنقيط نيون</div>
+                    <div class="menu-option" onclick="setBrush('highlighter', '🖍️ هايلايتر')">🖍️ هايلايتر</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="document.getElementById('colorPicker').click()">
+                <span>لون اللوحة العام ▾</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="color-circle-btn" id="colorCirclePreview"></div>
+                    <input type="color" id="colorPicker" value="#00f2fe" style="opacity: 0; width: 0; height: 0; position: absolute;">
+                </div>
+            </div>
+
+            <div style="font-size: 13px; font-weight: 700; color: #cbd5e1; display: flex; justify-content: space-between; align-items: center; padding: 6px;">
+                <label>سُمْك الخط:</label>
+                <input type="range" id="brushWidth" min="1" max="25" value="4" style="width: 55%; accent-color: #00f2fe; height: 6px;">
+            </div>
+
+            <div class="accordion-header" onclick="toggleAccordion('roomsSec')">🏠 مساحات وحجرات معمارية ▾</div>
+            <div class="accordion-content" id="roomsSec">
+                <button onclick="promptAddRoom('حجرة نوم رئيسية')">🛏️ حجرة نوم رئيسية</button>
+                <button onclick="promptAddRoom('حجرة أطفال')">🛌 حجرة أطفال</button>
+                <button onclick="promptAddRoom('حجرة استقبال (صالة)')">🛋️ حجرة استقبال</button>
+                <button onclick="promptAddRoom('حمام رئيسي')">🛁 حمام رئيسي</button>
+                <button onclick="promptAddRoom('مطبخ متكامل')">🍳 مطبخ متكامل</button>
+                <button onclick="promptAddRoom('منطقة جاردن (حديقة)')">🌿 منطقة جاردن</button>
+            </div>
+
+            <div class="accordion-header" onclick="toggleAccordion('carpentrySec')">🚪 نجارة (أبواب وشبابيك) ▾</div>
+            <div class="accordion-content" id="carpentrySec">
+                <button onclick="addSymbol('door', 'باب مفرد مفصلي')">🚪 باب مفرد</button>
+                <button onclick="addSymbol('door_double', 'باب دبل عريض')">🚪 باب دبل</button>
+                <button onclick="addSymbol('door_sliding', 'باب جرار سحب')">↔️ باب جرار</button>
+                <button onclick="addSymbol('window', 'شباك زجاجي مفرد')">🪟 شباك مفرد</button>
+                <button onclick="addSymbol('window_double', 'شباك زجاجي دبل')">🪟 شباك دبل</button>
+                <button onclick="addSymbol('balcony', 'بلكون / تراس')">🏛️ بلكون</button>
+            </div>
+
+            <div class="accordion-header" onclick="toggleAccordion('electricSec')">⚡ كهرباء (تجهيزات ومفاتيح) ▾</div>
+            <div class="accordion-content" id="electricSec">
+                <button onclick="addSymbol('socket', 'بريزة طاقة مفردة')">🔌 بريزة مفردة</button>
+                <button onclick="addSymbol('socket_double', 'بريزة طاقة دبل')">🔌 بريزة دبل</button>
+                <button onclick="addSymbol('switch', 'مفتاح إضاءة فردي')">🔘 مفتاح فردي</button>
+                <button onclick="addSymbol('data', 'نقطة شبكة وداتا')">🌐 نقطة داتا</button>
+                <button onclick="addSymbol('sound', 'سماعة صوت ونظام صوتي')">🔊 نقطة صوت</button>
+                <button onclick="addSymbol('lamp', 'لمبة أو سبوتلايت سقف')">💡 لمبة / سبوت</button>
+                <button onclick="addSymbol('panel', 'لوحة توزيع كهرباء رئيسية')">⚡ لوحة توزيع</button>
+                <button onclick="addSymbol('ac', 'مخرج تكييف هواء')">❄️ مخرج تكييف</button>
+                <button onclick="addSymbol('tv', 'مخرج دش وشاشة عرض')">📺 مخرج دش/شاشة</button>
+            </div>
+
+            <div class="accordion-header" onclick="toggleAccordion('plumbingSec')">🚰 سباكة (مخارج ومواسير) ▾</div>
+            <div class="accordion-content" id="plumbingSec">
+                <button onclick="addSymbol('sink', 'حوض وجه ومغسلة')">🚰 حوض غسيل</button>
+                <button onclick="addSymbol('toilet', 'مرحاض (كرسي حمام)')">🚽 مرحاض</button>
+                <button onclick="addSymbol('shower', 'دش استحمام ومقصورة')">🚿 دش استحمام</button>
+                <button onclick="addSymbol('bathtub', 'بانيو استرخاء')">🛁 بانيو</button>
+                <button onclick="addSymbol('drain', 'صرف أرضي (بالوعة)')">⭕ بالوعة صرف</button>
+            </div>
+
+            <div class="accordion-header" onclick="toggleAccordion('furnitureSec')">🛋️ أثاث وتجهيزات داخلية ▾</div>
+            <div class="accordion-content" id="furnitureSec">
+                <button onclick="addSymbol('sofa', 'كنبة صالون ومعيشة')">🛋️ كنبة / صالون</button>
+                <button onclick="addSymbol('bed', 'سرير نوم رئيسي')">🛏️ سرير نوم</button>
+                <button onclick="addSymbol('table', 'طاولة طعام أو مكتب')">🪑 طاولة طعام</button>
+                <button onclick="addSymbol('wardrobe', 'دولاب ملابس وخزانة')">🚪 خزانة / دولاب</button>
+            </div>
+
+        </aside>
+    </div>
+
+    <script>
+        let currentFont = 'Arial';
+        let currentBrushType = 'pencil';
+        let isDeleteSegmentMode = false;
+        let pendingRoomName = '';
+        let deferredPrompt = null;
+        const floatingGroup = document.getElementById('floatingActionGroup');
+        const floatingDeleteBtn = document.getElementById('floatingDeleteBtn');
+        const floatingDuplicateBtn = document.getElementById('floatingDuplicateBtn');
+        const elementColorPicker = document.getElementById('elementColorPicker');
+
+        let undoStack = [];
+        let redoStack = [];
+        let isPerformingHistoryAction = false;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('btnInstall').style.display = 'flex';
+        });
+
+        document.getElementById('btnInstall').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('btnInstall').style.display = 'none';
+                }
+                deferredPrompt = null;
+            } else {
+                alert('يمكنك تثبيت التطبيق مباشرة من إعدادات المتصفح بالضغط على (إضافة إلى الشاشة الرئيسية / Add to Home screen)');
+            }
+        });
+
+        function saveHistory(canvas) {
+            if (isPerformingHistoryAction) return;
+            const json = JSON.stringify(canvas.toJSON(['nameTag', 'roomDimensions']));
+            if (undoStack.length > 0 && undoStack[undoStack.length - 1] === json) return;
+            undoStack.push(json);
+            if (undoStack.length > 30) undoStack.shift(); // الحفاظ على أداء الذاكرة
+            redoStack = [];
+            updateHistoryButtons();
+            updateInventorySummary(canvas);
+        }
+
+        function updateHistoryButtons() {
+            document.getElementById('btnUndo').disabled = undoStack.length <= 1;
+            document.getElementById('btnRedo').disabled = redoStack.length === 0;
+        }
+
+        function updateInventorySummary(canvas) {
+            const container = document.getElementById('inventoryListContainer');
+            const totalCountBadge = document.getElementById('totalItemsCount');
+            if (!canvas) return;
+
+            const objects = canvas.getObjects();
+            const counts = {};
+            let validItemsCount = 0;
+
+            objects.forEach(obj => {
+                let name = obj.nameTag;
+                if (name && name !== 'العلامة المائية S⚡N (electric)' && !name.includes('مقاس جدار') && !name.includes('أبعاد:')) {
+                    counts[name] = (counts[name] || 0) + 1;
+                    validItemsCount++;
+                }
+            });
+
+            totalCountBadge.innerText = validItemsCount + ' رمز';
+
+            if (Object.keys(counts).length === 0) {
+                container.innerHTML = `<div style="font-size:11px; color:#94a3b8; text-align:center; padding: 8px;">لم يتم إضافة عناصر بعد...</div>`;
+                return;
+            }
+
+            let html = '';
+            for (let [name, count] of Object.entries(counts)) {
+                html += `
+                    <div class="inventory-item">
+                        <span>${name}</span>
+                        <span>عدد ${count}</span>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        window.onclick = function(e) {
+            if (!e.target.matches('.menu-item') && !e.target.matches('#fontLabel') && !e.target.matches('#brushLabel')) {
+                document.querySelectorAll('.menu-dropdown').forEach(d => d.classList.remove('show'));
+            }
+        };
+
+        function toggleDropdown(id) { document.getElementById(id).classList.toggle('show'); }
+        function toggleAccordion(id) { document.getElementById(id).classList.toggle('show'); }
+
+        function setFont(fontName, label) {
+            currentFont = fontName;
+            document.getElementById('fontLabel').innerText = "الخط: " + label + " ▾";
+            const activeObj = window.canvasApp.getActiveObject();
+            if (activeObj && activeObj.type === 'i-text') {
+                activeObj.set('fontFamily', fontName);
+                window.canvasApp.renderAll();
+                saveHistory(window.canvasApp);
+            }
+        }
+
+        function setBrush(type, label) {
+            currentBrushType = type;
+            document.getElementById('brushLabel').innerText = "النوع: " + label + " ▾";
+            window.updateBrushSettings();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('canvasContainer');
+            const sidebar = document.getElementById('sidebar');
+            
+            const canvas = new fabric.Canvas('drawCanvas', {
+                width: container.clientWidth,
+                height: container.clientHeight,
+                isDrawingMode: false,
+                subTargetDetection: true
+            });
+            window.canvasApp = canvas;
+
+            function addWatermark() {
+                const wmGroup = new fabric.Group([
+                    new fabric.Rect({ left: 0, top: 0, width: 170, height: 32, fill: 'rgba(11, 15, 25, 0.3)', rx: 6, ry: 6, stroke: 'rgba(0,242,254,0.1)', strokeWidth: 1 }),
+                    new fabric.IText('S', { left: 10, top: 6, fontSize: 16, fontWeight: '900', fill: 'rgba(0,102,255,0.4)', fontFamily: 'Arial' }),
+                    new fabric.IText('⚡', { left: 26, top: 6, fontSize: 14, fill: 'rgba(255,0,0,0.4)', fontFamily: 'Arial' }),
+                    new fabric.IText('N', { left: 44, top: 6, fontSize: 16, fontWeight: '900', fill: 'rgba(0,102,255,0.4)', fontFamily: 'Arial' }),
+                    new fabric.IText(' (electric)', { left: 64, top: 8, fontSize: 12, fontWeight: '700', fill: 'rgba(255,255,255,0.35)', fontFamily: 'Arial' })
+                ], {
+                    left: canvas.width - 190,
+                    top: canvas.height - 50,
+                    selectable: false,
+                    evented: false,
+                    opacity: 0.5,
+                    nameTag: 'العلامة المائية S⚡N (electric)'
+                });
+                canvas.add(wmGroup);
+            }
+
+            addWatermark();
+            saveHistory(canvas);
+
+            document.getElementById('btnUndo').addEventListener('click', () => {
+                if (undoStack.length > 1) {
+                    isPerformingHistoryAction = true;
+                    const currentState = undoStack.pop();
+                    redoStack.push(currentState);
+                    const previousState = undoStack[undoStack.length - 1];
+                    
+                    canvas.loadFromJSON(previousState, () => {
+                        canvas.renderAll();
+                        setTimeout(() => { isPerformingHistoryAction = false; }, 30);
+                        updateHistoryButtons();
+                        updateInventorySummary(canvas);
+                        floatingGroup.style.display = 'none';
+                    });
+                }
+            });
+
+            document.getElementById('btnRedo').addEventListener('click', () => {
+                if (redoStack.length > 0) {
+                    isPerformingHistoryAction = true;
+                    const nextState = redoStack.pop();
+                    undoStack.push(nextState);
+                    
+                    canvas.loadFromJSON(nextState, () => {
+                        canvas.renderAll();
+                        setTimeout(() => { isPerformingHistoryAction = false; }, 30);
+                        updateHistoryButtons();
+                        updateInventorySummary(canvas);
+                        floatingGroup.style.display = 'none';
+                    });
+                }
+            });
+
+            canvas.on('object:added', () => saveHistory(canvas));
+            canvas.on('object:removed', () => saveHistory(canvas));
+            canvas.on('object:modified', () => saveHistory(canvas));
+            canvas.on('path:created', () => saveHistory(canvas));
+
+            fabric.Object.prototype.set({
+                transparentCorners: false,
+                cornerColor: '#00f2fe',
+                cornerStrokeColor: '#ffffff',
+                borderColor: '#ff007f',
+                cornerSize: 12,
+                cornerStyle: 'circle'
+            });
+
+            window.addEventListener('resize', () => {
+                canvas.setWidth(container.clientWidth);
+                canvas.setHeight(container.clientHeight);
+                canvas.renderAll();
+            });
+
+            document.getElementById('btnToggleSidebar').addEventListener('click', () => sidebar.classList.toggle('active'));
+            function autoCloseSidebarOnMobile() { if (window.innerWidth <= 768) sidebar.classList.remove('active'); }
+
+            function updateFloatingButtonGroup() {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.nameTag !== 'العلامة المائية S⚡N (electric)' && !isDeleteSegmentMode) {
+                    const bound = activeObj.getBoundingRect();
+                    floatingGroup.style.display = 'flex';
+                    
+                    let targetTop = bound.top - 50;
+                    if (targetTop < 10) {
+                        targetTop = bound.top + bound.height + 15;
+                    }
+
+                    floatingGroup.style.left = (bound.left + bound.width / 2) + 'px';
+                    floatingGroup.style.top = targetTop + 'px';
+                } else {
+                    floatingGroup.style.display = 'none';
+                }
+            }
+
+            canvas.on('selection:created', updateFloatingButtonGroup);
+            canvas.on('selection:updated', updateFloatingButtonGroup);
+            canvas.on('selection:cleared', () => floatingGroup.style.display = 'none');
+            canvas.on('object:moving', updateFloatingButtonGroup);
+            canvas.on('object:scaling', updateFloatingButtonGroup);
+            canvas.on('object:rotating', updateFloatingButtonGroup);
+
+            floatingDeleteBtn.addEventListener('click', () => {
+                canvas.getActiveObjects().forEach(obj => {
+                    if (obj.nameTag !== 'العلامة المائية S⚡N (electric)') canvas.remove(obj);
+                });
+                canvas.discardActiveObject();
+                canvas.renderAll();
+                floatingGroup.style.display = 'none';
+                updateInventorySummary(canvas);
+            });
+
+            floatingDuplicateBtn.addEventListener('click', () => {
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.nameTag === 'العلامة المائية S⚡N (electric)') return;
+
+                activeObj.clone((cloned) => {
+                    canvas.discardActiveObject();
+                    cloned.set({
+                        left: activeObj.left + 25,
+                        top: activeObj.top + 25,
+                        evented: true,
+                    });
+                    if (cloned.type === 'activeSelection') {
+                        cloned.canvas = canvas;
+                        cloned.forEachObject((obj) => { canvas.add(obj); });
+                        cloned.setCoords();
+                    } else {
+                        canvas.add(cloned);
+                    }
+                    canvas.setActiveObject(cloned);
+                    canvas.renderAll();
+                    updateInventorySummary(canvas);
+                }, ['nameTag', 'roomDimensions']);
+            });
+
+            elementColorPicker.addEventListener('input', () => {
+                const newColor = elementColorPicker.value;
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.nameTag === 'العلامة المائية S⚡N (electric)') return;
+
+                if (activeObj.type === 'group') {
+                    activeObj.forEachObject(subObj => {
+                        if (subObj.stroke) subObj.set('stroke', newColor);
+                        if (subObj.type === 'i-text') subObj.set('fill', newColor);
+                    });
+                } else {
+                    if (activeObj.stroke) activeObj.set('stroke', newColor);
+                    if (activeObj.type === 'i-text') activeObj.set('fill', newColor);
+                }
+                canvas.renderAll();
+                saveHistory(canvas);
+            });
+
+            const colorPicker = document.getElementById('colorPicker');
+            const colorCirclePreview = document.getElementById('colorCirclePreview');
+            const brushWidth = document.getElementById('brushWidth');
+            const btnSelect = document.getElementById('btnSelect');
+            const btnDeleteSegment = document.getElementById('btnDeleteSegment');
+            const btnPencil = document.getElementById('btnPencil');
+            const btnText = document.getElementById('btnText');
+            const btnPanorama = document.getElementById('btnPanorama');
+
+            window.updateBrushSettings = function() {
+                const color = colorPicker.value;
+                const width = parseInt(brushWidth.value, 10);
+                canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                canvas.freeDrawingBrush.color = color;
+                canvas.freeDrawingBrush.width = width;
+                if (currentBrushType === 'highlighter') {
+                    canvas.freeDrawingBrush.color = color + '66';
+                    canvas.freeDrawingBrush.width = width * 3;
+                } else if (currentBrushType === 'dotted') {
+                    canvas.freeDrawingBrush.strokeDashArray = [8, 8];
+                }
+            };
+
+            colorPicker.addEventListener('input', () => {
+                const selectedColor = colorPicker.value;
+                colorCirclePreview.style.background = selectedColor;
+                colorCirclePreview.style.boxShadow = `0 0 10px ${selectedColor}`;
+                window.updateBrushSettings();
+            });
+
+            function setActiveTool(activeBtn) {
+                [btnSelect, btnDeleteSegment, btnPencil, btnText].forEach(b => b.classList.remove('active'));
+                activeBtn.classList.add('active');
+                isDeleteSegmentMode = (activeBtn === btnDeleteSegment);
+            }
+
+            btnSelect.addEventListener('click', () => {
+                canvas.isDrawingMode = false;
+                setActiveTool(btnSelect);
+                autoCloseSidebarOnMobile();
+            });
+
+            btnDeleteSegment.addEventListener('click', () => {
+                canvas.isDrawingMode = false;
+                setActiveTool(btnDeleteSegment);
+                autoCloseSidebarOnMobile();
+            });
+
+            canvas.on('mouse:down', (options) => {
+                if (isDeleteSegmentMode && options.target && options.target.nameTag !== 'العلامة المائية S⚡N (electric)') {
+                    const target = options.target;
+                    canvas.remove(target);
+                    canvas.discardActiveObject();
+                    canvas.renderAll();
+                    saveHistory(canvas);
+                    updateInventorySummary(canvas);
+                }
+            });
+
+            btnPencil.addEventListener('click', () => {
+                canvas.isDrawingMode = true;
+                window.updateBrushSettings();
+                setActiveTool(btnPencil);
+                autoCloseSidebarOnMobile();
+            });
+
+            btnText.addEventListener('click', () => {
+                canvas.isDrawingMode = false;
+                setActiveTool(btnSelect);
+                const text = new fabric.IText('اكتب النص هنا', {
+                    left: canvas.width / 2 - 40, top: canvas.height / 2 - 15,
+                    fontFamily: currentFont, fontSize: 20, fill: colorPicker.value, direction: 'rtl',
+                    nameTag: 'نص توضيحي'
+                });
+                canvas.add(text);
+                canvas.setActiveObject(text);
+                text.enterEditing();
+                text.selectAll();
+                autoCloseSidebarOnMobile();
+            });
+
+            btnPanorama.addEventListener('click', () => {
+                alert('تم تفعيل إعدادات العرض البانورامي الملون ثلاثي الأبعاد!');
+            });
+
+            window.promptAddRoom = function(roomName) {
+                pendingRoomName = roomName;
+                document.getElementById('roomModalTitle').innerText = '🏠 إدخال أبعاد: ' + roomName;
+                document.getElementById('roomInputModal').style.display = 'flex';
+                autoCloseSidebarOnMobile();
+            };
+
+            window.closeRoomModal = function() {
+                document.getElementById('roomInputModal').style.display = 'none';
+            };
+
+            window.confirmAddRoom = function() {
+                const lengthVal = parseFloat(document.getElementById('inputRoomLength').value) || 4.0;
+                const widthVal = parseFloat(document.getElementById('inputRoomWidth').value) || 3.0;
+                closeRoomModal();
+                createRoomOnCanvas(pendingRoomName, lengthVal, widthVal);
+            };
+
+            function createRoomOnCanvas(roomName, length, width) {
+                canvas.isDrawingMode = false;
+                setActiveTool(btnSelect);
+                
+                const color = colorPicker.value;
+                const strokeWidth = parseInt(brushWidth.value, 10) || 4;
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+
+                let w = 220, h = 150;
+                let p1 = {x:-w/2, y:-h/2}, p2 = {x:w/2, y:-h/2}, p3 = {x:w/2, y:h/2}, p4 = {x:-w/2, y:h/2};
+
+                let elements = [];
+                elements.push(new fabric.Line([p1.x, p1.y, p2.x, p2.y], { stroke: color, strokeWidth: strokeWidth, nameTag: 'جدار علوي' }));
+                elements.push(new fabric.Line([p2.x, p2.y, p3.x, p3.y], { stroke: color, strokeWidth: strokeWidth, nameTag: 'جدار أيمن' }));
+                elements.push(new fabric.Line([p3.x, p3.y, p4.x, p4.y], { stroke: color, strokeWidth: strokeWidth, nameTag: 'جدار سفلي' }));
+                elements.push(new fabric.Line([p4.x, p4.y, p1.x, p1.y], { stroke: color, strokeWidth: strokeWidth, nameTag: 'جدار أيسر' }));
+
+                const area = (length * width).toFixed(1);
+
+                elements.push(new fabric.IText(length + ' م', { left: -20, top: -h/2 - 20, fontSize: 12, fill: color, fontFamily: currentFont, nameTag: 'مقاس جدار' }));
+                elements.push(new fabric.IText(width + ' م', { left: w/2 + 8, top: -10, fontSize: 12, fill: color, fontFamily: currentFont, nameTag: 'مقاس جدار' }));
+
+                elements.push(new fabric.IText(`${roomName}\n(${area} م²)`, {
+                    left: -40, top: -15,
+                    fontFamily: currentFont, fontSize: 14, fill: color, direction: 'rtl', fontWeight: 'bold', textAlign: 'center',
+                    nameTag: roomName
+                }));
+
+                const roomGroup = new fabric.Group(elements, {
+                    left: centerX - w/2,
+                    top: centerY - h/2,
+                    nameTag: roomName,
+                    roomDimensions: `${length} × ${width} متر (${area} م²)`
+                });
+
+                canvas.add(roomGroup);
+                canvas.setActiveObject(roomGroup);
+                canvas.renderAll();
+            }
+
+            const getSvgData = (color) => ({
+                socket: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="${color}" stroke-width="3"/><line x1="25" y1="43" x2="25" y2="49" stroke="${color}" stroke-width="3"/><circle cx="18" cy="22" r="2.5" fill="${color}"/><circle cx="32" cy="22" r="2.5" fill="${color}"/></svg>`,
+                socket_double: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="4" y="4" width="42" height="42" rx="6" fill="none" stroke="${color}" stroke-width="3"/><circle cx="18" cy="25" r="3" fill="${color}"/><circle cx="32" cy="25" r="3" fill="${color}"/></svg>`,
+                switch: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="8" fill="${color}"/><line x1="25" y1="25" x2="42" y2="8" stroke="${color}" stroke-width="3"/></svg>`,
+                data: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="6" y="8" width="38" height="34" rx="4" fill="none" stroke="${color}" stroke-width="3"/><path d="M 16 28 L 22 20 L 28 28 L 34 20" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round"/><circle cx="25" cy="34" r="2" fill="${color}"/></svg>`,
+                sound: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><path d="M 12 18 L 18 18 L 28 10 L 28 40 L 18 32 L 12 32 Z" fill="none" stroke="${color}" stroke-width="3"/><path d="M 34 16 A 12 12 0 0 1 34 34" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
+                lamp: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="16" fill="none" stroke="${color}" stroke-width="3"/><line x1="14" y1="14" x2="36" y2="36" stroke="${color}" stroke-width="3"/><line x1="36" y1="14" x2="14" y2="36" stroke="${color}" stroke-width="3"/></svg>`,
+                panel: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect x="2" y="2" width="56" height="36" fill="none" stroke="${color}" stroke-width="3"/><path d="M 2 2 L 30 38 L 30 2 Z" fill="${color}"/></svg>`,
+                ac: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect x="3" y="5" width="54" height="30" rx="4" fill="none" stroke="${color}" stroke-width="3"/><text x="18" y="22" fill="${color}" font-size="12" font-weight="bold">A/C</text></svg>`,
+                tv: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 45"><rect x="4" y="10" width="52" height="30" rx="2" fill="none" stroke="${color}" stroke-width="3"/><polyline points="15,2 25,10 35,2 45,10" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
+                
+                door: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect x="5" y="5" width="6" height="50" fill="${color}"/><line x1="11" y1="5" x2="55" y2="5" stroke="${color}" stroke-width="4"/><path d="M 55 5 A 44 44 0 0 1 11 49" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="4 3"/></svg>`,
+                door_double: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60"><rect x="5" y="5" width="6" height="50" fill="${color}"/><rect x="69" y="5" width="6" height="50" fill="${color}"/><path d="M 11 5 A 29 29 0 0 1 40 34" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
+                door_sliding: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 40"><line x1="5" y1="20" x2="65" y2="20" stroke="${color}" stroke-width="2" stroke-dasharray="4 2"/><rect x="5" y="12" width="28" height="6" fill="${color}"/></svg>`,
+                window: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 30"><rect x="2" y="5" width="76" height="20" fill="none" stroke="${color}" stroke-width="3"/><line x1="2" y1="15" x2="78" y2="15" stroke="${color}" stroke-width="2"/></svg>`,
+                window_double: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 30"><rect x="2" y="5" width="76" height="20" fill="none" stroke="${color}" stroke-width="3"/><line x1="40" y1="5" x2="40" y2="25" stroke="${color}" stroke-width="3"/></svg>`,
+                balcony: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40"><rect x="4" y="8" width="72" height="24" fill="none" stroke="${color}" stroke-width="3"/><line x1="4" y1="20" x2="76" y2="20" stroke="${color}" stroke-width="2" stroke-dasharray="3 3"/></svg>`,
+
+                sink: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="8" y="12" width="34" height="26" rx="6" fill="none" stroke="${color}" stroke-width="3"/><circle cx="25" cy="25" r="6" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
+                toilet: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 60"><rect x="12" y="6" width="26" height="16" rx="3" fill="none" stroke="${color}" stroke-width="3"/><ellipse cx="25" cy="38" rx="14" ry="18" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
+                shower: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="5" y="5" width="40" height="40" fill="none" stroke="${color}" stroke-width="2"/><circle cx="25" cy="25" r="8" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
+                bathtub: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 40"><rect x="5" y="5" width="60" height="30" rx="10" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
+                drain: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="none" stroke="${color}" stroke-width="3"/><circle cx="20" cy="20" r="6" fill="${color}"/></svg>`,
+
+                sofa: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 50"><rect x="5" y="15" width="70" height="30" rx="6" fill="none" stroke="${color}" stroke-width="3"/><rect x="2" y="10" width="10" height="35" rx="3" fill="${color}"/><rect x="68" y="10" width="10" height="35" rx="3" fill="${color}"/></svg>`,
+                bed: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80"><rect x="5" y="5" width="50" height="70" rx="4" fill="none" stroke="${color}" stroke-width="3"/><rect x="8" y="8" width="44" height="18" rx="3" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
+                table: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 50"><rect x="10" y="5" width="50" height="40" rx="4" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
+                wardrobe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 50"><rect x="5" y="5" width="60" height="40" rx="2" fill="none" stroke="${color}" stroke-width="3"/><line x1="35" y1="5" x2="35" y2="45" stroke="${color}" stroke-width="3"/></svg>`
+            });
+
+            window.addSymbol = function(type, labelName) {
+                canvas.isDrawingMode = false;
+                setActiveTool(btnSelect);
+                const svgStr = getSvgData(colorPicker.value)[type] || getSvgData(colorPicker.value)['socket'];
+                fabric.loadSVGFromString(svgStr, (objects, options) => {
+                    const obj = fabric.util.groupSVGElements(objects, options);
+                    obj.set({
+                        left: canvas.width / 2 - 25, top: canvas.height / 2 - 25,
+                        scaleX: 1.1, scaleY: 1.1,
+                        nameTag: labelName
+                    });
+                    canvas.add(obj);
+                    canvas.setActiveObject(obj);
+                });
+                autoCloseSidebarOnMobile();
+            };
+
+            document.getElementById('btnClear').addEventListener('click', () => {
+                if (confirm('هل ترغب في مسح اللوحة بالكامل؟')) {
+                    canvas.clear();
+                    addWatermark();
+                    floatingGroup.style.display = 'none';
+                    saveHistory(canvas);
+                    updateInventorySummary(canvas);
+                }
+            });
+
+            document.getElementById('btnFullscreen').addEventListener('click', () => {
+                const elem = document.documentElement;
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            });
+
+            document.getElementById('btnSave').addEventListener('click', () => {
+                const objects = canvas.getObjects().filter(o => o.nameTag !== 'العلامة المائية S⚡N (electric)');
+                if (objects.length === 0) {
+                    alert('اللوحة فارغة تماماً، لا يوجد عناصر لحفظها!');
+                    return;
+                }
+                openSummaryModal(canvas);
+            });
+        });
+
+        function openSummaryModal(canvas) {
+            const container = document.getElementById('elementsListContainer');
+            container.innerHTML = '';
+
+            const objects = canvas.getObjects();
+            let roomsList = [];
+            const symbolCounts = {};
+
+            objects.forEach(obj => {
+                let name = obj.nameTag;
+                if (!name || name === 'العلامة المائية S⚡N (electric)' || name.includes('مقاس جدار')) return;
+
+                if (obj.roomDimensions) {
+                    roomsList.push({ name: name, dims: obj.roomDimensions });
+                } else {
+                    symbolCounts[name] = (symbolCounts[name] || 0) + 1;
+                }
+            });
+
+            let html = '<div style="font-size:12px; color:#00f2fe; font-weight:900; margin-bottom:4px;">🏠 الحجرات والمساحات المدخلة وأبعادها:</div>';
+            if (roomsList.length === 0) {
+                html += '<div style="font-size:11px; color:#94a3b8; padding: 4px;">لا توجد حجرات مساحية مدخلة.</div>';
+            } else {
+                roomsList.forEach((room, idx) => {
+                    html += `
+                        <div class="element-row">
+                            <span>حجرة (${idx + 1}): <strong>${room.name}</strong></span>
+                            <span style="color:#00f2fe; font-weight:900; background:rgba(0,242,254,0.15); padding:3px 8px; border-radius:6px;">${room.dims}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '<div style="font-size:12px; color:#ff007f; font-weight:900; margin-top:8px; margin-bottom:4px;">⚡ 🚰 🛋️ ملخص الرموز والكميات الآلية:</div>';
+            if (Object.keys(symbolCounts).length === 0) {
+                html += '<div style="font-size:11px; color:#94a3b8; padding: 4px;">لا توجد رموز مضافة.</div>';
+            } else {
+                for (let [name, count] of Object.entries(symbolCounts)) {
+                    html += `
+                        <div class="element-row">
+                            <span>${name}</span>
+                            <span style="color:#ff007f; font-weight:900; background:rgba(255,0,127,0.15); padding:3px 8px; border-radius:6px;">عدد ${count}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            container.innerHTML = html;
+            document.getElementById('dimensionsModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('dimensionsModal').style.display = 'none';
+        }
+
+        function saveFinalImage() {
+            closeModal();
+            const canvas = window.canvasApp;
+            canvas.discardActiveObject();
+            canvas.renderAll();
+
+            const link = document.createElement('a');
+            link.download = `SNelectric-Certified-Layout-${Date.now()}.png`;
+            link.href = canvas.toDataURL({ format: 'png', multiplier: 2 });
+            link.click();
+        }
+    </script>
+</body>
+</html>
