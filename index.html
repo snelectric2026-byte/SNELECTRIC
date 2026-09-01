@@ -66,9 +66,12 @@
                     <i class="fa-solid fa-circle-info"></i> تنبيه هام قبل البدء:
                 </p>
                 <p style="font-size: 14px; color: #ddd;">
-                    هذا الرسم يحسب عدد البرايز والمدخلات من تلقاء نفسه تلقائياً بعد إدخالك لمقاسات الغرفة!
+                    هذا التطبيق يساعدك على رسم المخطط المعماري وحساب عدد البرايز والمدخلات من تلقاء نفسه تلقائياً بعد إدخالك لمقاسات الغرفة!
                 </p>
-                <button onclick="startDrawing()" class="btn-service" style="margin-top: 10px; width: auto; padding: 6px 20px;">ابدأ الرسم الآن</button>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+                    <button onclick="startDrawing()" class="btn-service" style="width: auto; padding: 6px 20px;">📋 ارسم وصمم الآن</button>
+                    <button onclick="goToDrawingApp()" class="btn-service" style="width: auto; padding: 6px 20px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000;">🎨 تطبيق الرسم المتقدم</button>
+                </div>
             </div>
 
             <!-- منطقة أدوات الرسم -->
@@ -93,7 +96,7 @@
         <!-- قسم صيانة أعطال الكهرباء -->
         <h2 class="section-title"><i class="fa-solid fa-plug-circle-bolt"></i> صيانة الأعطال الطارئة</h2>
         <div class="maintenance-box">
-            <p style="margin-bottom: 15px; font-size: 14px; color: #cbd5e1;">إذا كان لديك عطل كهربائي، يمكنك رفع صورة العطل وإرسال بلاغ طارئ فوراً:</p>
+            <p style="margin-bottom: 15px; font-size: 14px; color: #cbd5e1;">إذا كان لديك عطل كهربائي، يمكنك رفع صورة العطل وإرسال بلاغ طارئ فوراً للإدارة عبر WhatsApp</p>
             <div class="form-group">
                 <label>اختر صورة العطل:</label>
                 <input type="file" id="electricFaultImg" accept="image/*">
@@ -155,7 +158,7 @@
                     <input type="text" id="inspGovDetails" placeholder="مثال: القاهرة - نصر سيتي - شارع الطيران">
                 </div>
                 <div class="form-group" id="mapGroup" style="display: none;">
-                    <button type="button" onclick="getGPSLocation()" style="padding: 8px 12px; background: #3498db; color: #fff; border: none; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">تحديد موقعي الآن</button>
+                    <button type="button" onclick="getGPSLocation()" style="padding: 8px 12px; background: #3498db; color: #fff; border: none; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">🗺️ احصل على الموقع</button>
                     <input type="text" id="inspMapLink" placeholder="رابط الموقع على الخريطة" readonly>
                 </div>
                 <button type="submit" class="btn-submit">تأكيد طلب المعاينة</button>
@@ -303,7 +306,7 @@
             <span>مساعد SN ELECTRIC</span>
             <span style="cursor: pointer;" onclick="toggleChat()">&times;</span>
         </div>
-        <div id="chatBody" style="height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px;">
+        <div id="chatBody" style="height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); padding: 8px; border-radius: 8px;">
             <div style="background: rgba(255,255,255,0.05); color: #fff; padding: 8px 12px; border-radius: 8px; align-self: flex-start;">مرحباً بك! كيف يمكنني مساعدتك اليوم؟</div>
         </div>
         <div style="display: flex; gap: 5px;">
@@ -314,5 +317,11 @@
 
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        // دالة الانتقال لتطبيق الرسم
+        function goToDrawingApp() {
+            window.location.href = 'drwing.html';
+        }
+    </script>
 </body>
 </html>
