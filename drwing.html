@@ -5,21 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SNelectric - مولد المساحات والمخططات المعمارية الذكية</title>
 
-    <!-- مكتبة Fabric.js للتصميم الهندسي -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-    <!-- مكتبات Three.js للعرض والتجول 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
         
-        body { 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            overflow: hidden; 
-            background: #0b0f19; 
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0b0f19;
             color: #ffffff;
         }
 
@@ -45,6 +42,7 @@
         }
 
         .top-bar {
+            height: 65px;
             min-height: 65px; 
             background: rgba(18, 25, 41, 0.95);
             backdrop-filter: blur(16px);
@@ -55,7 +53,6 @@
             align-items: center; 
             padding: 8px 16px; 
             z-index: 100;
-            flex-wrap: wrap;
             gap: 8px;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
         }
@@ -68,24 +65,26 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
         }
 
         .btn-top { 
             height: 40px;
-            padding: 0 10px;
+            padding: 0 12px;
             border: 2px solid rgba(0, 242, 254, 0.6); 
             background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(79, 172, 254, 0.35) 100%); 
             color: #fff;
             backdrop-filter: blur(8px);
             border-radius: 12px; 
             cursor: pointer; 
-            font-size: 14px; 
+            font-size: 13px; 
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 4px;
+            white-space: nowrap;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
         }
@@ -94,7 +93,7 @@
             border-color: #00f2fe;
             color: #000;
             box-shadow: 0 0 20px rgba(0, 242, 254, 0.9);
-            transform: scale(1.05);
+            transform: scale(1.03);
         }
         .btn-top:disabled {
             opacity: 0.3;
@@ -106,10 +105,20 @@
             transform: none;
         }
 
-        .app-layout { display: flex; flex: 1; height: calc(100vh - 65px); position: relative; overflow: hidden; z-index: 10; }
+        /* --- الهيكل الرئيسي المخصص للتجاوب الحقيقي --- */
+        .app-layout { 
+            display: flex; 
+            height: calc(100vh - 65px); 
+            width: 100vw;
+            position: relative; 
+            overflow: hidden; 
+            z-index: 10; 
+        }
 
         .canvas-container-wrapper {
-            flex: 1; width: 100%; height: 100%; position: relative; 
+            flex: 1; 
+            height: 100%; 
+            position: relative; 
             background-color: #0d1322;
             background-image: linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px), 
                               linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
@@ -118,20 +127,41 @@
             overflow: hidden;
         }
 
+        /* --- القائمة الجانبية وإصلاح مشكلة التمرير كاملة --- */
         .sidebar {
             width: 340px; 
-            background: rgba(15, 23, 42, 0.95);
+            height: 100%;
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-left: 2px solid rgba(0, 242, 254, 0.3); 
-            padding: 12px;
-            overflow-y: auto; display: flex; flex-direction: column; gap: 10px; z-index: 20; 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 20; 
             transition: transform 0.3s ease;
             box-shadow: -12px 0 35px rgba(0,0,0,0.7);
         }
 
+        .sidebar-scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            -webkit-overflow-scrolling: touch;
+        }
+
         @media (max-width: 768px) {
-            .sidebar { position: absolute; top: 0; right: 0; bottom: 0; width: 85%; max-width: 340px; transform: translateX(100%); }
+            .sidebar { 
+                position: absolute; 
+                top: 0; 
+                right: 0; 
+                bottom: 0; 
+                width: 88%; 
+                max-width: 340px; 
+                transform: translateX(100%); 
+            }
             .sidebar.active { transform: translateX(0); }
         }
 
@@ -141,7 +171,7 @@
             padding: 10px 8px; border-radius: 12px; 
             border: 2px solid rgba(255, 255, 255, 0.2); 
             background: rgba(255, 255, 255, 0.06);
-            color: #ffffff; font-size: 13px; cursor: pointer; text-align: center; 
+            color: #ffffff; font-size: 12px; cursor: pointer; text-align: center; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 700;
             box-shadow: 0 3px 12px rgba(0,0,0,0.3);
         }
@@ -149,7 +179,6 @@
             background: rgba(255, 255, 255, 0.15);
             border-color: rgba(0, 242, 254, 0.8);
             box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
-            transform: translateY(-1px);
         }
         .btn-oval.active { 
             background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); 
@@ -186,6 +215,7 @@
             box-shadow: 0 0 10px rgba(0,242,254,0.9); background: #00f2fe; cursor: pointer; display: inline-block;
         }
 
+        /* تحسين أكورديون القوائم الجانبية لتوفير مساحة العرض */
         .accordion-header { 
             background: linear-gradient(90deg, rgba(114,9,183,0.3) 0%, rgba(0,242,254,0.2) 100%); 
             padding: 10px 12px; 
@@ -197,16 +227,15 @@
         }
         .accordion-header:hover { border-color: rgba(0, 242, 254, 0.8); box-shadow: 0 0 15px rgba(0, 242, 254, 0.6); }
 
-        .accordion-content { display: none; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 6px; }
+        .accordion-content { display: none; grid-template-columns: 1fr 1fr; gap: 6px; padding-top: 6px; }
         .accordion-content.show { display: grid; }
         .accordion-content button { 
-            padding: 9px 8px; font-size: 12px; background: rgba(255, 255, 255, 0.05); 
-            color: #ffffff; border: 2px solid rgba(255, 255, 255, 0.12); border-radius: 10px; cursor: pointer; 
-            transition: all 0.2s; text-align: right; display: flex; align-items: center; gap: 6px; font-weight: 700;
+            padding: 8px 6px; font-size: 11px; background: rgba(255, 255, 255, 0.05); 
+            color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.12); border-radius: 10px; cursor: pointer; 
+            transition: all 0.2s; text-align: right; display: flex; align-items: center; gap: 4px; font-weight: 700;
         }
         .accordion-content button:hover { 
             background: rgba(0, 242, 254, 0.3); border-color: #00f2fe; color: #fff; box-shadow: 0 0 12px rgba(0,242,254,0.6);
-            transform: translateY(-1px);
         }
 
         .inventory-panel {
@@ -220,7 +249,7 @@
             box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
         }
         .inventory-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 900;
             color: #00f2fe;
             border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -233,10 +262,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 12px;
+            font-size: 11px;
             background: rgba(255, 255, 255, 0.04);
-            padding: 6px 10px;
-            border-radius: 8px;
+            padding: 5px 8px;
+            border-radius: 6px;
             border: 1px solid rgba(255, 255, 255, 0.06);
             font-weight: 700;
         }
@@ -305,7 +334,6 @@
 </head>
 <body>
 
-    <!-- مدخل قراءة الملف المخفي -->
     <input type="file" id="fileInputJSON" accept=".json" style="display: none;" />
 
     <div id="floatingActionGroup" class="floating-action-group">
@@ -314,7 +342,6 @@
         <button id="floatingDeleteBtn" class="floating-btn delete" title="حذف العنصر المحدد">🗑️</button>
     </div>
 
-    <!-- نافذة إدخال أبعاد الغرفة عند الإضافة -->
     <div class="modal-overlay" id="roomInputModal">
         <div class="modal-card">
             <div class="modal-header">
@@ -343,7 +370,6 @@
         </div>
     </div>
 
-    <!-- نافذة التدقيق وعدد المدخلات النهائية قبل الحفظ -->
     <div class="modal-overlay" id="dimensionsModal">
         <div class="modal-card">
             <div class="modal-header">
@@ -363,7 +389,6 @@
         </div>
     </div>
 
-    <!-- نافذة العرض والتجول 3D -->
     <div id="modal3D" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:2000; background:#000;">
         <div id="instructions3D" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); color:#fff; background:rgba(0,0,0,0.7); padding:10px 20px; border-radius:8px; z-index:10; font-weight:bold; cursor:pointer; text-align:center;">
             اضغط هنا لبدء التجول داخل الغرفة (W,A,S,D للتحرك والماوس للنظر) <br> <span style="font-size:12px; color:#00f2fe;">[ اضغط ESC للخروج من التحكم ]</span>
@@ -397,138 +422,136 @@
         </main>
 
         <aside class="sidebar" id="sidebar">
+            <div class="sidebar-scroll-content">
 
-            <div class="tools-grid">
-                <button id="btnSelect" class="btn-oval active">🖐️ تحديد ونقل</button>
-                <button id="btnDeleteSegment" class="btn-oval btn-oval-warning">✂️ ممحاة ضلع</button>
-                <button id="btnPencil" class="btn-oval">✏️ رسم حر</button>
-                <button id="btnText" class="btn-oval">T إضافة نص</button>
-            </div>
-            <button id="btnClear" class="btn-oval btn-oval-danger" style="width: 100%;">🗑️ مسح اللوحة بالكامل</button>
-
-            <div class="inventory-panel">
-                <div class="inventory-title">
-                    <span>📊 الحصر الآلي للرموز والكميات</span>
-                    <span id="totalItemsCount" style="font-size:11px; color:#00f2fe;">0 عنصر</span>
+                <div class="tools-grid">
+                    <button id="btnSelect" class="btn-oval active">🖐️ تحديد ونقل</button>
+                    <button id="btnDeleteSegment" class="btn-oval btn-oval-warning">✂️ ممحاة ضلع</button>
+                    <button id="btnPencil" class="btn-oval">✏️ رسم حر</button>
+                    <button id="btnText" class="btn-oval">T إضافة نص</button>
                 </div>
-                <div id="inventoryListContainer" style="display: flex; flex-direction: column; gap: 5px; max-height: 150px; overflow-y: auto;">
-                    <div style="font-size:11px; color:#94a3b8; text-align:center; padding: 8px;">لم يتم إضافة عناصر بعد...</div>
+                <button id="btnClear" class="btn-oval btn-oval-danger" style="width: 100%;">🗑️ مسح اللوحة بالكامل</button>
+
+                <div class="menu-item" onclick="toggleDropdown('fontDropdown')">
+                    <span id="fontLabel">الخط: Arial ▾</span>
+                    <div class="menu-dropdown" id="fontDropdown">
+                        <div class="menu-option" onclick="setFont('Arial', 'Arial')">Arial</div>
+                        <div class="menu-option" onclick="setFont('Tahoma', 'Tahoma')">Tahoma</div>
+                        <div class="menu-option" onclick="setFont('Cairo', 'Cairo')">Cairo</div>
+                        <div class="menu-option" onclick="setFont('Amiri', 'Amiri')">Amiri</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="menu-item" onclick="toggleDropdown('fontDropdown')">
-                <span id="fontLabel">الخط: Arial ▾</span>
-                <div class="menu-dropdown" id="fontDropdown">
-                    <div class="menu-option" onclick="setFont('Arial', 'Arial')">Arial</div>
-                    <div class="menu-option" onclick="setFont('Tahoma', 'Tahoma')">Tahoma</div>
-                    <div class="menu-option" onclick="setFont('Cairo', 'Cairo')">Cairo</div>
-                    <div class="menu-option" onclick="setFont('Amiri', 'Amiri')">Amiri</div>
+                <div class="menu-item" onclick="toggleDropdown('brushDropdown')">
+                    <span id="brushLabel">نوع القلم: ✏️ عادي ▾</span>
+                    <div class="menu-dropdown" id="brushDropdown">
+                        <div class="menu-option" onclick="setBrush('pencil', '✏️ عادي')">✏️ عادي</div>
+                        <div class="menu-option" onclick="setBrush('dotted', '💬 تنقيط نيون')">💬 تنقيط نيون</div>
+                        <div class="menu-option" onclick="setBrush('highlighter', '🖍️ هايلايتر')">🖍️ هايلايتر</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="menu-item" onclick="toggleDropdown('brushDropdown')">
-                <span id="brushLabel">نوع القلم: ✏️ عادي ▾</span>
-                <div class="menu-dropdown" id="brushDropdown">
-                    <div class="menu-option" onclick="setBrush('pencil', '✏️ عادي')">✏️ عادي</div>
-                    <div class="menu-option" onclick="setBrush('dotted', '💬 تنقيط نيون')">💬 تنقيط نيون</div>
-                    <div class="menu-option" onclick="setBrush('highlighter', '🖍️ هايلايتر')">🖍️ هايلايتر</div>
+                <div class="menu-item" onclick="document.getElementById('colorPicker').click()">
+                    <span>لون اللوحة العام ▾</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="color-circle-btn" id="colorCirclePreview"></div>
+                        <input type="color" id="colorPicker" value="#00f2fe" style="opacity: 0; width: 0; height: 0; position: absolute;">
+                    </div>
                 </div>
-            </div>
 
-            <div class="menu-item" onclick="document.getElementById('colorPicker').click()">
-                <span>لون اللوحة العام ▾</span>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div class="color-circle-btn" id="colorCirclePreview"></div>
-                    <input type="color" id="colorPicker" value="#00f2fe" style="opacity: 0; width: 0; height: 0; position: absolute;">
+                <div style="font-size: 13px; font-weight: 700; color: #cbd5e1; display: flex; justify-content: space-between; align-items: center; padding: 4px 6px;">
+                    <label>سُمْك الخط:</label>
+                    <input type="range" id="brushWidth" min="1" max="25" value="4" style="width: 55%; accent-color: #00f2fe; height: 6px;">
                 </div>
+
+                <div class="accordion-header" onclick="toggleAccordion('roomsSec')">🏠 مساحات وحجرات معمارية ▾</div>
+                <div class="accordion-content" id="roomsSec">
+                    <button onclick="promptAddRoom('حجرة نوم رئيسية')">🛏️ غرفة نوم</button>
+                    <button onclick="promptAddRoom('حجرة أطفال')">🛌 غرفة أطفال</button>
+                    <button onclick="promptAddRoom('حجرة استقبال (صالة)')">🛋️ استقبال</button>
+                    <button onclick="promptAddRoom('حمام رئيسي')">🛁 حمام</button>
+                    <button onclick="promptAddRoom('مطبخ متكامل')">🍳 مطبخ</button>
+                    <button onclick="promptAddRoom('منطقة جاردن (حديقة)')">🌿 حدائق</button>
+                </div>
+
+                <div class="accordion-header" onclick="toggleAccordion('electricSec')">⚡ كهرباء (تجهيزات ومفاتيح) ▾</div>
+                <div class="accordion-content" id="electricSec">
+                    <button onclick="addSymbol('single_sw', 'مفتاح إحدى')">🔘 مفتاح أحادي</button>
+                    <button onclick="addSymbol('double_sw', 'مفتاح ثنائي')">🔘 مفتاح ثنائي</button>
+                    <button onclick="addSymbol('triple_sw', 'مفتاح ثلاثي')">🔘 مفتاح ثلاثي</button>
+                    <button onclick="addSymbol('two_way_sw', 'مفتاح ديفاتوري')">🔘 ديفاتوري</button>
+                    <button onclick="addSymbol('single_socket', 'بريزة احادى')">🔌 بريزة عادية</button>
+                    <button onclick="addSymbol('power_socket', 'بريزة مجوفه (قوى)')">🔌 بريزة قوى</button>
+                    <button onclick="addSymbol('ac_outlet', 'تكييف')">❄️ تكييف</button>
+                    <button onclick="addSymbol('exhaust_fan', 'شفاط')">🌀 شفاط</button>
+                    <button onclick="addSymbol('wall_spot', 'اسبوت حائط')">🎯 سبوت حائط</button>
+                    <button onclick="addSymbol('lamp', 'لمبه')">💡 لمبة</button>
+                    <button onclick="addSymbol('bell', 'جرس')">🔔 جرس</button>
+                    <button onclick="addSymbol('alarm', 'انذار')">🚨 إنذار</button>
+                    <button onclick="addSymbol('audio_out', 'مخرج صوت')">🔊 صوت</button>
+                    <button onclick="addSymbol('data_out', 'داتا')">🌐 داتا</button>
+                    <button onclick="addSymbol('panel', 'لوحة توزيع كهرباء رئيسية')">⚡ لوحة رئيسية</button>
+                </div>
+
+                <div class="accordion-header" onclick="toggleAccordion('powerSupplySec')">⚡ التغذية الكهربائية والتأريض ▾</div>
+                <div class="accordion-content" id="powerSupplySec">
+                    <button onclick="addSymbol('main_meter', 'عداد كهرباء رئيسي')">📟 عداد رئيسي</button>
+                    <button onclick="addSymbol('sub_panel', 'لوحة فرعية')">🔲 لوحة فرعية</button>
+                    <button onclick="addSymbol('mcb_breaker', 'قاطع أوتوماتيك MCB')">🎛️ قاطع MCB</button>
+                    <button onclick="addSymbol('rccb_breaker', 'قاطع تسريب أرضي RCCB')">🛡️ قاطع RCCB</button>
+                    <button onclick="addSymbol('earth_pit', 'بئر تأريض Grounding Pit')">🌐 بئر تأريض</button>
+                    <button onclick="addSymbol('earth_rod', 'قضيب تأريض Earth Rod')">📍 قضيب تأريض</button>
+                    <button onclick="addSymbol('ats_switch', 'مفتاح تحويل أوتوماتيك ATS')">🔄 مفتاح ATS</button>
+                    <button onclick="addSymbol('generator', 'مولد كهربائي طوارئ')">⚙️ مولد طوارئ</button>
+                    <button onclick="addSymbol('ups_system', 'جهاز تغذية غير منقطعة UPS')">🔋 وحدة UPS</button>
+                    <button onclick="openSmartDistributor()" style="grid-column: span 2; background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(114, 9, 183, 0.3)); border-color: #00f2fe; text-align: center; justify-content: center; color: #00f2fe;">
+                        ⚡ الموزع الذكي للدوائر ( أوتوماتيكي )
+                    </button>
+                </div>
+
+                <div class="accordion-header" onclick="toggleAccordion('carpentrySec')">🚪 نجارة (أبواب وشبابيك) ▾</div>
+                <div class="accordion-content" id="carpentrySec">
+                    <button onclick="addSymbol('door', 'باب مفرد مفصلي')">🚪 باب مفرد</button>
+                    <button onclick="addSymbol('door_double', 'باب دبل عريض')">🚪 باب دبل</button>
+                    <button onclick="addSymbol('door_sliding', 'باب جرار سحب')">↔️ باب جرار</button>
+                    <button onclick="addSymbol('window', 'شباك زجاجي مفرد')">🪟 شباك مفرد</button>
+                    <button onclick="addSymbol('window_double', 'شباك زجاجي دبل')">🪟 شباك دبل</button>
+                    <button onclick="addSymbol('balcony', 'بلكون / تراس')">🏛️ بلكون</button>
+                </div>
+
+                <div class="accordion-header" onclick="toggleAccordion('plumbingSec')">🚰 سباكة (مخارج ومواسير) ▾</div>
+                <div class="accordion-content" id="plumbingSec">
+                    <button onclick="addSymbol('sink', 'حوض وجه ومغسلة')">🚰 حوض غسيل</button>
+                    <button onclick="addSymbol('toilet', 'مرحاض (كرسي حمام)')">🚽 مرحاض</button>
+                    <button onclick="addSymbol('shower', 'دش استحمام ومقصورة')">🚿 دش استحمام</button>
+                    <button onclick="addSymbol('bathtub', 'بانيو استرخاء')">🛁 بانيو</button>
+                    <button onclick="addSymbol('drain', 'صرف أرضي (بالوعة)')">⭕ بالوعة صرف</button>
+                </div>
+
+                <div class="accordion-header" onclick="toggleAccordion('furnitureSec')">🛋️ أثاث وتجهيزات داخلية ▾</div>
+                <div class="accordion-content" id="furnitureSec">
+                    <button onclick="addSymbol('wooden_chair', 'كرسى خشب')">🪑 كرسي خشب</button>
+                    <button onclick="addSymbol('armchair', 'كرسى انتريه')">🪑 كرسي أنتريه</button>
+                    <button onclick="addSymbol('sofa', 'كنبه')">🛋️ كنبة</button>
+                    <button onclick="addSymbol('table', 'طاوله')">🪵 طاولة</button>
+                    <button onclick="addSymbol('wardrobe', 'دولاب')">🚪 دولاب</button>
+                    <button onclick="addSymbol('stove', 'بوتاجاز')">🍳 بوتاجاز</button>
+                    <button onclick="addSymbol('water_heater', 'سخان')">🔥 سخان</button>
+                    <button onclick="addSymbol('tv_screen', 'شاشه')">📺 شاشة</button>
+                    <button onclick="addSymbol('bed', 'سرير نوم رئيسي')">🛏️ سرير نوم</button>
+                </div>
+
+                <div class="inventory-panel" style="margin-top: 10px;">
+                    <div class="inventory-title">
+                        <span>📊 الحصر الآلي للرموز والكميات</span>
+                        <span id="totalItemsCount" style="font-size:11px; color:#00f2fe;">0 عنصر</span>
+                    </div>
+                    <div id="inventoryListContainer" style="display: flex; flex-direction: column; gap: 5px; max-height: 160px; overflow-y: auto;">
+                        <div style="font-size:11px; color:#94a3b8; text-align:center; padding: 8px;">لم يتم إضافة عناصر بعد...</div>
+                    </div>
+                </div>
+
             </div>
-
-            <div style="font-size: 13px; font-weight: 700; color: #cbd5e1; display: flex; justify-content: space-between; align-items: center; padding: 6px;">
-                <label>سُمْك الخط:</label>
-                <input type="range" id="brushWidth" min="1" max="25" value="4" style="width: 55%; accent-color: #00f2fe; height: 6px;">
-            </div>
-
-            <div class="accordion-header" onclick="toggleAccordion('roomsSec')">🏠 مساحات وحجرات معمارية ▾</div>
-            <div class="accordion-content" id="roomsSec">
-                <button onclick="promptAddRoom('حجرة نوم رئيسية')">🛏️ حجرة نوم رئيسية</button>
-                <button onclick="promptAddRoom('حجرة أطفال')">🛌 حجرة أطفال</button>
-                <button onclick="promptAddRoom('حجرة استقبال (صالة)')">🛋️ حجرة استقبال</button>
-                <button onclick="promptAddRoom('حمام رئيسي')">🛁 حمام رئيسي</button>
-                <button onclick="promptAddRoom('مطبخ متكامل')">🍳 مطبخ متكامل</button>
-                <button onclick="promptAddRoom('منطقة جاردن (حديقة)')">🌿 منطقة جاردن</button>
-            </div>
-
-            <div class="accordion-header" onclick="toggleAccordion('carpentrySec')">🚪 نجارة (أبواب وشبابيك) ▾</div>
-            <div class="accordion-content" id="carpentrySec">
-                <button onclick="addSymbol('door', 'باب مفرد مفصلي')">🚪 باب مفرد</button>
-                <button onclick="addSymbol('door_double', 'باب دبل عريض')">🚪 باب دبل</button>
-                <button onclick="addSymbol('door_sliding', 'باب جرار سحب')">↔️ باب جرار</button>
-                <button onclick="addSymbol('window', 'شباك زجاجي مفرد')">🪟 شباك مفرد</button>
-                <button onclick="addSymbol('window_double', 'شباك زجاجي دبل')">🪟 شباك دبل</button>
-                <button onclick="addSymbol('balcony', 'بلكون / تراس')">🏛️ بلكون</button>
-            </div>
-
-            <div class="accordion-header" onclick="toggleAccordion('electricSec')">⚡ كهرباء (تجهيزات ومفاتيح) ▾</div>
-            <div class="accordion-content" id="electricSec">
-                <button onclick="addSymbol('single_sw', 'مفتاح إحدى')">🔘 مفتاح إحدى</button>
-                <button onclick="addSymbol('double_sw', 'مفتاح ثنائي')">🔘 مفتاح ثنائي</button>
-                <button onclick="addSymbol('triple_sw', 'مفتاح ثلاثي')">🔘 مفتاح ثلاثي</button>
-                <button onclick="addSymbol('two_way_sw', 'مفتاح ديفاتوري')">🔘 مفتاح ديفاتوري</button>
-                <button onclick="addSymbol('single_socket', 'بريزة احادى')">🔌 بريزة أحادية</button>
-                <button onclick="addSymbol('power_socket', 'بريزة مجوفه (قوى)')">🔌 بريزة قوى</button>
-                <button onclick="addSymbol('ac_outlet', 'تكييف')">❄️ تكييف</button>
-                <button onclick="addSymbol('exhaust_fan', 'شفاط')">🌀 شفاط</button>
-                <button onclick="addSymbol('wall_spot', 'اسبوت حائط')">🎯 اسبوت حائط</button>
-                <button onclick="addSymbol('lamp', 'لمبه')">💡 لمبة</button>
-                <button onclick="addSymbol('bell', 'جرس')">🔔 جرس</button>
-                <button onclick="addSymbol('alarm', 'انذار')">🚨 إنذار</button>
-                <button onclick="addSymbol('audio_out', 'مخرج صوت')">🔊 مخرج صوت</button>
-                <button onclick="addSymbol('data_out', 'داتا')">🌐 داتا</button>
-                <button onclick="addSymbol('panel', 'لوحة توزيع كهرباء رئيسية')">⚡ لوحة توزيع</button>
-            </div>
-
-            <!-- الإضافة: قسم التغذية الكهربائية والتأريض -->
-            <div class="accordion-header" onclick="toggleAccordion('powerSupplySec')">⚡ التغذية الكهربائية والتأريض ▾</div>
-            <div class="accordion-content" id="powerSupplySec">
-                <button onclick="addSymbol('main_meter', 'عداد كهرباء رئيسي')">📟 عداد رئيسي</button>
-                <button onclick="addSymbol('sub_panel', 'لوحة فرعية')">🔲 لوحة فرعية</button>
-                <button onclick="addSymbol('mcb_breaker', 'قاطع أوتوماتيك MCB')">🎛️ قاطع MCB</button>
-                <button onclick="addSymbol('rccb_breaker', 'قاطع تسريب أرضي RCCB')">🛡️ قاطع RCCB</button>
-
-                <button onclick="addSymbol('earth_pit', 'بئر تأريض Grounding Pit')">🌐 بئر تأريض</button>
-
-                <button onclick="addSymbol('earth_rod', 'قضيب تأريض Earth Rod')">📍 قضيب تأريض</button>
-
-                <button onclick="addSymbol('ats_switch', 'مفتاح تحويل أوتوماتيك ATS')">🔄 مفتاح ATS</button>
-                <button onclick="addSymbol('generator', 'مولد كهربائي طوارئ')">⚙️ مولد طوارئ</button>
-                <button onclick="addSymbol('ups_system', 'جهاز تغذية غير منقطعة UPS')">🔋 وحدة UPS</button>
-                <button onclick="openSmartDistributor()" style="grid-column: span 2; background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(114, 9, 183, 0.3)); border-color: #00f2fe; text-align: center; justify-content: center; color: #00f2fe;">
-                    ⚡ الموزع الذكي للدوائر ( توزيع أوتوماتيكي )
-                </button>
-            </div>
-
-            <div class="accordion-header" onclick="toggleAccordion('plumbingSec')">🚰 سباكة (مخارج ومواسير) ▾</div>
-            <div class="accordion-content" id="plumbingSec">
-                <button onclick="addSymbol('sink', 'حوض وجه ومغسلة')">🚰 حوض غسيل</button>
-                <button onclick="addSymbol('toilet', 'مرحاض (كرسي حمام)')">🚽 مرحاض</button>
-                <button onclick="addSymbol('shower', 'دش استحمام ومقصورة')">🚿 دش استحمام</button>
-                <button onclick="addSymbol('bathtub', 'بانيو استرخاء')">🛁 بانيو</button>
-                <button onclick="addSymbol('drain', 'صرف أرضي (بالوعة)')">⭕ بالوعة صرف</button>
-            </div>
-
-            <div class="accordion-header" onclick="toggleAccordion('furnitureSec')">🛋️ أثاث وتجهيزات داخلية ▾</div>
-            <div class="accordion-content" id="furnitureSec">
-                <button onclick="addSymbol('wooden_chair', 'كرسى خشب')">🪑 كرسى خشب</button>
-                <button onclick="addSymbol('armchair', 'كرسى انتريه')">🪑 كرسى انتريه</button>
-                <button onclick="addSymbol('sofa', 'كنبه')">🛋️ كنبة</button>
-                <button onclick="addSymbol('table', 'طاوله')">🪵 طاولة</button>
-                <button onclick="addSymbol('wardrobe', 'دولاب')">🚪 دولاب</button>
-                <button onclick="addSymbol('stove', 'بوتاجاز')">🍳 بوتاجاز</button>
-                <button onclick="addSymbol('water_heater', 'سخان')">🔥 سخان</button>
-                <button onclick="addSymbol('tv_screen', 'شاشه')">📺 شاشة</button>
-                <button onclick="addSymbol('bed', 'سرير نوم رئيسي')">🛏️ سرير نوم</button>
-            </div>
-
         </aside>
     </div>
 
@@ -646,7 +669,6 @@
             window.updateBrushSettings();
         }
 
-        // دالة الموزع الذكي للدوائر الكهربائية
         function openSmartDistributor() {
             const canvas = window.canvasApp;
             if (!canvas) return;
@@ -1086,7 +1108,6 @@
                 canvas.renderAll();
             }
 
-            // مكتبة الرموز SVG بعد تحديث رسومات التغذية والتأريض
             const getSvgData = (color) => ({
                 single_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="50" y1="20" x2="50" y2="2" stroke="${color}" stroke-width="6"/></svg>`,
                 double_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="40" y1="20" x2="40" y2="2" stroke="${color}" stroke-width="6"/><line x1="60" y1="20" x2="60" y2="2" stroke="${color}" stroke-width="6"/></svg>`,
@@ -1104,7 +1125,6 @@
                 data_out: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="22" text-anchor="middle" font-weight="bold" fill="${color}">IT</text></svg>`,
                 panel: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect x="2" y="2" width="56" height="36" fill="none" stroke="${color}" stroke-width="3"/><path d="M 2 2 L 30 38 L 30 2 Z" fill="${color}"/></svg>`,
                 
-                // إضافة رموز التغذية والتأريض الجديدة
                 main_meter: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="8" stroke="${color}" stroke-width="6" fill="none"/><rect x="25" y="25" width="50" height="25" fill="${color}" opacity="0.3"/><circle cx="50" cy="68" r="10" stroke="${color}" stroke-width="4" fill="none"/></svg>`,
                 sub_panel: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="4" stroke="${color}" stroke-width="6" fill="none"/><line x1="10" y1="50" x2="90" y2="50" stroke="${color}" stroke-width="4"/><line x1="50" y1="20" x2="50" y2="80" stroke="${color}" stroke-width="4"/></svg>`,
                 mcb_breaker: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="30" y="10" width="40" height="80" rx="5" stroke="${color}" stroke-width="6" fill="none"/><rect x="40" y="40" width="20" height="30" fill="${color}"/></svg>`,
@@ -1181,9 +1201,6 @@
                 }
             });
 
-            // -----------------------------------------------------------
-            // إدارة المجلد SNelectric: فتح وحفظ ملفات JSON والصور PNG
-            // -----------------------------------------------------------
             let projectDirHandle = null;
 
             async function getSNelectricDirectory() {
@@ -1199,7 +1216,6 @@
                 }
             }
 
-            // زر فتح ملف مشروع JSON
             document.getElementById('btnOpenFile').addEventListener('click', async () => {
                 const fileInput = document.getElementById('fileInputJSON');
                 fileInput.value = '';
@@ -1229,7 +1245,6 @@
                 reader.readAsText(file);
             });
 
-            // زر حفظ ملف مشروع JSON
             document.getElementById('btnSaveProject').addEventListener('click', async () => {
                 const jsonStr = JSON.stringify(canvas.toJSON(['nameTag', 'roomDimensions']), null, 2);
                 const fileName = `SNelectric_Project_${Date.now()}.json`;
@@ -1248,7 +1263,6 @@
                     }
                 }
 
-                // طريقة الاحتياط التقليدية (تنزيل الملف مباشرة)
                 const blob = new Blob([jsonStr], { type: 'application/json' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
@@ -1338,9 +1352,6 @@
             };
         });
 
-        // -------------------------------------------------------------
-        // البرمجة الخاصة بمحرك الـ 3D وتوليد المشهد وتجول الشخص الأول
-        // -------------------------------------------------------------
         let scene3D, camera3D, renderer3D, controls3D;
         let moveFwd = false, moveBwd = false, moveLft = false, moveRgt = false;
         let prevTime3D = performance.now();
