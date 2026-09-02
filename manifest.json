@@ -1,18 +1,47 @@
 {
-  "name": "SN ELECTRIC - لوحة التحكم",
-  "short_name": "SN Admin",
-  "description": "لوحة تحكم الإدارة - SN ELECTRIC",
-  "start_url": "admin.html",
-  "scope": "./",
+  "name": "SNelectric - تطبيق الرسم الهندسي",
+  "short_name": "SNelectric",
+  "description": "تطبيق رسم معماري هندسي ذكي - حفظ محلي على الجهاز",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#1e3a8a",
-  "background_color": "#07101d",
-  "orientation": "portrait-primary",
+  "orientation": "portrait-or-landscape",
+  "background_color": "#0b0f19",
+  "theme_color": "#00f2fe",
   "icons": [
     {
-      "src": "icon.png",
-      "sizes": "192x192 512x512",
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["productivity", "graphics"],
+  "screenshots": [
+    {
+      "src": "/icon.png",
+      "sizes": "540x720",
       "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ارسم مشروعك",
+      "short_name": "رسم",
+      "description": "ابدأ رسم مشروع جديد",
+      "url": "/drwing.html",
+      "icons": [
+        {
+          "src": "/icon.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
