@@ -2,14 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SNelectric - مولد المساحات والمخططات المعمارية الذكية</title>
 
     <!-- مكتبة Fabric.js للتصميم الهندسي -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <!-- مكتبات Three.js للعرض والتجول 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
         
         body { 
             display: flex; 
@@ -69,19 +72,20 @@
         }
 
         .btn-top { 
-            width: 40px;
             height: 40px;
-            padding: 0;
+            padding: 0 10px;
             border: 2px solid rgba(0, 242, 254, 0.6); 
             background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(79, 172, 254, 0.35) 100%); 
             color: #fff;
             backdrop-filter: blur(8px);
             border-radius: 12px; 
             cursor: pointer; 
-            font-size: 16px; 
+            font-size: 14px; 
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 4px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
         }
@@ -110,6 +114,8 @@
             background-image: linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px), 
                               linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
             background-size: 25px 25px;
+            touch-action: none;
+            overflow: hidden;
         }
 
         .sidebar {
@@ -299,6 +305,9 @@
 </head>
 <body>
 
+    <!-- مدخل قراءة الملف المخفي -->
+    <input type="file" id="fileInputJSON" accept=".json" style="display: none;" />
+
     <div id="floatingActionGroup" class="floating-action-group">
         <label id="floatingColorBtn" class="floating-btn" title="تغيير لون هذا العنصر أو الجدار" style="cursor:pointer; font-size:16px; background:rgba(0,242,254,0.3);">🎨<input type="color" id="elementColorPicker" style="opacity:0; width:0; height:0; position:absolute;"></label>
         <button id="floatingDuplicateBtn" class="floating-btn" title="نسخ وتكرار الشكل">📋</button>
@@ -349,9 +358,18 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px;" onclick="closeModal()">إلغاء</button>
-                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color:#000; font-weight:900;" onclick="saveFinalImage()">اعتماد وحفظ الرسم 💾</button>
+                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color:#000; font-weight:900;" onclick="saveFinalImage()">اعتماد وحفظ الرسم كصورة 🖼️</button>
             </div>
         </div>
+    </div>
+
+    <!-- نافذة العرض والتجول 3D -->
+    <div id="modal3D" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:2000; background:#000;">
+        <div id="instructions3D" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); color:#fff; background:rgba(0,0,0,0.7); padding:10px 20px; border-radius:8px; z-index:10; font-weight:bold; cursor:pointer; text-align:center;">
+            اضغط هنا لبدء التجول داخل الغرفة (W,A,S,D للتحرك والماوس للنظر) <br> <span style="font-size:12px; color:#00f2fe;">[ اضغط ESC للخروج من التحكم ]</span>
+        </div>
+        <button onclick="close3DModal()" style="position:absolute; top:20px; right:20px; z-index:11; padding:8px 16px; background:#ff007f; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">إغلاق الـ 3D ✕</button>
+        <div id="container3D" style="width:100%; height:100%;"></div>
     </div>
 
     <header class="top-bar">
@@ -360,11 +378,15 @@
         </div>
         <div class="top-actions">
             <button id="btnInstall" class="btn-top" title="تثبيت التطبيق على الجهاز ⬇️" style="display:none; background:linear-gradient(135deg, #ff007f 0%, #7209b7 100%); border-color:#ff007f;">⬇️</button>
-            <button id="btnPanorama" class="btn-top" title="العرض البانورامي الملون 🌟">🌈</button>
+            <button id="btnOpenFile" class="btn-top" title="فتح مشروع احفظته سابقاً 📂">📂 فتح</button>
+            <button id="btnSaveProject" class="btn-top" title="حفظ كمشروع للتعديل لاحقاً 💾">💾 مشروع</button>
+            <button id="btnView3D" class="btn-top" title="مشاهدة والتجول 3D 🏠">🏠 3D</button>
+
+            <button id="btnResetZoom" class="btn-top" title="إعادة ضبط التقريب والزوم 🔍">🎯</button>
             <button id="btnUndo" class="btn-top" disabled title="تراجع (Undo)">↩️</button>
             <button id="btnRedo" class="btn-top" disabled title="إعادة (Redo)">↪️</button>
             <button id="btnToggleSidebar" class="btn-top" title="الأدوات 🛠️">🛠️</button>
-            <button id="btnSave" class="btn-top" title="عرض المقاسات والحفظ 💾">💾</button>
+            <button id="btnSave" class="btn-top" title="عرض المقاسات والحفظ كصورة 🖼️">🖼️ صورة</button>
             <button id="btnFullscreen" class="btn-top" title="ملء الشاشة 📺">📺</button>
         </div>
     </header>
@@ -448,15 +470,41 @@
 
             <div class="accordion-header" onclick="toggleAccordion('electricSec')">⚡ كهرباء (تجهيزات ومفاتيح) ▾</div>
             <div class="accordion-content" id="electricSec">
-                <button onclick="addSymbol('socket', 'بريزة طاقة مفردة')">🔌 بريزة مفردة</button>
-                <button onclick="addSymbol('socket_double', 'بريزة طاقة دبل')">🔌 بريزة دبل</button>
-                <button onclick="addSymbol('switch', 'مفتاح إضاءة فردي')">🔘 مفتاح فردي</button>
-                <button onclick="addSymbol('data', 'نقطة شبكة وداتا')">🌐 نقطة داتا</button>
-                <button onclick="addSymbol('sound', 'سماعة صوت ونظام صوتي')">🔊 نقطة صوت</button>
-                <button onclick="addSymbol('lamp', 'لمبة أو سبوتلايت سقف')">💡 لمبة / سبوت</button>
+                <button onclick="addSymbol('single_sw', 'مفتاح إحدى')">🔘 مفتاح إحدى</button>
+                <button onclick="addSymbol('double_sw', 'مفتاح ثنائي')">🔘 مفتاح ثنائي</button>
+                <button onclick="addSymbol('triple_sw', 'مفتاح ثلاثي')">🔘 مفتاح ثلاثي</button>
+                <button onclick="addSymbol('two_way_sw', 'مفتاح ديفاتوري')">🔘 مفتاح ديفاتوري</button>
+                <button onclick="addSymbol('single_socket', 'بريزة احادى')">🔌 بريزة أحادية</button>
+                <button onclick="addSymbol('power_socket', 'بريزة مجوفه (قوى)')">🔌 بريزة قوى</button>
+                <button onclick="addSymbol('ac_outlet', 'تكييف')">❄️ تكييف</button>
+                <button onclick="addSymbol('exhaust_fan', 'شفاط')">🌀 شفاط</button>
+                <button onclick="addSymbol('wall_spot', 'اسبوت حائط')">🎯 اسبوت حائط</button>
+                <button onclick="addSymbol('lamp', 'لمبه')">💡 لمبة</button>
+                <button onclick="addSymbol('bell', 'جرس')">🔔 جرس</button>
+                <button onclick="addSymbol('alarm', 'انذار')">🚨 إنذار</button>
+                <button onclick="addSymbol('audio_out', 'مخرج صوت')">🔊 مخرج صوت</button>
+                <button onclick="addSymbol('data_out', 'داتا')">🌐 داتا</button>
                 <button onclick="addSymbol('panel', 'لوحة توزيع كهرباء رئيسية')">⚡ لوحة توزيع</button>
-                <button onclick="addSymbol('ac', 'مخرج تكييف هواء')">❄️ مخرج تكييف</button>
-                <button onclick="addSymbol('tv', 'مخرج دش وشاشة عرض')">📺 مخرج دش/شاشة</button>
+            </div>
+
+            <!-- الإضافة: قسم التغذية الكهربائية والتأريض -->
+            <div class="accordion-header" onclick="toggleAccordion('powerSupplySec')">⚡ التغذية الكهربائية والتأريض ▾</div>
+            <div class="accordion-content" id="powerSupplySec">
+                <button onclick="addSymbol('main_meter', 'عداد كهرباء رئيسي')">📟 عداد رئيسي</button>
+                <button onclick="addSymbol('sub_panel', 'لوحة فرعية')">🔲 لوحة فرعية</button>
+                <button onclick="addSymbol('mcb_breaker', 'قاطع أوتوماتيك MCB')">🎛️ قاطع MCB</button>
+                <button onclick="addSymbol('rccb_breaker', 'قاطع تسريب أرضي RCCB')">🛡️ قاطع RCCB</button>
+
+                <button onclick="addSymbol('earth_pit', 'بئر تأريض Grounding Pit')">🌐 بئر تأريض</button>
+
+                <button onclick="addSymbol('earth_rod', 'قضيب تأريض Earth Rod')">📍 قضيب تأريض</button>
+
+                <button onclick="addSymbol('ats_switch', 'مفتاح تحويل أوتوماتيك ATS')">🔄 مفتاح ATS</button>
+                <button onclick="addSymbol('generator', 'مولد كهربائي طوارئ')">⚙️ مولد طوارئ</button>
+                <button onclick="addSymbol('ups_system', 'جهاز تغذية غير منقطعة UPS')">🔋 وحدة UPS</button>
+                <button onclick="openSmartDistributor()" style="grid-column: span 2; background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(114, 9, 183, 0.3)); border-color: #00f2fe; text-align: center; justify-content: center; color: #00f2fe;">
+                    ⚡ الموزع الذكي للدوائر ( توزيع أوتوماتيكي )
+                </button>
             </div>
 
             <div class="accordion-header" onclick="toggleAccordion('plumbingSec')">🚰 سباكة (مخارج ومواسير) ▾</div>
@@ -470,10 +518,15 @@
 
             <div class="accordion-header" onclick="toggleAccordion('furnitureSec')">🛋️ أثاث وتجهيزات داخلية ▾</div>
             <div class="accordion-content" id="furnitureSec">
-                <button onclick="addSymbol('sofa', 'كنبة صالون ومعيشة')">🛋️ كنبة / صالون</button>
+                <button onclick="addSymbol('wooden_chair', 'كرسى خشب')">🪑 كرسى خشب</button>
+                <button onclick="addSymbol('armchair', 'كرسى انتريه')">🪑 كرسى انتريه</button>
+                <button onclick="addSymbol('sofa', 'كنبه')">🛋️ كنبة</button>
+                <button onclick="addSymbol('table', 'طاوله')">🪵 طاولة</button>
+                <button onclick="addSymbol('wardrobe', 'دولاب')">🚪 دولاب</button>
+                <button onclick="addSymbol('stove', 'بوتاجاز')">🍳 بوتاجاز</button>
+                <button onclick="addSymbol('water_heater', 'سخان')">🔥 سخان</button>
+                <button onclick="addSymbol('tv_screen', 'شاشه')">📺 شاشة</button>
                 <button onclick="addSymbol('bed', 'سرير نوم رئيسي')">🛏️ سرير نوم</button>
-                <button onclick="addSymbol('table', 'طاولة طعام أو مكتب')">🪑 طاولة طعام</button>
-                <button onclick="addSymbol('wardrobe', 'دولاب ملابس وخزانة')">🚪 خزانة / دولاب</button>
             </div>
 
         </aside>
@@ -485,6 +538,8 @@
         let isDeleteSegmentMode = false;
         let pendingRoomName = '';
         let deferredPrompt = null;
+        let isPencilActiveBeforeTouch = false;
+
         const floatingGroup = document.getElementById('floatingActionGroup');
         const floatingDeleteBtn = document.getElementById('floatingDeleteBtn');
         const floatingDuplicateBtn = document.getElementById('floatingDuplicateBtn');
@@ -518,7 +573,7 @@
             const json = JSON.stringify(canvas.toJSON(['nameTag', 'roomDimensions']));
             if (undoStack.length > 0 && undoStack[undoStack.length - 1] === json) return;
             undoStack.push(json);
-            if (undoStack.length > 30) undoStack.shift(); // الحفاظ على أداء الذاكرة
+            if (undoStack.length > 30) undoStack.shift();
             redoStack = [];
             updateHistoryButtons();
             updateInventorySummary(canvas);
@@ -591,6 +646,45 @@
             window.updateBrushSettings();
         }
 
+        // دالة الموزع الذكي للدوائر الكهربائية
+        function openSmartDistributor() {
+            const canvas = window.canvasApp;
+            if (!canvas) return;
+            const objects = canvas.getObjects().filter(o => o.nameTag && o.nameTag !== 'العلامة المائية S⚡N (electric)');
+            
+            if (objects.length === 0) {
+                alert('قم بإضافة رموز كهربائية أولاً لتوزيعها على الدوائر والأحمال!');
+                return;
+            }
+
+            let lightingCount = 0;
+            let socketsCount = 0;
+            let powerSocketsCount = 0;
+            let acCount = 0;
+
+            objects.forEach(obj => {
+                const name = obj.nameTag;
+                if (name.includes('لمبه') || name.includes('اسبوت')) lightingCount++;
+                else if (name.includes('بريزة احادى')) socketsCount++;
+                else if (name.includes('قوى')) powerSocketsCount++;
+                else if (name.includes('تكييف')) acCount++;
+            });
+
+            const lightCircuits = Math.ceil(lightingCount / 10) || (lightingCount > 0 ? 1 : 0);
+            const socketCircuits = Math.ceil(socketsCount / 8) || (socketsCount > 0 ? 1 : 0);
+            const powerCircuits = powerSocketsCount;
+            const acCircuits = acCount;
+            const totalCircuits = lightCircuits + socketCircuits + powerCircuits + acCircuits;
+
+            alert(`⚡ التوزيع الآلي المقترح للدوائر الكهربائية:\n\n` +
+                  `💡 دوائر الإنارة (10A / 1.5mm²): ${lightCircuits} دائرة (${lightingCount} مخرج)\n` +
+                  `🔌 دوائر البرايز العادية (16A / 2.5mm²): ${socketCircuits} دائرة (${socketsCount} مخرج)\n` +
+                  `⚡ دوائر برائز القوى (20A / 4mm²): ${powerCircuits} دائرة\n` +
+                  `❄️ دوائر التكييفات (25A / 6mm²): ${acCircuits} دائرة\n\n` +
+                  `📊 إجمالي القواطع الفرعية المطلوبة: ${totalCircuits} قاطع فرعي\n` +
+                  `🛡️ القاطع الرئيسي المقترح: MCCB 63A + RCCB 30mA للتأريض والتسريب.`);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('canvasContainer');
             const sidebar = document.getElementById('sidebar');
@@ -602,6 +696,100 @@
                 subTargetDetection: true
             });
             window.canvasApp = canvas;
+
+            let isMultiTouching = false;
+            let startDist = 0;
+            let startZoom = 1;
+            let lastMidX = 0;
+            let lastMidY = 0;
+
+            const canvasWrapper = container;
+
+            canvasWrapper.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    isMultiTouching = true;
+                    isPencilActiveBeforeTouch = canvas.isDrawingMode;
+                    
+                    canvas.isDrawingMode = false;
+                    canvas.discardActiveObject().renderAll();
+
+                    const t1 = e.touches[0];
+                    const t2 = e.touches[1];
+
+                    startDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                    startZoom = canvas.getZoom();
+
+                    const rect = canvasWrapper.getBoundingClientRect();
+                    lastMidX = ((t1.clientX + t2.clientX) / 2) - rect.left;
+                    lastMidY = ((t1.clientY + t2.clientY) / 2) - rect.top;
+                }
+            }, { passive: false });
+
+            canvasWrapper.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && isMultiTouching) {
+                    e.preventDefault();
+
+                    const t1 = e.touches[0];
+                    const t2 = e.touches[1];
+
+                    const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                    if (startDist === 0) return;
+
+                    let newZoom = startZoom * (currentDist / startDist);
+                    if (newZoom > 12) newZoom = 12;
+                    if (newZoom < 0.2) newZoom = 0.2;
+
+                    const rect = canvasWrapper.getBoundingClientRect();
+                    const currentMidX = ((t1.clientX + t2.clientX) / 2) - rect.left;
+                    const currentMidY = ((t1.clientY + t2.clientY) / 2) - rect.top;
+
+                    canvas.zoomToPoint({ x: currentMidX, y: currentMidY }, newZoom);
+
+                    const deltaX = currentMidX - lastMidX;
+                    const deltaY = currentMidY - lastMidY;
+
+                    const vpt = canvas.viewportTransform;
+                    vpt[4] += deltaX;
+                    vpt[5] += deltaY;
+
+                    canvas.requestRenderAll();
+
+                    lastMidX = currentMidX;
+                    lastMidY = currentMidY;
+
+                    updateFloatingButtonGroup();
+                }
+            }, { passive: false });
+
+            canvasWrapper.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2 && isMultiTouching) {
+                    isMultiTouching = false;
+                    startDist = 0;
+
+                    if (document.getElementById('btnPencil').classList.contains('active')) {
+                        canvas.isDrawingMode = true;
+                    }
+                }
+            });
+
+            canvas.on('mouse:wheel', function(opt) {
+                let delta = opt.e.deltaY;
+                let zoom = canvas.getZoom();
+                zoom *= 0.999 ** delta;
+                if (zoom > 12) zoom = 12;
+                if (zoom < 0.2) zoom = 0.2;
+                canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+                opt.e.preventDefault();
+                opt.e.stopPropagation();
+                updateFloatingButtonGroup();
+            });
+
+            document.getElementById('btnResetZoom').addEventListener('click', () => {
+                canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+                canvas.setZoom(1);
+                canvas.renderAll();
+                updateFloatingButtonGroup();
+            });
 
             function addWatermark() {
                 const wmGroup = new fabric.Group([
@@ -747,10 +935,12 @@
                 if (activeObj.type === 'group') {
                     activeObj.forEachObject(subObj => {
                         if (subObj.stroke) subObj.set('stroke', newColor);
+                        if (subObj.fill && subObj.fill !== 'none') subObj.set('fill', newColor);
                         if (subObj.type === 'i-text') subObj.set('fill', newColor);
                     });
                 } else {
                     if (activeObj.stroke) activeObj.set('stroke', newColor);
+                    if (activeObj.fill && activeObj.fill !== 'none') activeObj.set('fill', newColor);
                     if (activeObj.type === 'i-text') activeObj.set('fill', newColor);
                 }
                 canvas.renderAll();
@@ -764,7 +954,6 @@
             const btnDeleteSegment = document.getElementById('btnDeleteSegment');
             const btnPencil = document.getElementById('btnPencil');
             const btnText = document.getElementById('btnText');
-            const btnPanorama = document.getElementById('btnPanorama');
 
             window.updateBrushSettings = function() {
                 const color = colorPicker.value;
@@ -838,10 +1027,6 @@
                 autoCloseSidebarOnMobile();
             });
 
-            btnPanorama.addEventListener('click', () => {
-                alert('تم تفعيل إعدادات العرض البانورامي الملون ثلاثي الأبعاد!');
-            });
-
             window.promptAddRoom = function(roomName) {
                 pendingRoomName = roomName;
                 document.getElementById('roomModalTitle').innerText = '🏠 إدخال أبعاد: ' + roomName;
@@ -901,45 +1086,66 @@
                 canvas.renderAll();
             }
 
+            // مكتبة الرموز SVG بعد تحديث رسومات التغذية والتأريض
             const getSvgData = (color) => ({
-                socket: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="${color}" stroke-width="3"/><line x1="25" y1="43" x2="25" y2="49" stroke="${color}" stroke-width="3"/><circle cx="18" cy="22" r="2.5" fill="${color}"/><circle cx="32" cy="22" r="2.5" fill="${color}"/></svg>`,
-                socket_double: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="4" y="4" width="42" height="42" rx="6" fill="none" stroke="${color}" stroke-width="3"/><circle cx="18" cy="25" r="3" fill="${color}"/><circle cx="32" cy="25" r="3" fill="${color}"/></svg>`,
-                switch: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="8" fill="${color}"/><line x1="25" y1="25" x2="42" y2="8" stroke="${color}" stroke-width="3"/></svg>`,
-                data: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="6" y="8" width="38" height="34" rx="4" fill="none" stroke="${color}" stroke-width="3"/><path d="M 16 28 L 22 20 L 28 28 L 34 20" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round"/><circle cx="25" cy="34" r="2" fill="${color}"/></svg>`,
-                sound: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><path d="M 12 18 L 18 18 L 28 10 L 28 40 L 18 32 L 12 32 Z" fill="none" stroke="${color}" stroke-width="3"/><path d="M 34 16 A 12 12 0 0 1 34 34" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
-                lamp: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="16" fill="none" stroke="${color}" stroke-width="3"/><line x1="14" y1="14" x2="36" y2="36" stroke="${color}" stroke-width="3"/><line x1="36" y1="14" x2="14" y2="36" stroke="${color}" stroke-width="3"/></svg>`,
+                single_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="50" y1="20" x2="50" y2="2" stroke="${color}" stroke-width="6"/></svg>`,
+                double_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="40" y1="20" x2="40" y2="2" stroke="${color}" stroke-width="6"/><line x1="60" y1="20" x2="60" y2="2" stroke="${color}" stroke-width="6"/></svg>`,
+                triple_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="35" y1="20" x2="35" y2="2" stroke="${color}" stroke-width="5"/><line x1="50" y1="20" x2="50" y2="2" stroke="${color}" stroke-width="5"/><line x1="65" y1="20" x2="65" y2="2" stroke="${color}" stroke-width="5"/></svg>`,
+                two_way_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="${color}"/><line x1="50" y1="20" x2="50" y2="2" stroke="${color}" stroke-width="6"/></svg>`,
+                single_socket: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="none"/><circle cx="38" cy="50" r="5" fill="${color}"/><circle cx="62" cy="50" r="5" fill="${color}"/></svg>`,
+                power_socket: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="${color}"/><circle cx="38" cy="50" r="5" fill="#fff"/><circle cx="62" cy="50" r="5" fill="#fff"/></svg>`,
+                ac_outlet: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="30" width="70" height="40" rx="5" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="57" font-size="20" text-anchor="middle" font-weight="bold" fill="${color}">AC</text></svg>`,
+                exhaust_fan: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="none"/><path d="M50 15 L50 85 M15 50 L85 50" stroke="${color}" stroke-width="4"/></svg>`,
+                wall_spot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="25" fill="#ffb703" stroke="${color}" stroke-width="4"/><path d="M20 80 L50 50 L80 80" stroke="${color}" stroke-width="4" fill="none"/></svg>`,
+                lamp: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="29" y1="29" x2="71" y2="71" stroke="${color}" stroke-width="6"/><line x1="71" y1="29" x2="29" y2="71" stroke="${color}" stroke-width="6"/></svg>`,
+                bell: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M30 65 C30 35 70 35 70 65 Z" stroke="${color}" stroke-width="6" fill="none"/><rect x="25" y="65" width="50" height="8" fill="${color}"/></svg>`,
+                alarm: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,15 85,80 15,80" stroke="${color}" stroke-width="6" fill="none"/><circle cx="50" cy="60" r="6" fill="${color}"/></svg>`,
+                audio_out: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="20,40 40,40 60,20 60,80 40,60 20,60" fill="${color}"/><path d="M70 35 Q80 50 70 65" stroke="${color}" stroke-width="5" fill="none"/></svg>`,
+                data_out: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="22" text-anchor="middle" font-weight="bold" fill="${color}">IT</text></svg>`,
                 panel: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect x="2" y="2" width="56" height="36" fill="none" stroke="${color}" stroke-width="3"/><path d="M 2 2 L 30 38 L 30 2 Z" fill="${color}"/></svg>`,
-                ac: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect x="3" y="5" width="54" height="30" rx="4" fill="none" stroke="${color}" stroke-width="3"/><text x="18" y="22" fill="${color}" font-size="12" font-weight="bold">A/C</text></svg>`,
-                tv: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 45"><rect x="4" y="10" width="52" height="30" rx="2" fill="none" stroke="${color}" stroke-width="3"/><polyline points="15,2 25,10 35,2 45,10" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
                 
+                // إضافة رموز التغذية والتأريض الجديدة
+                main_meter: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="8" stroke="${color}" stroke-width="6" fill="none"/><rect x="25" y="25" width="50" height="25" fill="${color}" opacity="0.3"/><circle cx="50" cy="68" r="10" stroke="${color}" stroke-width="4" fill="none"/></svg>`,
+                sub_panel: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="4" stroke="${color}" stroke-width="6" fill="none"/><line x1="10" y1="50" x2="90" y2="50" stroke="${color}" stroke-width="4"/><line x1="50" y1="20" x2="50" y2="80" stroke="${color}" stroke-width="4"/></svg>`,
+                mcb_breaker: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="30" y="10" width="40" height="80" rx="5" stroke="${color}" stroke-width="6" fill="none"/><rect x="40" y="40" width="20" height="30" fill="${color}"/></svg>`,
+                rccb_breaker: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="10" width="60" height="80" rx="5" stroke="${color}" stroke-width="6" fill="none"/><circle cx="38" cy="35" r="8" fill="${color}"/><rect x="52" y="50" width="16" height="25" fill="${color}"/></svg>`,
+                earth_pit: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" stroke="${color}" stroke-width="6" fill="none" stroke-dasharray="6,4"/><line x1="50" y1="30" x2="50" y2="60" stroke="${color}" stroke-width="6"/><line x1="30" y1="60" x2="70" y2="60" stroke="${color}" stroke-width="6"/><line x1="38" y1="68" x2="62" y2="68" stroke="${color}" stroke-width="5"/><line x1="44" y1="75" x2="56" y2="75" stroke="${color}" stroke-width="4"/></svg>`,
+                earth_rod: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><line x1="50" y1="10" x2="50" y2="60" stroke="${color}" stroke-width="8"/><line x1="25" y1="60" x2="75" y2="60" stroke="${color}" stroke-width="6"/><line x1="35" y1="72" x2="65" y2="72" stroke="${color}" stroke-width="5"/><line x1="43" y1="83" x2="57" y2="83" stroke="${color}" stroke-width="4"/></svg>`,
+                ats_switch: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="8" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="22" text-anchor="middle" font-weight="bold" fill="${color}">ATS</text></svg>`,
+                generator: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="60" font-size="28" text-anchor="middle" font-weight="bold" fill="${color}">G</text></svg>`,
+                ups_system: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="20" width="70" height="60" rx="6" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="20" text-anchor="middle" font-weight="bold" fill="${color}">UPS</text></svg>`,
+
                 door: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect x="5" y="5" width="6" height="50" fill="${color}"/><line x1="11" y1="5" x2="55" y2="5" stroke="${color}" stroke-width="4"/><path d="M 55 5 A 44 44 0 0 1 11 49" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="4 3"/></svg>`,
                 door_double: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60"><rect x="5" y="5" width="6" height="50" fill="${color}"/><rect x="69" y="5" width="6" height="50" fill="${color}"/><path d="M 11 5 A 29 29 0 0 1 40 34" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
-                door_sliding: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 40"><line x1="5" y1="20" x2="65" y2="20" stroke="${color}" stroke-width="2" stroke-dasharray="4 2"/><rect x="5" y="12" width="28" height="6" fill="${color}"/></svg>`,
+                door_sliding: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 40"><line x1="5" y1="20" x2="65" y2="20" stroke="${color}" stroke-width="2" stroke-dasharray="4 2"/><rect x="5" y1="12" width="28" height="6" fill="${color}"/></svg>`,
                 window: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 30"><rect x="2" y="5" width="76" height="20" fill="none" stroke="${color}" stroke-width="3"/><line x1="2" y1="15" x2="78" y2="15" stroke="${color}" stroke-width="2"/></svg>`,
                 window_double: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 30"><rect x="2" y="5" width="76" height="20" fill="none" stroke="${color}" stroke-width="3"/><line x1="40" y1="5" x2="40" y2="25" stroke="${color}" stroke-width="3"/></svg>`,
                 balcony: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40"><rect x="4" y="8" width="72" height="24" fill="none" stroke="${color}" stroke-width="3"/><line x1="4" y1="20" x2="76" y2="20" stroke="${color}" stroke-width="2" stroke-dasharray="3 3"/></svg>`,
-
                 sink: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="8" y="12" width="34" height="26" rx="6" fill="none" stroke="${color}" stroke-width="3"/><circle cx="25" cy="25" r="6" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
                 toilet: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 60"><rect x="12" y="6" width="26" height="16" rx="3" fill="none" stroke="${color}" stroke-width="3"/><ellipse cx="25" cy="38" rx="14" ry="18" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
                 shower: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="5" y="5" width="40" height="40" fill="none" stroke="${color}" stroke-width="2"/><circle cx="25" cy="25" r="8" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
                 bathtub: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 40"><rect x="5" y="5" width="60" height="30" rx="10" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
                 drain: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="none" stroke="${color}" stroke-width="3"/><circle cx="20" cy="20" r="6" fill="${color}"/></svg>`,
-
-                sofa: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 50"><rect x="5" y="15" width="70" height="30" rx="6" fill="none" stroke="${color}" stroke-width="3"/><rect x="2" y="10" width="10" height="35" rx="3" fill="${color}"/><rect x="68" y="10" width="10" height="35" rx="3" fill="${color}"/></svg>`,
-                bed: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80"><rect x="5" y="5" width="50" height="70" rx="4" fill="none" stroke="${color}" stroke-width="3"/><rect x="8" y="8" width="44" height="18" rx="3" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
-                table: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 50"><rect x="10" y="5" width="50" height="40" rx="4" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
-                wardrobe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 50"><rect x="5" y="5" width="60" height="40" rx="2" fill="none" stroke="${color}" stroke-width="3"/><line x1="35" y1="5" x2="35" y2="45" stroke="${color}" stroke-width="3"/></svg>`
+                wooden_chair: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="25" y="25" width="50" height="50" rx="5" stroke="${color}" stroke-width="6" fill="none"/><line x1="25" y1="35" x2="75" y2="35" stroke="${color}" stroke-width="6"/></svg>`,
+                armchair: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" rx="15" stroke="${color}" stroke-width="6" fill="none"/><rect x="15" y="30" width="12" height="40" rx="4" fill="${color}"/><rect x="73" y="30" width="12" height="40" rx="4" fill="${color}"/></svg>`,
+                sofa: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="25" width="80" height="50" rx="10" stroke="${color}" stroke-width="6" fill="none"/><rect x="15" y="30" width="70" height="15" rx="5" fill="${color}"/></svg>`,
+                table: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="25" width="70" height="50" rx="3" stroke="${color}" stroke-width="6" fill="none"/></svg>`,
+                wardrobe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" stroke="${color}" stroke-width="6" fill="none"/><line x1="50" y1="15" x2="50" y2="85" stroke="${color}" stroke-width="4"/></svg>`,
+                stove: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" rx="5" stroke="${color}" stroke-width="6" fill="none"/><circle cx="38" cy="38" r="8" fill="${color}"/><circle cx="62" cy="38" r="8" fill="${color}"/><circle cx="38" cy="62" r="8" fill="${color}"/><circle cx="62" cy="62" r="8" fill="${color}"/></svg>`,
+                water_heater: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="20" text-anchor="middle" fill="${color}" font-weight="bold">H</text></svg>`,
+                tv_screen: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="5" y="42" width="90" height="16" rx="3" fill="${color}"/><path d="M40 58 L60 58 L65 70 L35 70 Z" fill="${color}"/></svg>`,
+                bed: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80"><rect x="5" y="5" width="50" height="70" rx="4" fill="none" stroke="${color}" stroke-width="3"/><rect x="8" y="8" width="44" height="18" rx="3" fill="none" stroke="${color}" stroke-width="2"/></svg>`
             });
 
             window.addSymbol = function(type, labelName) {
                 canvas.isDrawingMode = false;
                 setActiveTool(btnSelect);
-                const svgStr = getSvgData(colorPicker.value)[type] || getSvgData(colorPicker.value)['socket'];
+                const svgStr = getSvgData(colorPicker.value)[type] || getSvgData(colorPicker.value)['single_socket'];
                 fabric.loadSVGFromString(svgStr, (objects, options) => {
                     const obj = fabric.util.groupSVGElements(objects, options);
                     obj.set({
                         left: canvas.width / 2 - 25, top: canvas.height / 2 - 25,
-                        scaleX: 1.1, scaleY: 1.1,
+                        scaleX: 0.8, scaleY: 0.8,
                         nameTag: labelName
                     });
                     canvas.add(obj);
@@ -975,6 +1181,82 @@
                 }
             });
 
+            // -----------------------------------------------------------
+            // إدارة المجلد SNelectric: فتح وحفظ ملفات JSON والصور PNG
+            // -----------------------------------------------------------
+            let projectDirHandle = null;
+
+            async function getSNelectricDirectory() {
+                if (!window.showDirectoryPicker) return null;
+                try {
+                    if (!projectDirHandle) {
+                        alert("يرجى تحديد أو إنشاء المجلد 'SNelectric' لتنظيم حفظ وفتح الملفات والصور به.");
+                        projectDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    }
+                    return projectDirHandle;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // زر فتح ملف مشروع JSON
+            document.getElementById('btnOpenFile').addEventListener('click', async () => {
+                const fileInput = document.getElementById('fileInputJSON');
+                fileInput.value = '';
+                fileInput.click();
+            });
+
+            document.getElementById('fileInputJSON').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const jsonContent = evt.target.result;
+                        canvas.loadFromJSON(jsonContent, () => {
+                            canvas.renderAll();
+                            undoStack = [];
+                            redoStack = [];
+                            saveHistory(canvas);
+                            updateInventorySummary(canvas);
+                            alert("تم تحميل المشروع وتحديث اللوحة بنجاح 📂✨");
+                        });
+                    } catch (err) {
+                        alert("حدث خطأ أثناء فتح ملف المشروع. تأكد من تحديد ملف JSON صالح.");
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            // زر حفظ ملف مشروع JSON
+            document.getElementById('btnSaveProject').addEventListener('click', async () => {
+                const jsonStr = JSON.stringify(canvas.toJSON(['nameTag', 'roomDimensions']), null, 2);
+                const fileName = `SNelectric_Project_${Date.now()}.json`;
+
+                const dirHandle = await getSNelectricDirectory();
+                if (dirHandle) {
+                    try {
+                        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(jsonStr);
+                        await writable.close();
+                        alert(`تم حفظ ملف المشروع بنجاح داخل مجلد SNelectric!\nاسم الملف: ${fileName}`);
+                        return;
+                    } catch (e) {
+                        console.log('متابعة بالطريقة التقليدية...');
+                    }
+                }
+
+                // طريقة الاحتياط التقليدية (تنزيل الملف مباشرة)
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            });
+
             document.getElementById('btnSave').addEventListener('click', () => {
                 const objects = canvas.getObjects().filter(o => o.nameTag !== 'العلامة المائية S⚡N (electric)');
                 if (objects.length === 0) {
@@ -983,73 +1265,216 @@
                 }
                 openSummaryModal(canvas);
             });
+
+            window.openSummaryModal = function(canvas) {
+                const modal = document.getElementById('dimensionsModal');
+                const listContainer = document.getElementById('elementsListContainer');
+                listContainer.innerHTML = '';
+
+                const objects = canvas.getObjects();
+                let hasItems = false;
+
+                objects.forEach((obj) => {
+                    if (obj.roomDimensions) {
+                        hasItems = true;
+                        const row = document.createElement('div');
+                        row.className = 'element-row';
+                        row.innerHTML = `<span>🏠 ${obj.nameTag || 'غرفة'}: ${obj.roomDimensions}</span>`;
+                        listContainer.appendChild(row);
+                    }
+                });
+
+                if (!hasItems) {
+                    listContainer.innerHTML = `<div style="font-size:12px; color:#94a3b8; text-align:center;">جاهز لحفظ تصميم اللوحة الحالية كصورة high-resolution.</div>`;
+                }
+
+                modal.style.display = 'flex';
+            };
+
+            window.closeModal = function() {
+                document.getElementById('dimensionsModal').style.display = 'none';
+            };
+
+            window.saveFinalImage = async function() {
+                closeModal();
+
+                const originalViewport = canvas.viewportTransform;
+                const originalZoom = canvas.getZoom();
+
+                canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+                canvas.setZoom(1);
+
+                const dataURL = canvas.toDataURL({
+                    format: 'png',
+                    quality: 1,
+                    multiplier: 2
+                });
+
+                canvas.setViewportTransform(originalViewport);
+                canvas.setZoom(originalZoom);
+                canvas.renderAll();
+
+                const fileName = `SNelectric_Design_${Date.now()}.png`;
+                const dirHandle = await getSNelectricDirectory();
+                
+                if (dirHandle) {
+                    try {
+                        const blob = await (await fetch(dataURL)).blob();
+                        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        alert(`تم حفظ الصورة بنجاح داخل مجلد SNelectric!\nاسم الصورة: ${fileName}`);
+                        return;
+                    } catch (e) {
+                        console.log('متابعة الحفظ بالطريقة المباشرة...');
+                    }
+                }
+
+                const link = document.createElement('a');
+                link.download = fileName;
+                link.href = dataURL;
+                link.click();
+            };
         });
 
-        function openSummaryModal(canvas) {
-            const container = document.getElementById('elementsListContainer');
+        // -------------------------------------------------------------
+        // البرمجة الخاصة بمحرك الـ 3D وتوليد المشهد وتجول الشخص الأول
+        // -------------------------------------------------------------
+        let scene3D, camera3D, renderer3D, controls3D;
+        let moveFwd = false, moveBwd = false, moveLft = false, moveRgt = false;
+        let prevTime3D = performance.now();
+        const velocity3D = new THREE.Vector3();
+        const direction3D = new THREE.Vector3();
+
+        document.getElementById('btnView3D').addEventListener('click', () => {
+            const objects = window.canvasApp.getObjects().filter(o => o.nameTag !== 'العلامة المائية S⚡N (electric)');
+            if (objects.length === 0) {
+                alert('قم برسم غرفة أو إضافة أثاث ورموز أولاً قبل الانتقال لنظرة الـ 3D!');
+                return;
+            }
+            document.getElementById('modal3D').style.display = 'block';
+            init3DScene();
+            build3DRoomFromCanvas();
+        });
+
+        function close3DModal() {
+            document.getElementById('modal3D').style.display = 'none';
+            const container = document.getElementById('container3D');
+            container.innerHTML = '';
+            if (controls3D) controls3D.unlock();
+        }
+
+        function init3DScene() {
+            const container = document.getElementById('container3D');
             container.innerHTML = '';
 
-            const objects = canvas.getObjects();
-            let roomsList = [];
-            const symbolCounts = {};
+            scene3D = new THREE.Scene();
+            scene3D.background = new THREE.Color(0x0f172a);
 
-            objects.forEach(obj => {
-                let name = obj.nameTag;
-                if (!name || name === 'العلامة المائية S⚡N (electric)' || name.includes('مقاس جدار')) return;
+            camera3D = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera3D.position.set(0, 1.6, 0);
 
-                if (obj.roomDimensions) {
-                    roomsList.push({ name: name, dims: obj.roomDimensions });
-                } else {
-                    symbolCounts[name] = (symbolCounts[name] || 0) + 1;
-                }
+            renderer3D = new THREE.WebGLRenderer({ antialias: true });
+            renderer3D.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer3D.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene3D.add(ambientLight);
+            const light = new THREE.DirectionalLight(0xffffff, 0.5);
+            light.position.set(0, 10, 0);
+            scene3D.add(light);
+
+            controls3D = new THREE.PointerLockControls(camera3D, document.body);
+            const instructions = document.getElementById('instructions3D');
+
+            instructions.addEventListener('click', () => controls3D.lock());
+
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') moveFwd = true;
+                if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBwd = true;
+                if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLft = true;
+                if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRgt = true;
             });
 
-            let html = '<div style="font-size:12px; color:#00f2fe; font-weight:900; margin-bottom:4px;">🏠 الحجرات والمساحات المدخلة وأبعادها:</div>';
-            if (roomsList.length === 0) {
-                html += '<div style="font-size:11px; color:#94a3b8; padding: 4px;">لا توجد حجرات مساحية مدخلة.</div>';
-            } else {
-                roomsList.forEach((room, idx) => {
-                    html += `
-                        <div class="element-row">
-                            <span>حجرة (${idx + 1}): <strong>${room.name}</strong></span>
-                            <span style="color:#00f2fe; font-weight:900; background:rgba(0,242,254,0.15); padding:3px 8px; border-radius:6px;">${room.dims}</span>
-                        </div>
-                    `;
-                });
-            }
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') moveFwd = false;
+                if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBwd = false;
+                if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLft = false;
+                if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRgt = false;
+            });
 
-            html += '<div style="font-size:12px; color:#ff007f; font-weight:900; margin-top:8px; margin-bottom:4px;">⚡ 🚰 🛋️ ملخص الرموز والكميات الآلية:</div>';
-            if (Object.keys(symbolCounts).length === 0) {
-                html += '<div style="font-size:11px; color:#94a3b8; padding: 4px;">لا توجد رموز مضافة.</div>';
-            } else {
-                for (let [name, count] of Object.entries(symbolCounts)) {
-                    html += `
-                        <div class="element-row">
-                            <span>${name}</span>
-                            <span style="color:#ff007f; font-weight:900; background:rgba(255,0,127,0.15); padding:3px 8px; border-radius:6px;">عدد ${count}</span>
-                        </div>
-                    `;
+            animate3D();
+        }
+
+        function build3DRoomFromCanvas() {
+            const floorGeo = new THREE.PlaneGeometry(30, 30);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, side: THREE.DoubleSide });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = Math.PI / 2;
+            scene3D.add(floor);
+
+            const grid = new THREE.GridHelper(30, 30, 0x00f2fe, 0x334155);
+            grid.position.y = 0.01;
+            scene3D.add(grid);
+
+            const objects = window.canvasApp.getObjects();
+            const scale = 0.05;
+
+            objects.forEach(obj => {
+                if (obj.nameTag === 'العلامة المائية S⚡N (electric)') return;
+
+                const posX = (obj.left - window.canvasApp.width / 2) * scale;
+                const posZ = (obj.top - window.canvasApp.height / 2) * scale;
+
+                if (obj.type === 'group' && obj.roomDimensions) {
+                    const wallMat = new THREE.MeshStandardMaterial({ color: 0x00f2fe, wireframe: false });
+                    const wallGeo = new THREE.BoxGeometry(11, 2.8, 0.2);
+                    
+                    const wall1 = new THREE.Mesh(wallGeo, wallMat);
+                    wall1.position.set(posX, 1.4, posZ - 3.75);
+                    scene3D.add(wall1);
+
+                    const wall2 = new THREE.Mesh(wallGeo, wallMat);
+                    wall2.position.set(posX, 1.4, posZ + 3.75);
+                    scene3D.add(wall2);
+                } else {
+                    let boxGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                    let boxMat = new THREE.MeshStandardMaterial({ color: 0xff007f });
+                    if (obj.nameTag && obj.nameTag.includes('لمبة')) {
+                        boxMat = new THREE.MeshStandardMaterial({ color: 0xffb703, emissive: 0xffb703 });
+                    }
+                    const mesh = new THREE.Mesh(boxGeo, boxMat);
+                    mesh.position.set(posX, 0.25, posZ);
+                    scene3D.add(mesh);
                 }
+            });
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+
+            const time = performance.now();
+            if (controls3D && controls3D.isLocked) {
+                const delta = (time - prevTime3D) / 1000;
+
+                velocity3D.x -= velocity3D.x * 10.0 * delta;
+                velocity3D.z -= velocity3D.z * 10.0 * delta;
+
+                direction3D.z = Number(moveFwd) - Number(moveBwd);
+                direction3D.x = Number(moveRgt) - Number(moveLft);
+                direction3D.normalize();
+
+                if (moveFwd || moveBwd) velocity3D.z -= direction3D.z * 40.0 * delta;
+                if (moveLft || moveRgt) velocity3D.x -= direction3D.x * 40.0 * delta;
+
+                controls3D.moveRight(-velocity3D.x * delta);
+                controls3D.moveForward(-velocity3D.z * delta);
             }
-
-            container.innerHTML = html;
-            document.getElementById('dimensionsModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('dimensionsModal').style.display = 'none';
-        }
-
-        function saveFinalImage() {
-            closeModal();
-            const canvas = window.canvasApp;
-            canvas.discardActiveObject();
-            canvas.renderAll();
-
-            const link = document.createElement('a');
-            link.download = `SNelectric-Certified-Layout-${Date.now()}.png`;
-            link.href = canvas.toDataURL({ format: 'png', multiplier: 2 });
-            link.click();
+            prevTime3D = time;
+            if (renderer3D && scene3D && camera3D) {
+                renderer3D.render(scene3D, camera3D);
+            }
         }
     </script>
 </body>
