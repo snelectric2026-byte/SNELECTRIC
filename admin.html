@@ -3,272 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1e3a8a">
-    <title>SN ELECTRIC - لوحة التحكم الإدارية</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap">
+    <title>لوحة إشراف SN ELECTRIC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-client@2"></script>
     <style>
-        body { background: #07101d; color: #fff; font-family: 'Cairo', sans-serif; padding: 20px; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--dark); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bot[...]
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center; }
-        .stat-card h3 { color: var(--accent); font-size: 24px; margin-top: 5px; }
-        
-        .requests-table-container { background: var(--dark); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 25px; }
-        .admin-vertical-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-        .admin-request-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 15px 20px; display: flex; flex-direction: column; ga[...]
-        .admin-card-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; display: inline-block; }
-        .status-pending { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid #f1c40f; }
-        .status-approved { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-        .status-rejected { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
-        
-        .action-btns button, .action-btns a { padding: 8px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 5px; font-size: 13px; text-decoration: none; dis[...]
-        .btn-approve { background: #2ecc71; color: #fff; }
-        .btn-reject { background: #e74c3c; color: #fff; }
-        .btn-chat { background: var(--accent); color: var(--dark); }
-        .btn-edit-pass { background: #3498db; color: #fff; }
-        .btn-video { background: #9b59b6; color: #fff; }
-        
-        #notificationAlertBox { display: none; background: #e74c3c; color: #fff; padding: 15px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; }
+        :root { --bg: #0f172a; --card-bg: #1e293b; --accent: #f1c40f; --text: #f8fafc; --border: #334155; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .login-box { max-width: 380px; margin: 80px auto; background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; box-sizing: border-box; }
+        .btn-action { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .cards-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1000px; margin: 40px auto; }
+        .main-card { background: var(--card-bg); border: 1px solid var(--border); padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; }
+        .main-card i { font-size: 50px; color: var(--accent); margin-bottom: 15px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--card-bg); border-radius: 10px; overflow: hidden; }
+        .data-table th, .data-table td { padding: 12px; border: 1px solid var(--border); text-align: right; }
+        .data-table th { background: #334155; color: var(--accent); }
+        .stars-input { width: 60px; padding: 5px; background: #0f172a; border: 1px solid var(--border); color: #fff; border-radius: 4px; }
+        .btn-small { padding: 5px 10px; background: var(--accent); border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-approve { padding: 5px 10px; background: #2ecc71; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-reject { padding: 5px 10px; background: #e74c3c; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="admin-header">
-            <div>
-                <h2><i class="fa-solid fa-user-shield"></i> لوحة تحكم الإدارة - SN ELECTRIC</h2>
-            </div>
-            <div>
-                <a href="index.html" style="background: #1e3a8a; color: #fff; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-home"></i> ا[...]
-            </div>
-        </div>
-
-        <div id="notificationAlertBox">
-            <i class="fa-solid fa-triangle-exclamation"></i> تنبيه: طلب خدمة جديد!
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card"><p>إجمالي الطلبات</p><h3 id="statTotal">0</h3></div>
-            <div class="stat-card"><p>قيد الانتظار</p><h3 id="statPending" style="color: #f1c40f;">0</h3></div>
-            <div class="stat-card"><p>تم الموافقة</p><h3 id="statApproved" style="color: #2ecc71;">0</h3></div>
-            <div class="stat-card"><p>العملاء المسجلين</p><h3 id="statClients" style="color: #3498db;">0</h3></div>
-        </div>
-
-        <div class="requests-table-container">
-            <h3 style="margin-bottom: 15px; color: var(--accent);"><i class="fa-solid fa-list-check"></i> سجل طلبات العملاء والخدمات</h3>
-            <div id="adminVerticalList" class="admin-vertical-list">
-                <div style="text-align: center; padding: 20px;">جاري الجلب...</div>
-            </div>
-        </div>
-
-        <div class="requests-table-container">
-            <h3 style="margin-bottom: 15px; color: #3498db;"><i class="fa-solid fa-users-gear"></i> سجل حسابات العملاء وأرقام الهواتف</h3>
-            <div id="adminClientsList" class="admin-vertical-list">
-                <div style="text-align: center; padding: 20px;">جاري الجلب...</div>
-            </div>
-        </div>
+    <div id="loginSection" class="login-box">
+        <h2><i class="fa-solid fa-lock"></i> تسجيل الدخول الأدمن</h2>
+        <input type="text" id="adminUser" placeholder="اسم المستخدم">
+        <input type="password" id="adminPass" placeholder="كلمة المرور">
+        <button class="btn-action" onclick="login()">دخول</button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="js/supabase.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            loadAdminRequests();
-            loadAdminClients();
-        });
-
-        async function loadAdminRequests() {
-            if (!window.supabaseClient) return;
-            const { data } = await window.supabaseClient.from('service_requests').select('*').order('created_at', { ascending: false });
-            if (data) {
-                renderRequestsVerticalList(data);
-                updateStats(data);
-            }
-        }
-
-        async function loadAdminClients() {
-            if (!window.supabaseClient) return;
-            const { data } = await window.supabaseClient.from('customers').select('*').order('phone', { ascending: true });
-            const container = document.getElementById('adminClientsList');
-            if (document.getElementById('statClients') && data) document.getElementById('statClients').innerText = data.length;
-            if (!container) return;
-
-            if (!data || data.length === 0) {
-                container.innerHTML = `<div style="text-align: center; padding: 20px; color: #aaa;">لا توجد حسابات مسجلة</div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            data.forEach((client, index) => {
-                let card = document.createElement('div');
-                card.className = 'admin-request-card';
-                card.innerHTML = `
-                    <div class="admin-card-row">
-                        <span><strong># ${index + 1} | الهاتف:</strong> <a href="tel:${client.phone}" style="color:var(--accent); text-decoration:none;">${client.phone}</a></span>
-                        <span><strong>كلمة السر:</strong> <span style="background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; font-family: monospace;">${client.password || 'غير مسجل'}</span></span>
-                    </div>
-                    <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
-                        <div class="action-btns">
-                            <button class="btn-video" onclick="startAdminVideoCall('${client.phone}')"><i class="fa-solid fa-video"></i> مكالمة فيديو</button>
-                            <button class="btn-edit-pass" onclick="changeClientPassword('${client.phone}')"><i class="fa-solid fa-key"></i> تعديل كلمة السر</button>
-                            <a href="https://wa.me/2${client.phone}" target="_blank" class="btn-chat"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function startAdminVideoCall(phone) {
-            let msg = `مرحباً بك من إدارة SN ELECTRIC، نبدأ الآن مكالمة فيديو معاينة مباشرة للموقع.`;
-            window.open(`https://wa.me/2${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        async function changeClientPassword(phone) {
-            let newPass = prompt(`أدخل كلمة المرور الجديدة للرقم (${phone}):`);
-            if (!newPass) return;
-            const { error } = await window.supabaseClient.from('customers').update({ password: newPass.trim() }).eq('phone', phone);
-            if (!error) {
-                alert('تم التحديث بنجاح');
-                loadAdminClients();
-            } else {
-                alert('حدث خطأ');
-            }
-        }
-
-        function renderRequestsVerticalList(requests) {
-            const container = document.getElementById('adminVerticalList');
-            if (!container) return;
-            if (requests.length === 0) {
-                container.innerHTML = `<div style="text-align: center; padding: 20px; color: #aaa;">لا توجد طلبات</div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            requests.forEach((req, index) => {
-                let statusClass = req.status === 'موافقة' ? 'status-approved' : (req.status === 'مرفوض' ? 'status-rejected' : 'status-pending');
-                let projectCode = req.id ? `SN-${req.id}` : `SN-${index+1}`;
-
-                let card = document.createElement('div');
-                card.className = 'admin-request-card';
-                card.innerHTML = `
-                    <div class="admin-card-row">
-                        <span><strong># ${index + 1} | كود المشروع:</strong> <span style="color:var(--accent);">${projectCode}</span></span>
-                        <span class="status-badge ${statusClass}">${req.status || 'قيد الانتظار'}</span>
-                    </div>
-                    <div class="admin-card-row">
-                        <span><strong>العميل:</strong> ${req.customer_name || 'غير متوفر'}</span>
-                        <span><strong>الهاتف:</strong> ${req.customer_phone}</span>
-                        <span><strong>الخدمة:</strong> ${req.service_name || req.service_type}</span>
-                    </div>
-                    <div class="admin-card-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
-                        <div class="action-btns">
-                            <button class="btn-approve" onclick="updateStatus(${req.id}, 'موافقة')"><i class="fa-solid fa-check"></i> موافقة</button>
-                            <button class="btn-reject" onclick="updateStatus(${req.id}, 'مرفوض')"><i class="fa-solid fa-xmark"></i> رفض</button>
-                            <button class="btn-video" onclick="startAdminVideoCall('${req.customer_phone}')"><i class="fa-solid fa-video"></i> فيديو</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        async function updateStatus(id, status) {
-            await window.supabaseClient.from('service_requests').update({ status: status }).eq('id', id);
-            loadAdminRequests();
-        }
-
-        function updateStats(requests) {
-            document.getElementById('statTotal').innerText = requests.length;
-            document.getElementById('statPending').innerText = requests.filter(r => !r.status || r.status === 'قيد الانتظار').length;
-            document.getElementById('statApproved').innerText = requests.filter(r => r.status === 'موافقة').length;
-        }
-    </script>
-<!-- قسم سجل أرقام الهواتف والبيانات السرية للعملاء (من جدول customers) -->
-<div class="container" style="margin-top: 50px; margin-bottom: 50px; padding: 25px; background: rgba(11, 23, 42, 0.95); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30[...]
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">
-        <h3 style="color: var(--accent); margin: 0; font-size: 20px;"><i class="fa-solid fa-address-book"></i> سجل العملاء وأرقام الهواتف والأسرار المسجلة</h[...]
-        <button onclick="loadAdminCustomerRecords()" style="background: var(--accent); color: var(--dark); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;[...]
+    <div id="dashboardSection" style="display:none;">
+        <h2 style="text-align:center;"><i class="fa-solid fa-gauge"></i> لوحة التحكم الإدارية</h2>
+        <div class="cards-container">
+            <div class="main-card" onclick="showSection('clients')">
+                <i class="fa-solid fa-users"></i>
+                <h3>بيانات العملاء والطلبات</h3>
+                <p>عرض تفاصيل كافة الطلبات والحسابات</p>
+            </div>
+            <div class="main-card" onclick="showSection('techs')">
+                <i class="fa-solid fa-user-gear"></i>
+                <h3>إدارة الفنيين والاعتماد</h3>
+                <p>الموافقة/الرفض وتعديل التقييم والنجوم</p>
+            </div>
+        </div>
+        <button onclick="logout()" class="btn-action" style="max-width:200px; margin: 0 auto; display:block; background:#e74c3c; color:#fff;">تسجيل الخروج</button>
     </div>
-    
-    <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; text-align: right; color: #fff; font-size: 14px;">
+
+    <div id="clientsSection" style="display:none; max-width:1100px; margin:20px auto;">
+        <button onclick="backToDashboard()" class="btn-small"><i class="fa-solid fa-arrow-right"></i> عودة للكروت</button>
+        <h3><i class="fa-solid fa-users"></i> كافة طلبات العملاء والمعاينات</h3>
+        <table class="data-table">
             <thead>
-                <tr style="background: rgba(255,215,0,0.1); color: var(--accent);">
-                    <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">اسم العميل</th>
-                    <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">رقم الهاتف</th>
-                    <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">الرقم السري (المسجل أول مرة)</th>
-                    <th style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">تاريخ التسجيل</th>
+                <tr>
+                    <th>الكود</th>
+                    <th>اسم العميل</th>
+                    <th>الهاتف</th>
+                    <th>العنوان</th>
+                    <th>نوع الخدمة</th>
+                    <th>الملاحظات والتفاصيل</th>
+                    <th>الحالة</th>
                 </tr>
             </thead>
-            <tbody id="adminCustomersTableBody">
-                <tr>
-                    <td colspan="4" style="text-align: center; padding: 20px; color: #8a9bb8;">جاري جلب السجلات من قاعدة البيانات...</td>
-                </tr>
-            </tbody>
+            <tbody id="clientsTableBody"></tbody>
         </table>
     </div>
-</div>
 
-<script>
-    // دالة جلب البيانات من جدول customers في Supabase
-    async function loadAdminCustomerRecords() {
-        const tbody = document.getElementById('adminCustomersTableBody');
-        if (typeof supabase === 'undefined') {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ff6b6b; padding: 15px;">خطأ: اتصال Supabase غير متوفر</td></tr>`;
-            return;
+    <div id="techsSection" style="display:none; max-width:1100px; margin:20px auto;">
+        <button onclick="backToDashboard()" class="btn-small"><i class="fa-solid fa-arrow-right"></i> عودة للكروت</button>
+        <h3><i class="fa-solid fa-user-gear"></i> إدارة واعتماد الفنيين</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>م</th>
+                    <th>الاسم</th>
+                    <th>الهاتف</th>
+                    <th>التخصص</th>
+                    <th>المنطقة</th>
+                    <th>النجوم ⭐</th>
+                    <th>حالة الاعتماد</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="techsTableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_URL.supabase.co";
+        const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function login() {
+            const user = document.getElementById('adminUser').value.trim();
+            const pass = document.getElementById('adminPass').value.trim();
+            if (user === 'admin' && pass === '000000') {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+            } else {
+                alert('بيانات الدخول غير صحيحة!');
+            }
         }
 
-        try {
-            // جلب البيانات من جدول customers مرتبة تنازلياً حسب الأحدث
-            const { data, error } = await supabase
-                .from('customers')
-                .select('*')
-                .order('created_at', { ascending: false });
+        function logout() {
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+        }
 
-            if (error) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ffa500; padding: 15px;">تعذر جلب الجدول (تأكد من صلاحيات RLS أو أسماء ا[...]
+        function backToDashboard() {
+            document.getElementById('clientsSection').style.display = 'none';
+            document.getElementById('techsSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+        }
+
+        function showSection(section) {
+            document.getElementById('dashboardSection').style.display = 'none';
+            if (section === 'clients') {
+                document.getElementById('clientsSection').style.display = 'block';
+                loadClientsData();
+            } else if (section === 'techs') {
+                document.getElementById('techsSection').style.display = 'block';
+                loadTechsData();
+            }
+        }
+
+        async function loadClientsData() {
+            const tbody = document.getElementById('clientsTableBody');
+            tbody.innerHTML = '<tr><td colspan="7">جاري التحميل...</td></tr>';
+            const { data, error } = await db.from('service_requests').select('*').order('created_at', { ascending: false });
+            if (error || !data) {
+                tbody.innerHTML = '<tr><td colspan="7">لا توجد طلبات مسجلة</td></tr>';
                 return;
             }
-
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #8a9bb8;">لا توجد عملاء مسجلين حتى الآن</td></tr>`;
-                return;
-            }
-
             tbody.innerHTML = '';
-            data.forEach(client => {
-                const row = document.createElement('tr');
-                row.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
-                
-                // التعامل المرن مع أسماء الأعمدة المحتملة داخل الجدول (name/full_name, phone, password/pin_code, created_at)
-                const clientName = client.name || client.full_name || client.customer_name || 'غير محدد';
-                const clientPhone = client.phone || client.mobile || 'غير متوفر';
-                const clientPassword = client.password || client.pin_code || client.secret || 'غير مسجل';
-                const clientDate = client.created_at ? new Date(client.created_at).toLocaleString('ar-EG') : 'حديث';
-
-                row.innerHTML = `
-                    <td style="padding: 12px; font-weight: 600;">${clientName}</td>
-                    <td style="padding: 12px; direction: ltr; text-align: right; color: #79c0ff; font-family: monospace;">${clientPhone}</td>
-                    <td style="padding: 12px; font-family: monospace; color: var(--accent); font-weight: bold; background: rgba(255,215,0,0.03);">${clientPassword}</td>
-                    <td style="padding: 12px; font-size: 12px; opacity: 0.8; color: #8a9bb8;">${clientDate}</td>
+            data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>SN-${item.id}</td>
+                        <td>${item.customer_name || 'غير محدد'}</td>
+                        <td>${item.customer_phone || ''}</td>
+                        <td>${item.address || ''}</td>
+                        <td>${item.service_type || ''}</td>
+                        <td><pre style="font-family:inherit; white-space:pre-wrap;">${item.notes || ''}</pre></td>
+                        <td>${item.status || 'قيد الانتظار'}</td>
+                    </tr>
                 `;
-                tbody.appendChild(row);
             });
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ff6b6b; padding: 15px;">حدث خطأ غير متوقع أثناء الاتصال</td></tr>`;
         }
-    }
 
-    // تشغيل الدالة تلقائياً عند تحميل الصفحة
-    document.addEventListener("DOMContentLoaded", function() {
-        setTimeout(loadAdminCustomerRecords, 1200);
-    });
-</script>
+        async function loadTechsData() {
+            const tbody = document.getElementById('techsTableBody');
+            tbody.innerHTML = '<tr><td colspan="8">جاري التحميل...</td></tr>';
+            const { data, error } = await db.from('technicians').select('*');
+            if (error || !data) {
+                tbody.innerHTML = '<tr><td colspan="8">لا يوجد فنيون مسجلون</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            data.forEach(tech => {
+                const isApproved = tech.approved === true;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${tech.id}</td>
+                        <td>${tech.name}</td>
+                        <td>${tech.phone}</td>
+                        <td>${tech.specialty || '-'}</td>
+                        <td>${tech.area || '-'}</td>
+                        <td>
+                            <input type="number" id="starInput_${tech.id}" class="stars-input" value="${tech.total_stars || 5}">
+                            <button class="btn-small" onclick="updateStars(${tech.id})">حفظ</button>
+                        </td>
+                        <td>${isApproved ? '<b style="color:#2ecc71;">معتمد (إظهار الرقم)</b>' : '<b style="color:#e74c3c;">قيد المراجعة</b>'}</td>
+                        <td>
+                            <button class="btn-approve" onclick="toggleApproval(${tech.id}, true)">موافقة</button>
+                            <button class="btn-reject" onclick="toggleApproval(${tech.id}, false)">رفض/حجب</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
 
+        async function updateStars(techId) {
+            const newStars = parseInt(document.getElementById(`starInput_${techId}`).value) || 0;
+            const { error } = await db.from('technicians').update({ total_stars: newStars }).eq('id', techId);
+            if (!error) { alert('تم تحديث نجوم الفني!'); loadTechsData(); }
+        }
+
+        async function toggleApproval(techId, status) {
+            const { error } = await db.from('technicians').update({ approved: status }).eq('id', techId);
+            if (!error) { alert('تم تحديث حالة اعتماد الفني بنجاح!'); loadTechsData(); }
+        }
+    </script>
 </body>
 </html>
