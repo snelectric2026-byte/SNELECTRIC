@@ -2,1487 +2,891 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S⚡N - مولد المساحات والمخططات الذكية</title>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S⚡N - مخطط الغرف والأثاث ثلاثي الأبعاد</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.85);
+            --panel-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --warning-color: #ef4444;
+            --header-height: 60px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
             overflow: hidden;
-            background: #0b0f19;
-            color: #ffffff;
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            width: 350px; height: 350px;
-            background: radial-gradient(circle, rgba(0,242,254,0.3) 0%, rgba(79,172,254,0) 70%);
-            top: -50px; right: 10%;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        body::after {
-            content: '';
-            position: absolute;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(247,37,133,0.25) 0%, rgba(114,9,183,0) 70%);
-            bottom: -50px; left: 5%;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .top-bar {
-            height: 65px;
-            min-height: 65px; 
-            background: rgba(18, 25, 41, 0.95);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 2px solid rgba(0, 242, 254, 0.4);
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 8px 16px; 
-            z-index: 100;
-            gap: 8px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
-        }
-        .brand { font-size: 22px; font-weight: 900; letter-spacing: 0.5px; white-space: nowrap; }
-        .logo-sn { color: #0066ff; text-shadow: 0 0 10px rgba(0,102,255,0.7); } 
-        .logo-bolt { color: #ff0000; text-shadow: 0 0 14px #ff0000; } 
-        
-        .top-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-        }
-
-        .btn-top { 
-            height: 40px;
-            min-width: 40px;
-            padding: 0 10px;
-            border: 2px solid rgba(0, 242, 254, 0.6); 
-            background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(79, 172, 254, 0.35) 100%); 
-            color: #fff;
-            backdrop-filter: blur(8px);
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            white-space: nowrap;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
-        }
-        .btn-top:hover {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            border-color: #00f2fe;
-            color: #000;
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.9);
-            transform: scale(1.03);
-        }
-        .btn-top:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            box-shadow: none;
-            border-color: rgba(255, 255, 255, 0.05);
-            background: rgba(255, 255, 255, 0.02);
-            color: #fff;
-            transform: none;
-        }
-
-        .app-layout { 
-            display: flex; 
-            height: calc(100vh - 65px); 
+            height: 100vh;
             width: 100vw;
-            position: relative; 
-            overflow: hidden; 
-            z-index: 10; 
         }
 
-        .canvas-container-wrapper {
-            flex: 1; 
-            height: 100%; 
-            position: relative; 
-            background-color: #0d1322;
-            background-image: linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
-            background-size: 25px 25px;
-            touch-action: none;
-            overflow: hidden;
+        /* App Header */
+        header {
+            height: var(--header-height);
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
 
-        .sidebar {
-            width: 320px; 
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #fff;
+            background: linear-gradient(45deg, #3b82f6, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            color: var(--text-color);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Room Dimensions Form */
+        .room-inputs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .room-inputs input {
+            width: 50px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--accent-color);
+            color: #fff;
+            text-align: center;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .room-inputs label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            height: calc(100vh - var(--header-height));
+            margin-top: var(--header-height);
+            position: relative;
+        }
+
+        /* Canvas Viewport */
+        #viewport {
+            flex-grow: 1;
             height: 100%;
-            background: rgba(15, 23, 42, 0.98);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-left: 2px solid rgba(0, 242, 254, 0.3); 
-            display: flex; 
-            flex-direction: column; 
-            z-index: 20; 
-            transition: transform 0.3s ease;
-            box-shadow: -12px 0 35px rgba(0,0,0,0.7);
+            position: relative;
+            background-color: #050811;
         }
 
-        .sidebar-scroll-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
+        /* Sidebar Library */
+        .sidebar {
+            width: 320px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--panel-border);
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            -webkit-overflow-scrolling: touch;
+            z-index: 10;
         }
 
-        @media (max-width: 768px) {
-            .sidebar { 
-                position: absolute; 
-                top: 0; 
-                right: 0; 
-                bottom: 0; 
-                width: 88%; 
-                max-width: 320px; 
-                transform: translateX(100%); 
-            }
-            .sidebar.active { transform: translateX(0); }
+        .search-box {
+            padding: 15px;
+            border-bottom: 1px solid var(--panel-border);
         }
 
-        .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            outline: none;
+            font-size: 0.9rem;
+        }
 
-        .btn-oval {
-            padding: 10px 4px; border-radius: 12px; 
-            border: 2px solid rgba(255, 255, 255, 0.2); 
-            background: rgba(255, 255, 255, 0.06);
-            color: #ffffff; font-size: 16px; cursor: pointer; text-align: center; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 700;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
+        .search-box input:focus {
+            border-color: var(--accent-color);
         }
-        .btn-oval:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(0, 242, 254, 0.8);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
-        }
-        .btn-oval.active { 
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); 
-            color: #000000; font-weight: 900; border-color: #00f2fe; 
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.8); 
-        }
-        .btn-oval-danger { background: rgba(247, 37, 133, 0.2); color: #ff4d6d; border-color: rgba(247, 37, 133, 0.6); }
-        .btn-oval-danger:hover { background: rgba(247, 37, 133, 0.4); box-shadow: 0 0 20px rgba(247, 37, 133, 0.8); }
-        
-        .btn-oval-warning { background: rgba(255, 183, 3, 0.2); color: #ffb703; border-color: rgba(255, 183, 3, 0.6); }
-        .btn-oval-warning:hover { background: rgba(255, 183, 3, 0.4); box-shadow: 0 0 20px rgba(255, 183, 3, 0.8); }
 
-        .menu-item {
-            position: relative; cursor: pointer; padding: 10px 12px; 
+        .library-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .accordion-item {
+            margin-bottom: 8px;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .accordion-header {
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .accordion-header:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .accordion-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 10px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .accordion-item.open .accordion-content {
+            max-height: 500px;
+            padding: 10px;
+        }
+
+        .accordion-item.open .arrow {
+            transform: rotate(90deg);
+        }
+
+        .arrow {
+            transition: transform 0.2s;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .item-card {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px; border: 2px solid rgba(255, 255, 255, 0.12); 
-            font-size: 14px; display: flex; justify-content: space-between; align-items: center;
-            transition: 0.3s; font-weight: 700;
-        }
-        .menu-item:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(0, 242, 254, 0.6); }
-
-        .menu-dropdown {
-            display: none; position: absolute; top: 100%; right: 0; left: 0; 
-            background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px);
-            border: 2px solid rgba(0, 242, 254, 0.5); border-radius: 12px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 50; margin-top: 4px; max-height: 180px; overflow-y: auto;
-        }
-        .menu-dropdown.show { display: block; }
-        .menu-option { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); color: #e2e8f0; font-weight: 700; }
-        .menu-option:hover { background: rgba(0, 242, 254, 0.3); color: #00f2fe; }
-
-        .color-circle-btn {
-            width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ffffff;
-            box-shadow: 0 0 10px rgba(0,242,254,0.9); background: #00f2fe; cursor: pointer; display: inline-block;
-        }
-
-        .accordion-header { 
-            background: linear-gradient(90deg, rgba(114,9,183,0.3) 0%, rgba(0,242,254,0.2) 100%); 
-            padding: 10px 12px; 
-            border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; 
-            display: flex; justify-content: space-between; align-items: center;
-            border: 2px solid rgba(0, 242, 254, 0.4); color: #00f2fe;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
-        }
-        .accordion-header:hover { border-color: rgba(0, 242, 254, 0.8); box-shadow: 0 0 15px rgba(0, 242, 254, 0.6); }
-
-        .accordion-content { display: none; grid-template-columns: repeat(4, 1fr); gap: 6px; padding-top: 6px; }
-        .accordion-content.show { display: grid; }
-        .accordion-content button { 
-            padding: 10px 4px; font-size: 18px; background: rgba(255, 255, 255, 0.05); 
-            color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.12); border-radius: 10px; cursor: pointer; 
-            transition: all 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; font-weight: 700;
-        }
-        .accordion-content button:hover { 
-            background: rgba(0, 242, 254, 0.3); border-color: #00f2fe; color: #fff; box-shadow: 0 0 12px rgba(0,242,254,0.6);
-        }
-
-        .inventory-panel {
-            background: rgba(10, 15, 28, 0.85);
-            border: 2px solid rgba(0, 242, 254, 0.35);
-            border-radius: 12px;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
             padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
-        }
-        .inventory-title {
-            font-size: 13px;
-            font-weight: 900;
-            color: #00f2fe;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-        .inventory-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 5px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            font-weight: 700;
-        }
-        .inventory-item span:last-child {
-            color: #ff007f;
-            font-weight: 900;
-            background: rgba(255, 0, 127, 0.15);
-            padding: 2px 6px;
-            border-radius: 6px;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
         }
 
-        .floating-action-group {
-            position: absolute; display: none; z-index: 100;
-            transform: translate(-50%, -130%);
-            gap: 8px;
-            align-items: center;
-        }
-        .floating-btn {
-            background: rgba(18, 25, 41, 0.95);
-            border: 2px solid rgba(0, 242, 254, 0.7);
-            color: white; border-radius: 50%; width: 40px; height: 40px; 
-            font-size: 16px; cursor: pointer; box-shadow: 0 0 18px rgba(0, 242, 254, 0.6); 
-            display: flex; align-items: center; justify-content: center;
-            transition: transform 0.2s, background 0.2s;
-        }
-        .floating-btn:hover { transform: scale(1.15); background: rgba(0, 242, 254, 0.5); }
-        .floating-btn.delete {
-            background: linear-gradient(135deg, #ff007f 0%, #7209b7 100%);
-            border-color: #ff007f;
-            box-shadow: 0 0 20px rgba(255, 0, 127, 0.9);
+        .item-card:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
         }
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(11, 15, 25, 0.88); backdrop-filter: blur(8px);
-            display: none; justify-content: center; align-items: center; z-index: 1000;
+        .item-icon {
+            font-size: 1.8rem;
         }
-        .modal-card {
-            background: #121929; border: 2px solid rgba(0, 242, 254, 0.5);
-            border-radius: 16px; width: 90%; max-width: 550px; max-height: 85vh;
-            display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 242, 254, 0.4);
+
+        .item-title {
+            font-size: 0.75rem;
+            color: var(--text-color);
         }
-        .modal-header {
-            padding: 14px 16px; background: rgba(0, 242, 254, 0.15);
-            font-weight: 800; font-size: 15px; color: #00f2fe;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+
+        /* Floating Bottom Toolbar */
+        .floating-toolbar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--panel-border);
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 20;
         }
-        .modal-body {
-            padding: 14px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 1px solid var(--panel-border);
+            padding-left: 12px;
         }
-        .element-row {
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255, 255, 255, 0.04); padding: 10px 14px;
-            border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);
-            gap: 10px;
+
+        .toolbar-group:last-child {
+            border-left: none;
+            padding-left: 0;
         }
-        .element-row span { font-size: 13px; color: #e2e8f0; flex: 1; font-weight: 700; }
-        .modal-footer {
-            padding: 14px 16px; background: rgba(0,0,0,0.4);
-            display: flex; justify-content: flex-end; gap: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+        .color-picker-wrapper {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #fff;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .color-picker-wrapper input[type="color"] {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Warnings & Notifications */
+        #warning-toast {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--warning-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #warning-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* FPS Overlay UI */
+        #fps-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--panel-bg);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+            display: none;
+            color: white;
+            font-size: 0.8rem;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 240px;
+            }
+            .room-inputs input {
+                width: 35px;
+            }
         }
     </style>
+    <!-- Three.js and OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
-    <input type="file" id="fileInputJSON" accept=".json" style="display: none;" />
-
-    <div id="floatingActionGroup" class="floating-action-group">
-        <label id="floatingColorBtn" class="floating-btn" title="🎨" style="cursor:pointer; font-size:16px; background:rgba(0,242,254,0.3);">🎨<input type="color" id="elementColorPicker" style="opacity:0; width:0; height:0; position:absolute;"></label>
-        <button id="floatingDuplicateBtn" class="floating-btn" title="📋">📋</button>
-        <button id="floatingDeleteBtn" class="floating-btn delete" title="🗑️">🗑️</button>
+    <!-- Notification Warning -->
+    <div id="warning-toast">
+        ⚠️ تنبيه: أبعاد العنصر أكبر من مساحة الجدار/الغرفة!
     </div>
 
-    <div class="modal-overlay" id="roomInputModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <span id="roomModalTitle">🏠</span>
-                <button onclick="closeRoomModal()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:18px;">✕</button>
-            </div>
-            <div class="modal-body">
-                <div style="font-size: 13px; color: #cbd5e1; font-weight: 600;">
-                    أدخل المقاسات الحقيقية (بالمتر) للطول والعرض ليتم كتابتها مباشرة على الرسم:
-                </div>
-                <div style="display: flex; gap: 12px; margin-top: 8px;">
-                    <div style="flex:1; display:flex; flex-direction:column; gap:5px;">
-                        <label style="font-size:12px; color:#00f2fe; font-weight:bold;">الطول (متر):</label>
-                        <input type="number" id="inputRoomLength" value="4.0" step="0.5" min="0.5" style="width:100%; padding:10px; border-radius:8px; border:2px solid rgba(0,242,254,0.6); background:#000; color:#fff; text-align:center; font-size:15px; font-weight:bold;">
-                    </div>
-                    <div style="flex:1; display:flex; flex-direction:column; gap:5px;">
-                        <label style="font-size:12px; color:#00f2fe; font-weight:bold;">العرض (متر):</label>
-                        <input type="number" id="inputRoomWidth" value="3.0" step="0.5" min="0.5" style="width:100%; padding:10px; border-radius:8px; border:2px solid rgba(0,242,254,0.6); background:#000; color:#fff; text-align:center; font-size:15px; font-weight:bold;">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px;" onclick="closeRoomModal()">✕</button>
-                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color:#000; font-weight:900;" onclick="confirmAddRoom()">📐</button>
-            </div>
+    <!-- Application Header -->
+    <header>
+        <div class="logo">
+            S⚡N <span>Architect 3D</span>
         </div>
-    </div>
 
-    <div class="modal-overlay" id="dimensionsModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <span>📊</span>
-                <button onclick="closeModal()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:18px;">✕</button>
-            </div>
-            <div class="modal-body" id="summaryModalBody">
-                <div style="font-size: 13px; color: #cbd5e1; line-height: 1.5; font-weight: 600;">
-                    مراجعة المساحات المدخلة وعدد الرموز التلقائية قبل اعتماد وحفظ الصورة النهائية:
-                </div>
-                <div id="elementsListContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px;" onclick="closeModal()">✕</button>
-                <button class="btn-top" style="border-radius: 16px; width: auto; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color:#000; font-weight:900;" onclick="saveFinalImage()">🖼️</button>
-            </div>
+        <div class="room-inputs">
+            <label>الطول (م):</label>
+            <input type="number" id="room-length" value="6" min="2" max="20" step="0.5">
+            <label>العرض (م):</label>
+            <input type="number" id="room-width" value="5" min="2" max="20" step="0.5">
+            <label>الارتفاع (م):</label>
+            <input type="number" id="room-height" value="3" min="2" max="6" step="0.1">
+            <button class="btn btn-primary" onclick="updateRoomDimensions()">تطبيق</button>
         </div>
-    </div>
 
-    <div id="modal3D" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:2000; background:#000;">
-        <div id="instructions3D" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); color:#fff; background:rgba(0,0,0,0.7); padding:10px 20px; border-radius:8px; z-index:10; font-weight:bold; cursor:pointer; text-align:center;">
-            🎮 <br> <span style="font-size:12px; color:#00f2fe;">[ ESC ]</span>
-        </div>
-        <button onclick="close3DModal()" style="position:absolute; top:20px; right:20px; z-index:11; padding:8px 16px; background:#ff007f; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">✕</button>
-        <div id="container3D" style="width:100%; height:100%;"></div>
-    </div>
-
-    <header class="top-bar">
-        <div class="brand">
-            <span class="logo-sn">S</span><span class="logo-bolt">⚡</span><span class="logo-sn">N</span>
-        </div>
-        <div class="top-actions">
-            <button id="btnInstall" class="btn-top" title="تثبيت التطبيق" style="display:none; background:linear-gradient(135deg, #ff007f 0%, #7209b7 100%); border-color:#ff007f;">⬇️</button>
-            <button id="btnOpenFile" class="btn-top" title="فتح مشروع">📂</button>
-            <button id="btnSaveProject" class="btn-top" title="حفظ كمشروع">💾</button>
-            <button id="btnView3D" class="btn-top" title="العرض ثلاثي الأبعاد 3D">🏠</button>
-
-            <button id="btnResetZoom" class="btn-top" title="إعادة ضبط التقريب">🎯</button>
-            <button id="btnUndo" class="btn-top" disabled title="تراجع">↩️</button>
-            <button id="btnRedo" class="btn-top" disabled title="إعادة">↪️</button>
-            <button id="btnToggleSidebar" class="btn-top" title="الأدوات">🛠️</button>
-            <button id="btnSave" class="btn-top" title="حفظ كصورة">🖼️</button>
-            <button id="btnFullscreen" class="btn-top" title="ملء الشاشة">📺</button>
+        <div class="header-controls">
+            <button class="btn active" id="btn-top-view" onclick="setViewMode('top')">منظور علوي (Top)</button>
+            <button class="btn" id="btn-iso-view" onclick="setViewMode('iso')">منظور إيزومتري</button>
+            <button class="btn" id="btn-fps-view" onclick="setViewMode('fps')">تجول داخلي (FPS)</button>
+            <button class="btn" onclick="clearScene()">مسح الكل</button>
         </div>
     </header>
 
-    <div class="app-layout">
-        <main class="canvas-container-wrapper" id="canvasContainer">
-            <canvas id="drawCanvas"></canvas>
-        </main>
-
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-scroll-content">
-
-                <div class="tools-grid">
-                    <button id="btnSelect" class="btn-oval active" title="تحديد ونقل">🖐️</button>
-                    <button id="btnDeleteSegment" class="btn-oval btn-oval-warning" title="ممحاة ضلع">✂️</button>
-                    <button id="btnPencil" class="btn-oval" title="رسم حر">✏️</button>
-                    <button id="btnText" class="btn-oval" title="إضافة نص">T</button>
-                </div>
-                <button id="btnClear" class="btn-oval btn-oval-danger" style="width: 100%;" title="مسح اللوحة بالكامل">🗑️</button>
-
-                <div class="menu-item" onclick="toggleDropdown('fontDropdown')">
-                    <span id="fontLabel">🔤 ▾</span>
-                    <div class="menu-dropdown" id="fontDropdown">
-                        <div class="menu-option" onclick="setFont('Arial', 'Arial')">Arial</div>
-                        <div class="menu-option" onclick="setFont('Tahoma', 'Tahoma')">Tahoma</div>
-                        <div class="menu-option" onclick="setFont('Cairo', 'Cairo')">Cairo</div>
-                        <div class="menu-option" onclick="setFont('Amiri', 'Amiri')">Amiri</div>
-                    </div>
-                </div>
-
-                <div class="menu-item" onclick="toggleDropdown('brushDropdown')">
-                    <span id="brushLabel">🖌️ ✏️ ▾</span>
-                    <div class="menu-dropdown" id="brushDropdown">
-                        <div class="menu-option" onclick="setBrush('pencil', '✏️')">✏️</div>
-                        <div class="menu-option" onclick="setBrush('dotted', '💬')">💬</div>
-                        <div class="menu-option" onclick="setBrush('highlighter', '🖍️')">🖍️</div>
-                    </div>
-                </div>
-
-                <div class="menu-item" onclick="document.getElementById('colorPicker').click()">
-                    <span>🎨 ▾</span>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="color-circle-btn" id="colorCirclePreview"></div>
-                        <input type="color" id="colorPicker" value="#00f2fe" style="opacity: 0; width: 0; height: 0; position: absolute;">
-                    </div>
-                </div>
-
-                <div style="font-size: 13px; font-weight: 700; color: #cbd5e1; display: flex; justify-content: space-between; align-items: center; padding: 4px 6px;">
-                    <label>📏</label>
-                    <input type="range" id="brushWidth" min="1" max="25" value="4" style="width: 80%; accent-color: #00f2fe; height: 6px;">
-                </div>
-
-                <div class="accordion-header" onclick="toggleAccordion('roomsSec')">🏠 ▾</div>
-                <div class="accordion-content" id="roomsSec">
-                    <button onclick="promptAddRoom('حجرة نوم رئيسية')" title="غرفة نوم">🛏️</button>
-                    <button onclick="promptAddRoom('حجرة أطفال')" title="غرفة أطفال">🛌</button>
-                    <button onclick="promptAddRoom('حجرة استقبال (صالة)')" title="استقبال">🛋️</button>
-                    <button onclick="promptAddRoom('حمام رئيسي')" title="حمام">🛁</button>
-                    <button onclick="promptAddRoom('مطبخ متكامل')" title="مطبخ">🍳</button>
-                    <button onclick="promptAddRoom('منطقة جاردن (حديقة)')" title="حديقة">🌿</button>
-                </div>
-
-                <div class="accordion-header" onclick="toggleAccordion('electricSec')">⚡ ▾</div>
-                <div class="accordion-content" id="electricSec">
-                    <button onclick="addSymbol('single_sw', 'مفتاح أحادي')" title="مفتاح أحادي">🔘</button>
-                    <button onclick="addSymbol('double_sw', 'مفتاح ثنائي')" title="مفتاح ثنائي">⚪</button>
-                    <button onclick="addSymbol('triple_sw', 'مفتاح ثلاثي')" title="مفتاح ثلاثي">🔘</button>
-                    <button onclick="addSymbol('two_way_sw', 'مفتاح ديفاتوري')" title="ديفاتوري">🔄</button>
-                    <button onclick="addSymbol('single_socket', 'بريزة عادية')" title="بريزة عادية">🔌</button>
-                    <button onclick="addSymbol('power_socket', 'بريزة قوى')" title="بريزة قوى">⚡</button>
-                    <button onclick="addSymbol('ac_outlet', 'تكييف')" title="تكييف">❄️</button>
-                    <button onclick="addSymbol('exhaust_fan', 'شفاط')" title="شفاط">🌀</button>
-                    <button onclick="addSymbol('wall_spot', 'سبوت حائط')" title="سبوت حائط">🎯</button>
-                    <button onclick="addSymbol('lamp', 'لمبة')" title="لمبة">💡</button>
-                    <button onclick="addSymbol('bell', 'جرس')" title="جرس">🔔</button>
-                    <button onclick="addSymbol('alarm', 'إنذار')" title="إنذار">🚨</button>
-                    <button onclick="addSymbol('audio_out', 'مخرج صوت')" title="صوت">🔊</button>
-                    <button onclick="addSymbol('data_out', 'داتا')" title="داتا">🌐</button>
-                    <button onclick="addSymbol('panel', 'لوحة توزيع رئيسية')" title="لوحة رئيسية">🎛️</button>
-                </div>
-
-                <div class="accordion-header" onclick="toggleAccordion('powerSupplySec')">🔋 ▾</div>
-                <div class="accordion-content" id="powerSupplySec">
-                    <button onclick="addSymbol('main_meter', 'عداد رئيسي')" title="عداد رئيسي">📟</button>
-                    <button onclick="addSymbol('sub_panel', 'لوحة فرعية')" title="لوحة فرعية">🔲</button>
-                    <button onclick="addSymbol('mcb_breaker', 'قاطع MCB')" title="قاطع MCB">🎚️</button>
-                    <button onclick="addSymbol('rccb_breaker', 'قاطع RCCB')" title="قاطع RCCB">🛡️</button>
-                    <button onclick="addSymbol('earth_pit', 'بئر تأريض')" title="بئر تأريض">🌐</button>
-                    <button onclick="addSymbol('earth_rod', 'قضيب تأريض')" title="قضيب تأريض">📍</button>
-                    <button onclick="addSymbol('ats_switch', 'مفتاح ATS')" title="مفتاح ATS">🔄</button>
-                    <button onclick="addSymbol('generator', 'مولد طوارئ')" title="مولد طوارئ">⚙️</button>
-                    <button onclick="addSymbol('ups_system', 'وحدة UPS')" title="وحدة UPS">🔋</button>
-                    <button onclick="openSmartDistributor()" style="grid-column: span 4; background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(114, 9, 183, 0.3)); border-color: #00f2fe; text-align: center; justify-content: center; color: #00f2fe;" title="الموزع الذكي للدوائر">
-                        ⚡🤖
-                    </button>
-                </div>
-
-                <div class="accordion-header" onclick="toggleAccordion('carpentrySec')">🚪 ▾</div>
-                <div class="accordion-content" id="carpentrySec">
-                    <button onclick="addSymbol('door', 'باب مفرد')" title="باب مفرد">🚪</button>
-                    <button onclick="addSymbol('door_double', 'باب دبل')" title="باب دبل">🚪🚪</button>
-                    <button onclick="addSymbol('door_sliding', 'باب جرار')" title="باب جرار">↔️</button>
-                    <button onclick="addSymbol('window', 'شباك مفرد')" title="شباك مفرد">🪟</button>
-                    <button onclick="addSymbol('window_double', 'شباك دبل')" title="شباك دبل">🖼️</button>
-                    <button onclick="addSymbol('balcony', 'بلكون')" title="بلكون">🏛️</button>
-                </div>
-
-                <div class="accordion-header" onclick="toggleAccordion('plumbingSec')">🚰 ▾</div>
-                <div class="accordion-content" id="plumbingSec">
-                    <button onclick="addSymbol('sink', 'حوض غسيل')" title="حوض غسيل">🚰</button>
-                    <button onclick="addSymbol('toilet', 'مرحاض')" title="مرحاض">🚽</button>
-                    <button onclick="addSymbol('shower', 'دش استحمام')" title="دش استحمام">🚿</button>
-                    <button onclick="addSymbol('bathtub', 'بانيو')" title="بانيو">🛁</button>
-                    <button onclick="addSymbol('drain', 'بالوعة صرف')" title="بالوعة صرف">⭕</button>
-                </div>
-
-                <div class="accordion-header" onclick="toggleAccordion('furnitureSec')">🛋️ ▾</div>
-                <div class="accordion-content" id="furnitureSec">
-                    <button onclick="addSymbol('wooden_chair', 'كرسي خشب')" title="كرسي خشب">🪑</button>
-                    <button onclick="addSymbol('armchair', 'كرسي أنتريه')" title="كرسي أنتريه">💺</button>
-                    <button onclick="addSymbol('sofa', 'كنبة')" title="كنبة">🛋️</button>
-                    <button onclick="addSymbol('table', 'طاولة')" title="طاولة">🪵</button>
-                    <button onclick="addSymbol('wardrobe', 'دولاب')" title="دولاب">🚪</button>
-                    <button onclick="addSymbol('stove', 'بوتاجاز')" title="بوتاجاز">🍳</button>
-                    <button onclick="addSymbol('water_heater', 'سخان')" title="سخان">🔥</button>
-                    <button onclick="addSymbol('tv_screen', 'شاشة')" title="شاشة">📺</button>
-                    <button onclick="addSymbol('bed', 'سرير نوم')" title="سرير نوم">🛏️</button>
-                </div>
-
-                <div class="inventory-panel" style="margin-top: 10px;">
-                    <div class="inventory-title">
-                        <span>📊</span>
-                        <span id="totalItemsCount" style="font-size:11px; color:#00f2fe;">0</span>
-                    </div>
-                    <div id="inventoryListContainer" style="display: flex; flex-direction: column; gap: 5px; max-height: 160px; overflow-y: auto;">
-                        <div style="font-size:11px; color:#94a3b8; text-align:center; padding: 8px;">...</div>
-                    </div>
-                </div>
-
+    <!-- Main Workspace -->
+    <div class="main-container">
+        
+        <!-- Viewport Three.js Canvas -->
+        <div id="viewport">
+            <div id="fps-controls">
+                استخدم أسهم الكيبورد أو (W, A, S, D) للتحرك | حرك الماوس للنظر حولك
             </div>
-        </aside>
+        </div>
+
+        <!-- Sidebar Library -->
+        <div class="sidebar">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="بحث عن عنصر (مثل: سرير، مفتاح، باب)..." oninput="filterLibrary()">
+            </div>
+            
+            <div class="library-content" id="library-container">
+                <!-- Categories will be rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Bottom Controls Toolbar -->
+    <div class="floating-toolbar">
+        <div class="toolbar-group">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">لون العنصر:</span>
+            <div class="color-picker-wrapper">
+                <input type="color" id="element-color" value="#3b82f6" onchange="updateSelectedObjectColor(this.value)">
+            </div>
+        </div>
+
+        <div class="toolbar-group">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">سمك الرسم:</span>
+            <input type="range" id="pen-thickness" min="1" max="10" value="3" style="width: 80px;">
+        </div>
+
+        <div class="toolbar-group">
+            <button class="btn" onclick="rotateSelectedObject()">🔄 تدوير</button>
+            <button class="btn" style="color: var(--warning-color);" onclick="deleteSelectedObject()">🗑️ حذف</button>
+        </div>
     </div>
 
     <script>
-        let currentFont = 'Arial';
-        let currentBrushType = 'pencil';
-        let isDeleteSegmentMode = false;
-        let pendingRoomName = '';
-        let deferredPrompt = null;
-        let isPencilActiveBeforeTouch = false;
-
-        const floatingGroup = document.getElementById('floatingActionGroup');
-        const floatingDeleteBtn = document.getElementById('floatingDeleteBtn');
-        const floatingDuplicateBtn = document.getElementById('floatingDuplicateBtn');
-        const elementColorPicker = document.getElementById('elementColorPicker');
-
-        let undoStack = [];
-        let redoStack = [];
-        let isPerformingHistoryAction = false;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('btnInstall').style.display = 'flex';
-        });
-
-        document.getElementById('btnInstall').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    document.getElementById('btnInstall').style.display = 'none';
-                }
-                deferredPrompt = null;
-            } else {
-                alert('يمكنك تثبيت التطبيق مباشرة من إعدادات المتصفح');
+        // --- Library Data Structure ---
+        const libraryData = [
+            {
+                category: "الأثاث الأساسي",
+                items: [
+                    { id: "bed", name: "سرير مزدوج", icon: "🛏️", size: [2, 0.8, 2] },
+                    { id: "sofa", name: "اريكة معيشة", icon: "🛋️", size: [2.2, 0.9, 0.9] },
+                    { id: "table", name: "طاولة طعام", icon: "🪑", size: [1.6, 0.75, 0.9] },
+                    { id: "wardrobe", name: "خزانة ملابس", icon: "🚪", size: [1.8, 2.2, 0.6] }
+                ]
+            },
+            {
+                category: "التجهيزات الكهربائية",
+                items: [
+                    { id: "switch", name: "مفتاح كهربائي", icon: "🔘", size: [0.15, 0.15, 0.05], wallMounted: true },
+                    { id: "socket", name: "مقبس كهرباء", icon: "🔌", size: [0.15, 0.15, 0.05], wallMounted: true },
+                    { id: "lamp", name: "مصباح أرضي", icon: "💡", size: [0.4, 1.7, 0.4] }
+                ]
+            },
+            {
+                category: "الفتحات المعمارية",
+                items: [
+                    { id: "door", name: "باب خشب", icon: "🚪", size: [1, 2.1, 0.15], wallMounted: true },
+                    { id: "window", name: "نافذة زجاجية", icon: "🪟", size: [1.2, 1.2, 0.15], wallMounted: true }
+                ]
             }
-        });
+        ];
 
-        function saveHistory(canvas) {
-            if (isPerformingHistoryAction) return;
-            const json = JSON.stringify(canvas.toJSON(['nameTag', 'roomDimensions']));
-            if (undoStack.length > 0 && undoStack[undoStack.length - 1] === json) return;
-            undoStack.push(json);
-            if (undoStack.length > 30) undoStack.shift();
-            redoStack = [];
-            updateHistoryButtons();
-            updateInventorySummary(canvas);
+        // --- Core Variables ---
+        let scene, camera, renderer, controls;
+        let roomGroup, objectsGroup;
+        let roomDimensions = { length: 6, width: 5, height: 3, wallThickness: 0.15 };
+        let selectedObject = null;
+        let viewMode = 'top'; // 'top', 'iso', 'fps'
+        
+        // FPS Movement Controls Variables
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let velocity = new THREE.Vector3(), direction = new THREE.Vector3();
+        let clock = new THREE.Clock();
+
+        // --- Initialization ---
+        function init() {
+            const container = document.getElementById('viewport');
+
+            // 1. Scene Setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0f1d);
+
+            // 2. Camera Setup
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+
+            // 3. Renderer Setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // 4. Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // 5. Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+            dirLight.position.set(10, 20, 15);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            scene.add(dirLight);
+
+            // Groups
+            roomGroup = new THREE.Group();
+            objectsGroup = new THREE.Group();
+            scene.add(roomGroup);
+            scene.add(objectsGroup);
+
+            // Initialize Scene Content
+            buildRoom();
+            renderLibraryUI();
+            setViewMode('top');
+
+            // Event Listeners
+            window.addEventListener('resize', onWindowResize);
+            setupRaycaster();
+            setupFPSControls();
+
+            // Animation Loop
+            animate();
         }
 
-        function updateHistoryButtons() {
-            document.getElementById('btnUndo').disabled = undoStack.length <= 1;
-            document.getElementById('btnRedo').disabled = redoStack.length === 0;
-        }
-
-        function updateInventorySummary(canvas) {
-            const container = document.getElementById('inventoryListContainer');
-            const totalCountBadge = document.getElementById('totalItemsCount');
-            if (!canvas) return;
-
-            const objects = canvas.getObjects();
-            const counts = {};
-            let validItemsCount = 0;
-
-            objects.forEach(obj => {
-                let name = obj.nameTag;
-                if (name && name !== 'العلامة المائية S⚡N' && !name.includes('مقاس جدار') && !name.includes('أبعاد:')) {
-                    counts[name] = (counts[name] || 0) + 1;
-                    validItemsCount++;
-                }
-            });
-
-            totalCountBadge.innerText = validItemsCount;
-
-            if (Object.keys(counts).length === 0) {
-                container.innerHTML = `<div style="font-size:11px; color:#94a3b8; text-align:center; padding: 8px;">...</div>`;
-                return;
+        // --- Room Construction (3D Architectural Fixes) ---
+        function buildRoom() {
+            // Clear existing room
+            while (roomGroup.children.length > 0) {
+                const obj = roomGroup.children[0];
+                roomGroup.remove(obj);
             }
 
-            let html = '';
-            for (let [name, count] of Object.entries(counts)) {
-                html += `
-                    <div class="inventory-item">
-                        <span>${name}</span>
-                        <span>${count}</span>
-                    </div>
-                `;
-            }
-            container.innerHTML = html;
-        }
-
-        window.onclick = function(e) {
-            if (!e.target.matches('.menu-item') && !e.target.matches('#fontLabel') && !e.target.matches('#brushLabel')) {
-                document.querySelectorAll('.menu-dropdown').forEach(d => d.classList.remove('show'));
-            }
-        };
-
-        function toggleDropdown(id) { document.getElementById(id).classList.toggle('show'); }
-        function toggleAccordion(id) { document.getElementById(id).classList.toggle('show'); }
-
-        function setFont(fontName, label) {
-            currentFont = fontName;
-            document.getElementById('fontLabel').innerText = "🔤 " + label + " ▾";
-            const activeObj = window.canvasApp.getActiveObject();
-            if (activeObj && activeObj.type === 'i-text') {
-                activeObj.set('fontFamily', fontName);
-                window.canvasApp.renderAll();
-                saveHistory(window.canvasApp);
-            }
-        }
-
-        function setBrush(type, label) {
-            currentBrushType = type;
-            document.getElementById('brushLabel').innerText = "🖌️ " + label + " ▾";
-            window.updateBrushSettings();
-        }
-
-        function openSmartDistributor() {
-            const canvas = window.canvasApp;
-            if (!canvas) return;
-            const objects = canvas.getObjects().filter(o => o.nameTag && o.nameTag !== 'العلامة المائية S⚡N');
-            
-            if (objects.length === 0) {
-                alert('قم بإضافة رموز كهربائية أولاً لتوزيعها على الدوائر والأحمال!');
-                return;
-            }
-
-            let lightingCount = 0;
-            let socketsCount = 0;
-            let powerSocketsCount = 0;
-            let acCount = 0;
-
-            objects.forEach(obj => {
-                const name = obj.nameTag;
-                if (name.includes('لمبه') || name.includes('اسبوت')) lightingCount++;
-                else if (name.includes('بريزة احادى')) socketsCount++;
-                else if (name.includes('قوى')) powerSocketsCount++;
-                else if (name.includes('تكييف')) acCount++;
-            });
-
-            const lightCircuits = Math.ceil(lightingCount / 10) || (lightingCount > 0 ? 1 : 0);
-            const socketCircuits = Math.ceil(socketsCount / 8) || (socketsCount > 0 ? 1 : 0);
-            const powerCircuits = powerSocketsCount;
-            const acCircuits = acCount;
-            const totalCircuits = lightCircuits + socketCircuits + powerCircuits + acCircuits;
-
-            alert(`⚡ التوزيع الآلي المقترح للدوائر الكهربائية:\n\n` +
-                  `💡 دوائر الإنارة (10A / 1.5mm²): ${lightCircuits} دائرة (${lightingCount} مخرج)\n` +
-                  `🔌 دوائر البرايز العادية (16A / 2.5mm²): ${socketCircuits} دائرة (${socketsCount} مخرج)\n` +
-                  `⚡ دوائر برائز القوى (20A / 4mm²): ${powerCircuits} دائرة\n` +
-                  `❄️ دوائر التكييفات (25A / 6mm²): ${acCircuits} دائرة\n\n` +
-                  `📊 إجمالي القواطع الفرعية المطلوبة: ${totalCircuits} قاطع فرعي\n` +
-                  `🛡️ القاطع الرئيسي المقترح: MCCB 63A + RCCB 30mA للتأريض والتسريب.`);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('canvasContainer');
-            const sidebar = document.getElementById('sidebar');
-            
-            const canvas = new fabric.Canvas('drawCanvas', {
-                width: container.clientWidth,
-                height: container.clientHeight,
-                isDrawingMode: false,
-                subTargetDetection: true
-            });
-            window.canvasApp = canvas;
-
-            let isMultiTouching = false;
-            let startDist = 0;
-            let startZoom = 1;
-            let lastMidX = 0;
-            let lastMidY = 0;
-
-            const canvasWrapper = container;
-
-            canvasWrapper.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) {
-                    isMultiTouching = true;
-                    isPencilActiveBeforeTouch = canvas.isDrawingMode;
-                    
-                    canvas.isDrawingMode = false;
-                    canvas.discardActiveObject().renderAll();
-
-                    const t1 = e.touches[0];
-                    const t2 = e.touches[1];
-
-                    startDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-                    startZoom = canvas.getZoom();
-
-                    const rect = canvasWrapper.getBoundingClientRect();
-                    lastMidX = ((t1.clientX + t2.clientX) / 2) - rect.left;
-                    lastMidY = ((t1.clientY + t2.clientY) / 2) - rect.top;
-                }
-            }, { passive: false });
-
-            canvasWrapper.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2 && isMultiTouching) {
-                    e.preventDefault();
-
-                    const t1 = e.touches[0];
-                    const t2 = e.touches[1];
-
-                    const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-                    if (startDist === 0) return;
-
-                    let newZoom = startZoom * (currentDist / startDist);
-                    if (newZoom > 12) newZoom = 12;
-                    if (newZoom < 0.2) newZoom = 0.2;
-
-                    const rect = canvasWrapper.getBoundingClientRect();
-                    const currentMidX = ((t1.clientX + t2.clientX) / 2) - rect.left;
-                    const currentMidY = ((t1.clientY + t2.clientY) / 2) - rect.top;
-
-                    canvas.zoomToPoint({ x: currentMidX, y: currentMidY }, newZoom);
-
-                    const deltaX = currentMidX - lastMidX;
-                    const deltaY = currentMidY - lastMidY;
-
-                    const vpt = canvas.viewportTransform;
-                    vpt[4] += deltaX;
-                    vpt[5] += deltaY;
-
-                    canvas.requestRenderAll();
-
-                    lastMidX = currentMidX;
-                    lastMidY = currentMidY;
-
-                    updateFloatingButtonGroup();
-                }
-            }, { passive: false });
-
-            canvasWrapper.addEventListener('touchend', (e) => {
-                if (e.touches.length < 2 && isMultiTouching) {
-                    isMultiTouching = false;
-                    startDist = 0;
-
-                    if (document.getElementById('btnPencil').classList.contains('active')) {
-                        canvas.isDrawingMode = true;
-                    }
-                }
-            });
-
-            canvas.on('mouse:wheel', function(opt) {
-                let delta = opt.e.deltaY;
-                let zoom = canvas.getZoom();
-                zoom *= 0.999 ** delta;
-                if (zoom > 12) zoom = 12;
-                if (zoom < 0.2) zoom = 0.2;
-                canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
-                opt.e.preventDefault();
-                opt.e.stopPropagation();
-                updateFloatingButtonGroup();
-            });
-
-            document.getElementById('btnResetZoom').addEventListener('click', () => {
-                canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-                canvas.setZoom(1);
-                canvas.renderAll();
-                updateFloatingButtonGroup();
-            });
-
-            function addWatermark() {
-                const wmGroup = new fabric.Group([
-                    new fabric.Rect({ left: 0, top: 0, width: 70, height: 32, fill: 'rgba(11, 15, 25, 0.3)', rx: 6, ry: 6, stroke: 'rgba(0,242,254,0.1)', strokeWidth: 1 }),
-                    new fabric.IText('S', { left: 10, top: 6, fontSize: 16, fontWeight: '900', fill: 'rgba(0,102,255,0.4)', fontFamily: 'Arial' }),
-                    new fabric.IText('⚡', { left: 26, top: 6, fontSize: 14, fill: 'rgba(255,0,0,0.4)', fontFamily: 'Arial' }),
-                    new fabric.IText('N', { left: 44, top: 6, fontSize: 16, fontWeight: '900', fill: 'rgba(0,102,255,0.4)', fontFamily: 'Arial' })
-                ], {
-                    left: canvas.width - 90,
-                    top: canvas.height - 50,
-                    selectable: false,
-                    evented: false,
-                    opacity: 0.5,
-                    nameTag: 'العلامة المائية S⚡N'
-                });
-                canvas.add(wmGroup);
-            }
-
-            addWatermark();
-            saveHistory(canvas);
-
-            document.getElementById('btnUndo').addEventListener('click', () => {
-                if (undoStack.length > 1) {
-                    isPerformingHistoryAction = true;
-                    const currentState = undoStack.pop();
-                    redoStack.push(currentState);
-                    const previousState = undoStack[undoStack.length - 1];
-                    
-                    canvas.loadFromJSON(previousState, () => {
-                        canvas.renderAll();
-                        setTimeout(() => { isPerformingHistoryAction = false; }, 30);
-                        updateHistoryButtons();
-                        updateInventorySummary(canvas);
-                        floatingGroup.style.display = 'none';
-                    });
-                }
-            });
-
-            document.getElementById('btnRedo').addEventListener('click', () => {
-                if (redoStack.length > 0) {
-                    isPerformingHistoryAction = true;
-                    const nextState = redoStack.pop();
-                    undoStack.push(nextState);
-                    
-                    canvas.loadFromJSON(nextState, () => {
-                        canvas.renderAll();
-                        setTimeout(() => { isPerformingHistoryAction = false; }, 30);
-                        updateHistoryButtons();
-                        updateInventorySummary(canvas);
-                        floatingGroup.style.display = 'none';
-                    });
-                }
-            });
-
-            canvas.on('object:added', () => saveHistory(canvas));
-            canvas.on('object:removed', () => saveHistory(canvas));
-            canvas.on('object:modified', () => saveHistory(canvas));
-            canvas.on('path:created', () => saveHistory(canvas));
-
-            fabric.Object.prototype.set({
-                transparentCorners: false,
-                cornerColor: '#00f2fe',
-                cornerStrokeColor: '#ffffff',
-                borderColor: '#ff007f',
-                cornerSize: 12,
-                cornerStyle: 'circle'
-            });
-
-            window.addEventListener('resize', () => {
-                canvas.setWidth(container.clientWidth);
-                canvas.setHeight(container.clientHeight);
-                canvas.renderAll();
-            });
-
-            document.getElementById('btnToggleSidebar').addEventListener('click', () => sidebar.classList.toggle('active'));
-            function autoCloseSidebarOnMobile() { if (window.innerWidth <= 768) sidebar.classList.remove('active'); }
-
-            function updateFloatingButtonGroup() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.nameTag !== 'العلامة المائية S⚡N' && !isDeleteSegmentMode) {
-                    const bound = activeObj.getBoundingRect();
-                    floatingGroup.style.display = 'flex';
-                    
-                    let targetTop = bound.top - 50;
-                    if (targetTop < 10) {
-                        targetTop = bound.top + bound.height + 15;
-                    }
-
-                    floatingGroup.style.left = (bound.left + bound.width / 2) + 'px';
-                    floatingGroup.style.top = targetTop + 'px';
-                } else {
-                    floatingGroup.style.display = 'none';
-                }
-            }
-
-            canvas.on('selection:created', updateFloatingButtonGroup);
-            canvas.on('selection:updated', updateFloatingButtonGroup);
-            canvas.on('selection:cleared', () => floatingGroup.style.display = 'none');
-            canvas.on('object:moving', updateFloatingButtonGroup);
-            canvas.on('object:scaling', updateFloatingButtonGroup);
-            canvas.on('object:rotating', updateFloatingButtonGroup);
-
-            floatingDeleteBtn.addEventListener('click', () => {
-                canvas.getActiveObjects().forEach(obj => {
-                    if (obj.nameTag !== 'العلامة المائية S⚡N') canvas.remove(obj);
-                });
-                canvas.discardActiveObject();
-                canvas.renderAll();
-                floatingGroup.style.display = 'none';
-                updateInventorySummary(canvas);
-            });
-
-            floatingDuplicateBtn.addEventListener('click', () => {
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.nameTag === 'العلامة المائية S⚡N') return;
-
-                activeObj.clone((cloned) => {
-                    canvas.discardActiveObject();
-                    cloned.set({
-                        left: activeObj.left + 25,
-                        top: activeObj.top + 25,
-                        evented: true,
-                    });
-                    if (cloned.type === 'activeSelection') {
-                        cloned.canvas = canvas;
-                        cloned.forEachObject((obj) => { canvas.add(obj); });
-                        cloned.setCoords();
-                    } else {
-                        canvas.add(cloned);
-                    }
-                    canvas.setActiveObject(cloned);
-                    canvas.renderAll();
-                    updateInventorySummary(canvas);
-                }, ['nameTag', 'roomDimensions']);
-            });
-
-            elementColorPicker.addEventListener('input', () => {
-                const newColor = elementColorPicker.value;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.nameTag === 'العلامة المائية S⚡N') return;
-
-                if (activeObj.type === 'group') {
-                    activeObj.forEachObject(subObj => {
-                        if (subObj.stroke) subObj.set('stroke', newColor);
-                        if (subObj.fill && subObj.fill !== 'none') subObj.set('fill', newColor);
-                        if (subObj.type === 'i-text') subObj.set('fill', newColor);
-                    });
-                } else {
-                    if (activeObj.stroke) activeObj.set('stroke', newColor);
-                    if (activeObj.fill && activeObj.fill !== 'none') activeObj.set('fill', newColor);
-                    if (activeObj.type === 'i-text') activeObj.set('fill', newColor);
-                }
-                canvas.renderAll();
-                saveHistory(canvas);
-            });
-
-            const colorPicker = document.getElementById('colorPicker');
-            const colorCirclePreview = document.getElementById('colorCirclePreview');
-            const brushWidth = document.getElementById('brushWidth');
-            const btnSelect = document.getElementById('btnSelect');
-            const btnDeleteSegment = document.getElementById('btnDeleteSegment');
-            const btnPencil = document.getElementById('btnPencil');
-            const btnText = document.getElementById('btnText');
-
-            window.updateBrushSettings = function() {
-                const color = colorPicker.value;
-                const width = parseInt(brushWidth.value, 10);
-                canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-                canvas.freeDrawingBrush.color = color;
-                canvas.freeDrawingBrush.width = width;
-                if (currentBrushType === 'highlighter') {
-                    canvas.freeDrawingBrush.color = color + '66';
-                    canvas.freeDrawingBrush.width = width * 3;
-                } else if (currentBrushType === 'dotted') {
-                    canvas.freeDrawingBrush.strokeDashArray = [8, 8];
-                }
-            };
-
-            colorPicker.addEventListener('input', () => {
-                const selectedColor = colorPicker.value;
-                colorCirclePreview.style.background = selectedColor;
-                colorCirclePreview.style.boxShadow = `0 0 10px ${selectedColor}`;
-                window.updateBrushSettings();
-            });
-
-            function setActiveTool(activeBtn) {
-                [btnSelect, btnDeleteSegment, btnPencil, btnText].forEach(b => b.classList.remove('active'));
-                activeBtn.classList.add('active');
-                isDeleteSegmentMode = (activeBtn === btnDeleteSegment);
-            }
-
-            btnSelect.addEventListener('click', () => {
-                canvas.isDrawingMode = false;
-                setActiveTool(btnSelect);
-                autoCloseSidebarOnMobile();
-            });
-
-            btnDeleteSegment.addEventListener('click', () => {
-                canvas.isDrawingMode = false;
-                setActiveTool(btnDeleteSegment);
-                autoCloseSidebarOnMobile();
-            });
-
-            canvas.on('mouse:down', (options) => {
-                if (isDeleteSegmentMode && options.target && options.target.nameTag !== 'العلامة المائية S⚡N') {
-                    const target = options.target;
-                    canvas.remove(target);
-                    canvas.discardActiveObject();
-                    canvas.renderAll();
-                    saveHistory(canvas);
-                    updateInventorySummary(canvas);
-                }
-            });
-
-            btnPencil.addEventListener('click', () => {
-                canvas.isDrawingMode = true;
-                window.updateBrushSettings();
-                setActiveTool(btnPencil);
-                autoCloseSidebarOnMobile();
-            });
-
-            btnText.addEventListener('click', () => {
-                canvas.isDrawingMode = false;
-                setActiveTool(btnSelect);
-                const text = new fabric.IText('Text', {
-                    left: canvas.width / 2 - 40, top: canvas.height / 2 - 15,
-                    fontFamily: currentFont, fontSize: 20, fill: colorPicker.value, direction: 'rtl',
-                    nameTag: 'نص توضيحي'
-                });
-                canvas.add(text);
-                canvas.setActiveObject(text);
-                text.enterEditing();
-                text.selectAll();
-                autoCloseSidebarOnMobile();
-            });
-
-            window.promptAddRoom = function(roomName) {
-                pendingRoomName = roomName;
-                document.getElementById('roomModalTitle').innerText = '🏠 ' + roomName;
-                document.getElementById('roomInputModal').style.display = 'flex';
-                autoCloseSidebarOnMobile();
-            };
-
-            window.closeRoomModal = function() {
-                document.getElementById('roomInputModal').style.display = 'none';
-            };
-
-            window.confirmAddRoom = function() {
-                const lengthVal = parseFloat(document.getElementById('inputRoomLength').value) || 4.0;
-                const widthVal = parseFloat(document.getElementById('inputRoomWidth').value) || 3.0;
-                closeRoomModal();
-                createRoomOnCanvas(pendingRoomName, lengthVal, widthVal);
-            };
-
-            function createRoomOnCanvas(roomName, length, width) {
-                canvas.isDrawingMode = false;
-                setActiveTool(btnSelect);
-                
-                const color = colorPicker.value;
-                const strokeWidth = parseInt(brushWidth.value, 10) || 4;
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-
-                let w = 220, h = 150;
-                let p1 = {x:-w/2, y:-h/2}, p2 = {x:w/2, y:-h/2}, p3 = {x:w/2, y:h/2}, p4 = {x:-w/2, y:h/2};
-
-                let elements = [];
-                elements.push(new fabric.Line([p1.x, p1.y, p2.x, p2.y], { stroke: color, strokeWidth: strokeWidth, nameTag: 'جدار علوي' }));
-                elements.push(new fabric.Line([p2.x, p2.y, p3.x, p3.y], { stroke: color, strokeWidth: strokeWidth, nameTag: 'جدار أيمن' }));
-                elements.push(new fabric.Line([p3.x, p3.y, p4.x, p4.y], { stroke: color, strokeWidth: strokeWidth, nameTag: 'جدار سفلي' }));
-                elements.push(new fabric.Line([p4.x, p4.y, p1.x, p1.y], { stroke: color, strokeWidth: strokeWidth, nameTag: 'جدار أيسر' }));
-
-                const area = (length * width).toFixed(1);
-
-                elements.push(new fabric.IText(length + ' m', { left: -20, top: -h/2 - 20, fontSize: 12, fill: color, fontFamily: currentFont, nameTag: 'مقاس جدار' }));
-                elements.push(new fabric.IText(width + ' m', { left: w/2 + 8, top: -10, fontSize: 12, fill: color, fontFamily: currentFont, nameTag: 'مقاس جدار' }));
-
-                elements.push(new fabric.IText(`${roomName}\n(${area} m²)`, {
-                    left: -40, top: -15,
-                    fontFamily: currentFont, fontSize: 14, fill: color, direction: 'rtl', fontWeight: 'bold', textAlign: 'center',
-                    nameTag: roomName
-                }));
-
-                const roomGroup = new fabric.Group(elements, {
-                    left: centerX - w/2,
-                    top: centerY - h/2,
-                    nameTag: roomName,
-                    roomDimensions: `${length} × ${width} m (${area} m²)`
-                });
-
-                canvas.add(roomGroup);
-                canvas.setActiveObject(roomGroup);
-                canvas.renderAll();
-            }
-
-            const getSvgData = (color) => ({
-                single_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="50" y1="20" x2="50" y2="2" stroke="${color}" stroke-width="6"/></svg>`,
-                double_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="40" y1="20" x2="40" y2="2" stroke="${color}" stroke-width="6"/><line x1="60" y1="20" x2="60" y2="2" stroke="${color}" stroke-width="6"/></svg>`,
-                triple_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="35" y1="20" x2="35" y2="2" stroke="${color}" stroke-width="5"/><line x1="50" y1="20" x2="50" y2="2" stroke="${color}" stroke-width="5"/><line x1="65" y1="20" x2="65" y2="2" stroke="${color}" stroke-width="5"/></svg>`,
-                two_way_sw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="${color}"/><line x1="50" y1="20" x2="50" y2="2" stroke="${color}" stroke-width="6"/></svg>`,
-                single_socket: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="none"/><circle cx="38" cy="50" r="5" fill="${color}"/><circle cx="62" cy="50" r="5" fill="${color}"/></svg>`,
-                power_socket: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="${color}"/><circle cx="38" cy="50" r="5" fill="#fff"/><circle cx="62" cy="50" r="5" fill="#fff"/></svg>`,
-                ac_outlet: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="30" width="70" height="40" rx="5" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="57" font-size="20" text-anchor="middle" font-weight="bold" fill="${color}">AC</text></svg>`,
-                exhaust_fan: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="none"/><path d="M50 15 L50 85 M15 50 L85 50" stroke="${color}" stroke-width="4"/></svg>`,
-                wall_spot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="25" fill="#ffb703" stroke="${color}" stroke-width="4"/><path d="M20 80 L50 50 L80 80" stroke="${color}" stroke-width="4" fill="none"/></svg>`,
-                lamp: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" stroke="${color}" stroke-width="6" fill="none"/><line x1="29" y1="29" x2="71" y2="71" stroke="${color}" stroke-width="6"/><line x1="71" y1="29" x2="29" y2="71" stroke="${color}" stroke-width="6"/></svg>`,
-                bell: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M30 65 C30 35 70 35 70 65 Z" stroke="${color}" stroke-width="6" fill="none"/><rect x="25" y="65" width="50" height="8" fill="${color}"/></svg>`,
-                alarm: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,15 85,80 15,80" stroke="${color}" stroke-width="6" fill="none"/><circle cx="50" cy="60" r="6" fill="${color}"/></svg>`,
-                audio_out: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="20,40 40,40 60,20 60,80 40,60 20,60" fill="${color}"/><path d="M70 35 Q80 50 70 65" stroke="${color}" stroke-width="5" fill="none"/></svg>`,
-                data_out: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="22" text-anchor="middle" font-weight="bold" fill="${color}">IT</text></svg>`,
-                panel: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect x="2" y="2" width="56" height="36" fill="none" stroke="${color}" stroke-width="3"/><path d="M 2 2 L 30 38 L 30 2 Z" fill="${color}"/></svg>`,
-                
-                main_meter: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="8" stroke="${color}" stroke-width="6" fill="none"/><rect x="25" y="25" width="50" height="25" fill="${color}" opacity="0.3"/><circle cx="50" cy="68" r="10" stroke="${color}" stroke-width="4" fill="none"/></svg>`,
-                sub_panel: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="4" stroke="${color}" stroke-width="6" fill="none"/><line x1="10" y1="50" x2="90" y2="50" stroke="${color}" stroke-width="4"/><line x1="50" y1="20" x2="50" y2="80" stroke="${color}" stroke-width="4"/></svg>`,
-                mcb_breaker: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="30" y="10" width="40" height="80" rx="5" stroke="${color}" stroke-width="6" fill="none"/><rect x="40" y="40" width="20" height="30" fill="${color}"/></svg>`,
-                rccb_breaker: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="10" width="60" height="80" rx="5" stroke="${color}" stroke-width="6" fill="none"/><circle cx="38" cy="35" r="8" fill="${color}"/><rect x="52" y="50" width="16" height="25" fill="${color}"/></svg>`,
-                earth_pit: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" stroke="${color}" stroke-width="6" fill="none" stroke-dasharray="6,4"/><line x1="50" y1="30" x2="50" y2="60" stroke="${color}" stroke-width="6"/><line x1="30" y1="60" x2="70" y2="60" stroke="${color}" stroke-width="6"/><line x1="38" y1="68" x2="62" y2="68" stroke="${color}" stroke-width="5"/><line x1="44" y1="75" x2="56" y2="75" stroke="${color}" stroke-width="4"/></svg>`,
-                earth_rod: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><line x1="50" y1="10" x2="50" y2="60" stroke="${color}" stroke-width="8"/><line x1="25" y1="60" x2="75" y2="60" stroke="${color}" stroke-width="6"/><line x1="35" y1="72" x2="65" y2="72" stroke="${color}" stroke-width="5"/><line x1="43" y1="83" x2="57" y2="83" stroke="${color}" stroke-width="4"/></svg>`,
-                ats_switch: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="8" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="22" text-anchor="middle" font-weight="bold" fill="${color}">ATS</text></svg>`,
-                generator: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="60" font-size="28" text-anchor="middle" font-weight="bold" fill="${color}">G</text></svg>`,
-                ups_system: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="20" width="70" height="60" rx="6" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="20" text-anchor="middle" font-weight="bold" fill="${color}">UPS</text></svg>`,
-
-                door: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect x="5" y="5" width="6" height="50" fill="${color}"/><line x1="11" y1="5" x2="55" y2="5" stroke="${color}" stroke-width="4"/><path d="M 55 5 A 44 44 0 0 1 11 49" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="4 3"/></svg>`,
-                door_double: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60"><rect x="5" y="5" width="6" height="50" fill="${color}"/><rect x="69" y="5" width="6" height="50" fill="${color}"/><path d="M 11 5 A 29 29 0 0 1 40 34" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
-                door_sliding: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 40"><line x1="5" y1="20" x2="65" y2="20" stroke="${color}" stroke-width="2" stroke-dasharray="4 2"/><rect x="5" y1="12" width="28" height="6" fill="${color}"/></svg>`,
-                window: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 30"><rect x="2" y="5" width="76" height="20" fill="none" stroke="${color}" stroke-width="3"/><line x1="2" y1="15" x2="78" y2="15" stroke="${color}" stroke-width="2"/></svg>`,
-                window_double: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 30"><rect x="2" y="5" width="76" height="20" fill="none" stroke="${color}" stroke-width="3"/><line x1="40" y1="5" x2="40" y2="25" stroke="${color}" stroke-width="3"/></svg>`,
-                balcony: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40"><rect x="4" y="8" width="72" height="24" fill="none" stroke="${color}" stroke-width="3"/><line x1="4" y1="20" x2="76" y2="20" stroke="${color}" stroke-width="2" stroke-dasharray="3 3"/></svg>`,
-                sink: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="8" y="12" width="34" height="26" rx="6" fill="none" stroke="${color}" stroke-width="3"/><circle cx="25" cy="25" r="6" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
-                toilet: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 60"><rect x="12" y="6" width="26" height="16" rx="3" fill="none" stroke="${color}" stroke-width="3"/><ellipse cx="25" cy="38" rx="14" ry="18" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
-                shower: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect x="5" y="5" width="40" height="40" fill="none" stroke="${color}" stroke-width="2"/><circle cx="25" cy="25" r="8" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
-                bathtub: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 40"><rect x="5" y="5" width="60" height="30" rx="10" fill="none" stroke="${color}" stroke-width="3"/></svg>`,
-                drain: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="none" stroke="${color}" stroke-width="3"/><circle cx="20" cy="20" r="6" fill="${color}"/></svg>`,
-                wooden_chair: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="25" y="25" width="50" height="50" rx="5" stroke="${color}" stroke-width="6" fill="none"/><line x1="25" y1="35" x2="75" y2="35" stroke="${color}" stroke-width="6"/></svg>`,
-                armchair: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" rx="15" stroke="${color}" stroke-width="6" fill="none"/><rect x="15" y="30" width="12" height="40" rx="4" fill="${color}"/><rect x="73" y="30" width="12" height="40" rx="4" fill="${color}"/></svg>`,
-                sofa: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="25" width="80" height="50" rx="10" stroke="${color}" stroke-width="6" fill="none"/><rect x="15" y="30" width="70" height="15" rx="5" fill="${color}"/></svg>`,
-                table: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="25" width="70" height="50" rx="3" stroke="${color}" stroke-width="6" fill="none"/></svg>`,
-                wardrobe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" stroke="${color}" stroke-width="6" fill="none"/><line x1="50" y1="15" x2="50" y2="85" stroke="${color}" stroke-width="4"/></svg>`,
-                stove: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" rx="5" stroke="${color}" stroke-width="6" fill="none"/><circle cx="38" cy="38" r="8" fill="${color}"/><circle cx="62" cy="38" r="8" fill="${color}"/><circle cx="38" cy="62" r="8" fill="${color}"/><circle cx="62" cy="62" r="8" fill="${color}"/></svg>`,
-                water_heater: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" stroke="${color}" stroke-width="6" fill="none"/><text x="50" y="58" font-size="20" text-anchor="middle" fill="${color}" font-weight="bold">H</text></svg>`,
-                tv_screen: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="5" y="42" width="90" height="16" rx="3" fill="${color}"/><path d="M40 58 L60 58 L65 70 L35 70 Z" fill="${color}"/></svg>`,
-                bed: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80"><rect x="5" y="5" width="50" height="70" rx="4" fill="none" stroke="${color}" stroke-width="3"/><rect x="8" y="8" width="44" height="18" rx="3" fill="none" stroke="${color}" stroke-width="2"/></svg>`
-            });
-
-            window.addSymbol = function(type, labelName) {
-                canvas.isDrawingMode = false;
-                setActiveTool(btnSelect);
-                const svgStr = getSvgData(colorPicker.value)[type] || getSvgData(colorPicker.value)['single_socket'];
-                fabric.loadSVGFromString(svgStr, (objects, options) => {
-                    const obj = fabric.util.groupSVGElements(objects, options);
-                    obj.set({
-                        left: canvas.width / 2 - 25, top: canvas.height / 2 - 25,
-                        scaleX: 0.8, scaleY: 0.8,
-                        nameTag: labelName
-                    });
-                    canvas.add(obj);
-                    canvas.setActiveObject(obj);
-                });
-                autoCloseSidebarOnMobile();
-            };
-
-            document.getElementById('btnClear').addEventListener('click', () => {
-                if (confirm('مسح اللوحة؟')) {
-                    canvas.clear();
-                    addWatermark();
-                    floatingGroup.style.display = 'none';
-                    saveHistory(canvas);
-                    updateInventorySummary(canvas);
-                }
-            });
-
-            document.getElementById('btnFullscreen').addEventListener('click', () => {
-                const elem = document.documentElement;
-                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                    if (elem.requestFullscreen) {
-                        elem.requestFullscreen();
-                    } else if (elem.webkitRequestFullscreen) {
-                        elem.webkitRequestFullscreen();
-                    }
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    }
-                }
-            });
-
-            let projectDirHandle = null;
-
-            async function getSNelectricDirectory() {
-                if (!window.showDirectoryPicker) return null;
-                try {
-                    if (!projectDirHandle) {
-                        alert("يرجى تحديد أو إنشاء المجلد لتنظيم الملفات.");
-                        projectDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-                    }
-                    return projectDirHandle;
-                } catch (e) {
-                    return null;
-                }
-            }
-
-            document.getElementById('btnOpenFile').addEventListener('click', async () => {
-                const fileInput = document.getElementById('fileInputJSON');
-                fileInput.value = '';
-                fileInput.click();
-            });
-
-            document.getElementById('fileInputJSON').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    try {
-                        const jsonContent = evt.target.result;
-                        canvas.loadFromJSON(jsonContent, () => {
-                            canvas.renderAll();
-                            undoStack = [];
-                            redoStack = [];
-                            saveHistory(canvas);
-                            updateInventorySummary(canvas);
-                        });
-                    } catch (err) {
-                        alert("خطأ في فتح الملف");
-                    }
-                };
-                reader.readAsText(file);
-            });
-
-            document.getElementById('btnSaveProject').addEventListener('click', async () => {
-                const jsonStr = JSON.stringify(canvas.toJSON(['nameTag', 'roomDimensions']), null, 2);
-                const fileName = `SN_Project_${Date.now()}.json`;
-
-                const dirHandle = await getSNelectricDirectory();
-                if (dirHandle) {
-                    try {
-                        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(jsonStr);
-                        await writable.close();
-                        alert(`تم الحفظ: ${fileName}`);
-                        return;
-                    } catch (e) {
-                        console.log('متابعة...');
-                    }
-                }
-
-                const blob = new Blob([jsonStr], { type: 'application/json' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = fileName;
-                a.click();
-                URL.revokeObjectURL(a.href);
-            });
-
-            document.getElementById('btnSave').addEventListener('click', () => {
-                const objects = canvas.getObjects().filter(o => o.nameTag !== 'العلامة المائية S⚡N');
-                if (objects.length === 0) {
-                    alert('اللوحة فارغة!');
-                    return;
-                }
-                openSummaryModal(canvas);
-            });
-
-            window.openSummaryModal = function(canvas) {
-                const modal = document.getElementById('dimensionsModal');
-                const listContainer = document.getElementById('elementsListContainer');
-                listContainer.innerHTML = '';
-
-                const objects = canvas.getObjects();
-                let hasItems = false;
-
-                objects.forEach((obj) => {
-                    if (obj.roomDimensions) {
-                        hasItems = true;
-                        const row = document.createElement('div');
-                        row.className = 'element-row';
-                        row.innerHTML = `<span>🏠 ${obj.nameTag || 'غرفة'}: ${obj.roomDimensions}</span>`;
-                        listContainer.appendChild(row);
-                    }
-                });
-
-                if (!hasItems) {
-                    listContainer.innerHTML = `<div style="font-size:12px; color:#94a3b8; text-align:center;">جاهز لحفظ الصورة.</div>`;
-                }
-
-                modal.style.display = 'flex';
-            };
-
-            window.closeModal = function() {
-                document.getElementById('dimensionsModal').style.display = 'none';
-            };
-
-            window.saveFinalImage = async function() {
-                closeModal();
-
-                const originalViewport = canvas.viewportTransform;
-                const originalZoom = canvas.getZoom();
-
-                canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-                canvas.setZoom(1);
-
-                const dataURL = canvas.toDataURL({
-                    format: 'png',
-                    quality: 1,
-                    multiplier: 2
-                });
-
-                canvas.setViewportTransform(originalViewport);
-                canvas.setZoom(originalZoom);
-                canvas.renderAll();
-
-                const fileName = `SN_Design_${Date.now()}.png`;
-                const dirHandle = await getSNelectricDirectory();
-                
-                if (dirHandle) {
-                    try {
-                        const blob = await (await fetch(dataURL)).blob();
-                        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(blob);
-                        await writable.close();
-                        alert(`تم الحفظ: ${fileName}`);
-                        return;
-                    } catch (e) {
-                        console.log('متابعة...');
-                    }
-                }
-
-                const link = document.createElement('a');
-                link.download = fileName;
-                link.href = dataURL;
-                link.click();
-            };
-        });
-
-        let scene3D, camera3D, renderer3D, controls3D;
-        let moveFwd = false, moveBwd = false, moveLft = false, moveRgt = false;
-        let prevTime3D = performance.now();
-        const velocity3D = new THREE.Vector3();
-        const direction3D = new THREE.Vector3();
-
-        document.getElementById('btnView3D').addEventListener('click', () => {
-            const objects = window.canvasApp.getObjects().filter(o => o.nameTag !== 'العلامة المائية S⚡N');
-            if (objects.length === 0) {
-                alert('قم برسم عناصر أولاً!');
-                return;
-            }
-            document.getElementById('modal3D').style.display = 'block';
-            init3DScene();
-            build3DRoomFromCanvas();
-        });
-
-        function close3DModal() {
-            document.getElementById('modal3D').style.display = 'none';
-            const container = document.getElementById('container3D');
-            container.innerHTML = '';
-            if (controls3D) controls3D.unlock();
-        }
-
-        function init3DScene() {
-            const container = document.getElementById('container3D');
-            container.innerHTML = '';
-
-            scene3D = new THREE.Scene();
-            scene3D.background = new THREE.Color(0x0f172a);
-
-            camera3D = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera3D.position.set(0, 1.6, 0);
-
-            renderer3D = new THREE.WebGLRenderer({ antialias: true });
-            renderer3D.setSize(window.innerWidth, window.innerHeight);
-            container.appendChild(renderer3D.domElement);
-
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-            scene3D.add(ambientLight);
-            const light = new THREE.DirectionalLight(0xffffff, 0.5);
-            light.position.set(0, 10, 0);
-            scene3D.add(light);
-
-            controls3D = new THREE.PointerLockControls(camera3D, document.body);
-            const instructions = document.getElementById('instructions3D');
-
-            instructions.addEventListener('click', () => controls3D.lock());
-
-            document.addEventListener('keydown', (e) => {
-                if (e.code === 'KeyW' || e.code === 'ArrowUp') moveFwd = true;
-                if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBwd = true;
-                if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLft = true;
-                if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRgt = true;
-            });
-
-            document.addEventListener('keyup', (e) => {
-                if (e.code === 'KeyW' || e.code === 'ArrowUp') moveFwd = false;
-                if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBwd = false;
-                if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLft = false;
-                if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRgt = false;
-            });
-
-            animate3D();
-        }
-
-        function build3DRoomFromCanvas() {
-            const floorGeo = new THREE.PlaneGeometry(30, 30);
-            const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, side: THREE.DoubleSide });
+            const L = parseFloat(roomDimensions.length);
+            const W = parseFloat(roomDimensions.width);
+            const H = parseFloat(roomDimensions.height);
+            const T = parseFloat(roomDimensions.wallThickness); // Fixed 15cm (0.15m)
+
+            // Floor
+            const floorGeo = new THREE.BoxGeometry(L, 0.01, W);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
             const floor = new THREE.Mesh(floorGeo, floorMat);
-            floor.rotation.x = Math.PI / 2;
-            scene3D.add(floor);
+            floor.position.y = -0.005;
+            floor.receiveShadow = true;
+            roomGroup.add(floor);
 
-            const grid = new THREE.GridHelper(30, 30, 0x00f2fe, 0x334155);
+            // Grid Floor Overlay
+            const grid = new THREE.GridHelper(Math.max(L, W) * 2, Math.max(L, W) * 2, 0x3b82f6, 0x1e293b);
             grid.position.y = 0.01;
-            scene3D.add(grid);
+            roomGroup.add(grid);
 
-            const objects = window.canvasApp.getObjects();
-            const scale = 0.05;
+            // Wall Material
+            const wallMat = new THREE.MeshStandardMaterial({ 
+                color: 0x334155, 
+                transparent: true, 
+                opacity: 0.7, 
+                roughness: 0.5 
+            });
 
-            objects.forEach(obj => {
-                if (obj.nameTag === 'العلامة المائية S⚡N') return;
+            // Building Walls with Exact 15cm Thickness
+            // Back Wall
+            const backWall = new THREE.Mesh(new THREE.BoxGeometry(L + (2 * T), H, T), wallMat);
+            backWall.position.set(0, H / 2, -W / 2 - T / 2);
+            backWall.castShadow = true;
+            roomGroup.add(backWall);
 
-                const posX = (obj.left - window.canvasApp.width / 2) * scale;
-                const posZ = (obj.top - window.canvasApp.height / 2) * scale;
+            // Front Wall
+            const frontWall = new THREE.Mesh(new THREE.BoxGeometry(L + (2 * T), H, T), wallMat);
+            frontWall.position.set(0, H / 2, W / 2 + T / 2);
+            frontWall.castShadow = true;
+            roomGroup.add(frontWall);
 
-                if (obj.type === 'group' && obj.roomDimensions) {
-                    const wallMat = new THREE.MeshStandardMaterial({ color: 0x00f2fe, wireframe: false });
-                    const wallGeo = new THREE.BoxGeometry(11, 2.8, 0.2);
-                    
-                    const wall1 = new THREE.Mesh(wallGeo, wallMat);
-                    wall1.position.set(posX, 1.4, posZ - 3.75);
-                    scene3D.add(wall1);
+            // Left Wall
+            const leftWall = new THREE.Mesh(new THREE.BoxGeometry(T, H, W), wallMat);
+            leftWall.position.set(-L / 2 - T / 2, H / 2, 0);
+            leftWall.castShadow = true;
+            roomGroup.add(leftWall);
 
-                    const wall2 = new THREE.Mesh(wallGeo, wallMat);
-                    wall2.position.set(posX, 1.4, posZ + 3.75);
-                    scene3D.add(wall2);
-                } else {
-                    let boxGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-                    let boxMat = new THREE.MeshStandardMaterial({ color: 0xff007f });
-                    if (obj.nameTag && obj.nameTag.includes('لمبة')) {
-                        boxMat = new THREE.MeshStandardMaterial({ color: 0xffb703, emissive: 0xffb703 });
+            // Right Wall
+            const rightWall = new THREE.Mesh(new THREE.BoxGeometry(T, H, W), wallMat);
+            rightWall.position.set(L / 2 + T / 2, H / 2, 0);
+            rightWall.castShadow = true;
+            roomGroup.add(rightWall);
+        }
+
+        function updateRoomDimensions() {
+            roomDimensions.length = parseFloat(document.getElementById('room-length').value) || 6;
+            roomDimensions.width = parseFloat(document.getElementById('room-width').value) || 5;
+            roomDimensions.height = parseFloat(document.getElementById('room-height').value) || 3;
+            
+            buildRoom();
+            
+            // Re-validate existing furniture inside updated room dimensions
+            objectsGroup.children.forEach(obj => checkCollisionAndFit(obj));
+        }
+
+        // --- Camera & View Modes ---
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.querySelectorAll('.header-controls .btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${mode}-view`).classList.add('active');
+
+            const L = roomDimensions.length;
+            const W = roomDimensions.width;
+            const H = roomDimensions.height;
+            const maxDim = Math.max(L, W);
+
+            const fpsOverlay = document.getElementById('fps-controls');
+            fpsOverlay.style.display = (mode === 'fps') ? 'block' : 'none';
+
+            if (mode === 'top') {
+                // Architectural Top/Isometric View default
+                camera.position.set(0, maxDim * 1.8, 0.001);
+                controls.target.set(0, 0, 0);
+                controls.enableRotate = false;
+            } else if (mode === 'iso') {
+                camera.position.set(maxDim * 1.2, H * 2.5, maxDim * 1.2);
+                controls.target.set(0, 0, 0);
+                controls.enableRotate = true;
+            } else if (mode === 'fps') {
+                camera.position.set(0, 1.6, 0); // Eye height level
+                controls.target.set(0, 1.6, -1);
+                controls.enableRotate = true;
+            }
+            controls.update();
+        }
+
+        // --- Library UI & Collapsible Logic ---
+        function renderLibraryUI(filterText = "") {
+            const container = document.getElementById('library-container');
+            container.innerHTML = "";
+
+            libraryData.forEach((cat, index) => {
+                const filteredItems = cat.items.filter(item => item.name.includes(filterText));
+                
+                if (filteredItems.length === 0 && filterText !== "") return;
+
+                const itemEl = document.createElement('div');
+                itemEl.className = `accordion-item ${filterText !== "" || index === 0 ? 'open' : ''}`;
+
+                const header = document.createElement('div');
+                header.className = 'accordion-header';
+                header.innerHTML = `
+                    <span>${cat.category}</span>
+                    <span class="arrow">►</span>
+                `;
+                header.onclick = () => itemEl.classList.toggle('open');
+
+                const content = document.createElement('div');
+                content.className = 'accordion-content';
+
+                filteredItems.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.onclick = () => spawnElement(item);
+                    card.innerHTML = `
+                        <div class="item-icon">${item.icon}</div>
+                        <div class="item-title">${item.name}</div>
+                    `;
+                    content.appendChild(card);
+                });
+
+                itemEl.appendChild(header);
+                itemEl.appendChild(content);
+                container.appendChild(itemEl);
+            });
+        }
+
+        function filterLibrary() {
+            const query = document.getElementById('search-input').value.trim();
+            renderLibraryUI(query);
+        }
+
+        // --- Element Spawning & Collision Detection ---
+        function spawnElement(itemData) {
+            const [sx, sy, sz] = itemData.size;
+            const geo = new THREE.BoxGeometry(sx, sy, sz);
+            const defaultColor = document.getElementById('element-color').value;
+            const mat = new THREE.MeshStandardMaterial({ color: defaultColor, roughness: 0.3 });
+            
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            // Set initial Y position based on object dimensions
+            mesh.position.set(0, sy / 2, 0);
+            
+            // Attach Custom Metadata
+            mesh.userData = { 
+                id: itemData.id, 
+                name: itemData.name, 
+                size: itemData.size,
+                wallMounted: itemData.wallMounted || false 
+            };
+
+            // Outer Bounding Box visual helper
+            const wireGeo = new THREE.WireframeGeometry(geo);
+            const wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+            const wireframe = new THREE.LineSegments(wireGeo, wireMat);
+            wireframe.name = "wireframe";
+            mesh.add(wireframe);
+
+            objectsGroup.add(mesh);
+            selectObject(mesh);
+
+            // Execute Warning Check Immediately
+            checkCollisionAndFit(mesh);
+        }
+
+        // --- Intelligent Collision & Fit Warning ---
+        function checkCollisionAndFit(mesh) {
+            const [sx, sy, sz] = mesh.userData.size;
+            const L = roomDimensions.length;
+            const W = roomDimensions.width;
+            const H = roomDimensions.height;
+
+            // Scale factor if scaled dynamically
+            const boundsX = sx * mesh.scale.x;
+            const boundsY = sy * mesh.scale.y;
+            const boundsZ = sz * mesh.scale.z;
+
+            // Condition checking if object exceeds room or wall height limits
+            const isTooLarge = boundsX > L || boundsZ > W || boundsY > H;
+            
+            if (isTooLarge) {
+                showWarningToast(`⚠️ تنبيه: أبعاد العنصر (${mesh.userData.name}) أكبر من مساحة الجدار/الغرفة!`);
+                mesh.material.color.setHex(0xef4444); // Color Red on Warning
+            } else if (selectedObject === mesh) {
+                mesh.material.color.setStyle(document.getElementById('element-color').value);
+            }
+        }
+
+        function showWarningToast(msg) {
+            const toast = document.getElementById('warning-toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // --- Interaction & Selection Handling ---
+        function setupRaycaster() {
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            window.addEventListener('pointerdown', (e) => {
+                // Avoid UI Triggering
+                if (e.target.tagName !== 'CANVAS') return;
+
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / (window.innerHeight - 60)) * 2 + 1; // Subtract Header height
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(objectsGroup.children, true);
+
+                if (intersects.length > 0) {
+                    let obj = intersects[0].object;
+                    while (obj.parent && obj.parent !== objectsGroup) {
+                        obj = obj.parent;
                     }
-                    const mesh = new THREE.Mesh(boxGeo, boxMat);
-                    mesh.position.set(posX, 0.25, posZ);
-                    scene3D.add(mesh);
+                    selectObject(obj);
                 }
             });
         }
 
-        function animate3D() {
-            requestAnimationFrame(animate3D);
-
-            const time = performance.now();
-            if (controls3D && controls3D.isLocked) {
-                const delta = (time - prevTime3D) / 1000;
-
-                velocity3D.x -= velocity3D.x * 10.0 * delta;
-                velocity3D.z -= velocity3D.z * 10.0 * delta;
-
-                direction3D.z = Number(moveFwd) - Number(moveBwd);
-                direction3D.x = Number(moveRgt) - Number(moveLft);
-                direction3D.normalize();
-
-                if (moveFwd || moveBwd) velocity3D.z -= direction3D.z * 40.0 * delta;
-                if (moveLft || moveRgt) velocity3D.x -= direction3D.x * 40.0 * delta;
-
-                controls3D.moveRight(-velocity3D.x * delta);
-                controls3D.moveForward(-velocity3D.z * delta);
+        function selectObject(obj) {
+            if (selectedObject && selectedObject.userData) {
+                // Reset wireframe color
+                const prevWire = selectedObject.getObjectByName("wireframe");
+                if (prevWire) prevWire.material.color.setHex(0xffffff);
             }
-            prevTime3D = time;
-            if (renderer3D && scene3D && camera3D) {
-                renderer3D.render(scene3D, camera3D);
+
+            selectedObject = obj;
+            if (selectedObject) {
+                const wire = selectedObject.getObjectByName("wireframe");
+                if (wire) wire.material.color.setHex(0x3b82f6);
+                document.getElementById('element-color').value = '#' + selectedObject.material.color.getHexString();
             }
         }
+
+        function updateSelectedObjectColor(hexColor) {
+            if (selectedObject) {
+                selectedObject.material.color.setStyle(hexColor);
+            }
+        }
+
+        function rotateSelectedObject() {
+            if (selectedObject) {
+                selectedObject.rotation.y += Math.PI / 2;
+                checkCollisionAndFit(selectedObject);
+            }
+        }
+
+        function deleteSelectedObject() {
+            if (selectedObject) {
+                objectsGroup.remove(selectedObject);
+                selectedObject = null;
+            }
+        }
+
+        function clearScene() {
+            while (objectsGroup.children.length > 0) {
+                objectsGroup.remove(objectsGroup.children[0]);
+            }
+            selectedObject = null;
+        }
+
+        // --- First Person Controls (WASD) ---
+        function setupFPSControls() {
+            const onKeyDown = (event) => {
+                if (viewMode !== 'fps') return;
+                switch (event.code) {
+                    case 'ArrowUp':
+                    case 'KeyW': moveForward = true; break;
+                    case 'ArrowLeft':
+                    case 'KeyA': moveLeft = true; break;
+                    case 'ArrowDown':
+                    case 'KeyS': moveBackward = true; break;
+                    case 'ArrowRight':
+                    case 'KeyD': moveRight = true; break;
+                }
+            };
+
+            const onKeyUp = (event) => {
+                if (viewMode !== 'fps') return;
+                switch (event.code) {
+                    case 'ArrowUp':
+                    case 'KeyW': moveForward = false; break;
+                    case 'ArrowLeft':
+                    case 'KeyA': moveLeft = false; break;
+                    case 'ArrowDown':
+                    case 'KeyS': moveBackward = false; break;
+                    case 'ArrowRight':
+                    case 'KeyD': moveRight = false; break;
+                }
+            };
+
+            window.addEventListener('keydown', onKeyDown);
+            window.addEventListener('keyup', onKeyUp);
+        }
+
+        function updateFPSMovement(delta) {
+            if (viewMode !== 'fps') return;
+
+            velocity.x -= velocity.x * 10.0 * delta;
+            velocity.z -= velocity.z * 10.0 * delta;
+
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveRight) - Number(moveLeft);
+            direction.normalize();
+
+            if (moveForward || moveBackward) velocity.z -= direction.z * 40.0 * delta;
+            if (moveLeft || moveRight) velocity.x -= direction.x * 40.0 * delta;
+
+            controls.moveForward(-velocity.z * delta);
+            controls.moveRight(-velocity.x * delta);
+        }
+
+        // --- Window Resizing ---
+        function onWindowResize() {
+            const container = document.getElementById('viewport');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // --- Main Render Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            if (viewMode === 'fps') {
+                updateFPSMovement(delta);
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Run On Load
+        window.onload = init;
     </script>
 </body>
 </html>
