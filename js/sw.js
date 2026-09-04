@@ -1,4 +1,4 @@
-const CACHE_NAME = 'snelectric-v1';
+const CACHE_NAME = 'snelectric-v 0.1';
 const STATIC_ASSETS = ['/', '/index.html', '/contract.html', '/css/style.css', '/js/app.js', '/js/supabase.js', '/manifest.json'];
 
 self.addEventListener('install', (event) => {
