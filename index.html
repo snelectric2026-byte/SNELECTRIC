@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SN ELECTRIC - خدمات التأسيس والصيانة</title>
+    <title>S⚡N ELECTRIC - خدمات التأسيس والصيانة</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase JS Library -->
@@ -15,9 +15,14 @@
     <nav class="navbar">
         <div class="logo">
             <i class="fa-solid fa-bolt"></i>
-            <span>SN ELECTRIC</span>
+            <span>S⚡N ELECTRIC</span>
         </div>
-        <button class="btn-tech-apply" onclick="openTechModal()">التقديم كفني</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-service" onclick="openDrawModal()" style="width: auto; padding: 6px 15px; background: #f1c40f; color: #000; font-weight: bold;">
+                🎨 ارسم بيتك
+            </button>
+            <button class="btn-tech-apply" onclick="openTechModal()">التقديم كفني</button>
+        </div>
     </nav>
 
     <!-- Hero Section -->
@@ -28,75 +33,30 @@
 
     <main class="container">
 
-        <!-- قسم خدمات التأسيس -->
+        <!-- قسم خدمات التأسيس (بطاقة واحدة) -->
         <h2 class="section-title"><i class="fa-solid fa-layer-group"></i> خدمات التأسيس</h2>
-        <div class="services-grid">
-            <div class="service-card">
-                <i class="fa-solid fa-building"></i>
-                <h3>تأسيس شقة</h3>
-                <p>تأسيس شبكات الكهرباء الكاملة للشقق السكنية بأعلى معايير الأمان.</p>
-                <button class="btn-service" onclick="openTasissModal('شقة')">طلب تأسيس</button>
-            </div>
-            <div class="service-card">
-                <i class="fa-solid fa-industry"></i>
-                <h3>تأسيس مصنع</h3>
-                <p>تخطيط وتنفيذ الأحمال العالية والتوصيلات الصناعية للمصانع.</p>
-                <button class="btn-service" onclick="openTasissModal('مصنع')">طلب تأسيس</button>
-            </div>
-            <div class="service-card">
-                <i class="fa-solid fa-store"></i>
-                <h3>تأسيس محل</h3>
-                <p>إضاءة واستبدال وتوزيع أحمال مناسب للأنشطة التجارية.</p>
-                <button class="btn-service" onclick="openTasissModal('محل')">طلب تأسيس</button>
-            </div>
-            <div class="service-card">
-                <i class="fa-solid fa-house-chimney"></i>
-                <h3>تأسيس فيلا</h3>
-                <p>أنظمة كهربائية متكاملة ولاندسكيب وتأسيس سمارت هوم.</p>
-                <button class="btn-service" onclick="openTasissModal('فيلا')">طلب تأسيس</button>
-            </div>
-        </div>
-
-        <!-- قسم ارسم بيتك -->
-        <h2 class="section-title"><i class="fa-solid fa-compass-drafting"></i> ارسم بيتك</h2>
         <div class="maintenance-box">
-            <!-- رسالة التنبيه التوضيحية -->
-            <div id="drawInfoNotice" style="background: rgba(241, 196, 15, 0.1); border: 1px solid var(--accent); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-                <p style="color: var(--accent); font-weight: bold; margin-bottom: 5px;">
-                    <i class="fa-solid fa-circle-info"></i> تنبيه هام قبل البدء:
-                </p>
-                <p style="font-size: 14px; color: #ddd;">
-                    هذا التطبيق يساعدك على رسم المخطط المعماري وحساب عدد البرايز والمدخلات من تلقاء نفسه تلقائياً بعد إدخالك لمقاسات الغرفة!
-                </p>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
-                    <button onclick="startDrawing()" class="btn-service" style="width: auto; padding: 6px 20px;">📋 ارسم وصمم الآن</button>
-                    <button onclick="goToDrawingApp()" class="btn-service" style="width: auto; padding: 6px 20px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000;">🎨 تطبيق الرسم المتقدم</button>
-                </div>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <i class="fa-solid fa-building-circle-check" style="font-size: 40px; color: var(--accent); margin-bottom: 10px;"></i>
+                <h3>طلب خدمات التأسيس الشاملة</h3>
+                <p style="color: #cbd5e1; font-size: 14px; margin-top: 5px;">اختر نوع العقار والمواصفات المطلوبة لبدء عملية التأسيس الكهربائي بأعلى معايير الأمان.</p>
             </div>
-
-            <!-- منطقة أدوات الرسم -->
-            <div id="drawCanvasArea" style="display: none;">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; justify-content: center;">
-                    <input type="number" id="roomWidth" placeholder="العرض (متر)" value="4" style="width: 120px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: #07101d; color: #fff;">
-                    <input type="number" id="roomHeight" placeholder="الطول (متر)" value="5" style="width: 120px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: #07101d; color: #fff;">
-                    <button onclick="generateRoomLayout()" class="btn-submit" style="width: auto; padding: 8px 15px;">حساب وإنشاء الغرفة</button>
-                </div>
-
-                <!-- لوحة الرسم Canvas -->
-                <canvas id="roomCanvas" width="400" height="300" style="border: 2px dashed var(--accent); border-radius: 8px; background: #07101d; width: 100%; max-width: 500px; display: block; margin: 0 auto;"></canvas>
-
-                <!-- نتائج الحساب التلقائي -->
-                <div id="calcResults" style="margin-top: 15px; padding: 10px; background: #07101d; border-radius: 6px; text-align: center;">
-                    <p style="color: #2ecc71; font-weight: bold;">النتائج المحسوبة تلقائياً:</p>
-                    <p style="font-size: 14px; color: #fff; margin-top: 5px;" id="outDetails">أدخل المقاسات واضغط إنشاء لعرض عدد البرايز والمدخلات.</p>
-                </div>
+            <div class="form-group">
+                <label>اختر نوع التأسيس المطلوبة:</label>
+                <select id="singleTasissTypeSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: #07101d; color: #fff;">
+                    <option value="شقة">تأسيس شقة</option>
+                    <option value="فيلا">تأسيس فيلا</option>
+                    <option value="مصنع">تأسيس مصنع</option>
+                    <option value="محل">تأسيس محل تجاري</option>
+                </select>
             </div>
+            <button class="btn-submit" onclick="openTasissModalFromSelect()"><i class="fa-solid fa-paper-plane"></i> متابعة طلب التأسيس</button>
         </div>
 
-        <!-- قسم صيانة أعطال الكهرباء -->
+        <!-- قسم صيانة أعطال الكهرباء الطارئة -->
         <h2 class="section-title"><i class="fa-solid fa-plug-circle-bolt"></i> صيانة الأعطال الطارئة</h2>
         <div class="maintenance-box">
-            <p style="margin-bottom: 15px; font-size: 14px; color: #cbd5e1;">إذا كان لديك عطل كهربائي، يمكنك رفع صورة العطل وإرسال بلاغ طارئ فوراً للإدارة عبر WhatsApp</p>
+            <p style="margin-bottom: 15px; font-size: 14px; color: #cbd5e1;">إذا كان لديك عطل كهربائي طارئ، يمكنك رفع صورة العطل وإرسال بلاغ فوراً للإدارة عبر WhatsApp</p>
             <div class="form-group">
                 <label>اختر صورة العطل:</label>
                 <input type="file" id="electricFaultImg" accept="image/*">
@@ -104,34 +64,25 @@
             <button onclick="processFaultImage()" class="btn-submit"><i class="fa-brands fa-whatsapp"></i> إرسال بلاغ عطل طارئ</button>
         </div>
 
-        <!-- قسم صيانة الأجهزة المنزلية -->
+        <!-- قسم صيانة الأجهزة المنزلية (بطاقة واحدة) -->
         <h2 class="section-title"><i class="fa-solid fa-screwdriver-wrench"></i> صيانة الأجهزة المنزلية</h2>
-        <div class="services-grid">
-            <div class="service-card">
-                <i class="fa-solid fa-soap"></i>
-                <h3>غسالات</h3>
-                <button class="btn-service" onclick="openApplianceModal('غسالة')">طلب صيانة</button>
+        <div class="maintenance-box">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <i class="fa-solid fa-gears" style="font-size: 40px; color: var(--accent); margin-bottom: 10px;"></i>
+                <h3>طلب صيانة الأجهزة المنزلية</h3>
+                <p style="color: #cbd5e1; font-size: 14px; margin-top: 5px;">اختر نوع الجهاز المطلوب صيانته وسيتم التواصل معك من خلال أسرع فني متخصص.</p>
             </div>
-            <div class="service-card">
-                <i class="fa-solid fa-fire-burner"></i>
-                <h3>بوتاجازات</h3>
-                <button class="btn-service" onclick="openApplianceModal('بوتاجاز')">طلب صيانة</button>
+            <div class="form-group">
+                <label>اختر الجهاز:</label>
+                <select id="singleApplianceSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: #07101d; color: #fff;">
+                    <option value="غسالة">صيانة غسالات</option>
+                    <option value="بوتاجاز">صيانة بوتاجازات</option>
+                    <option value="تكييف">صيانة تكييفات</option>
+                    <option value="سخان">صيانة سخانات</option>
+                    <option value="ثلاجة">صيانة ثلاجات</option>
+                </select>
             </div>
-            <div class="service-card">
-                <i class="fa-solid fa-wind"></i>
-                <h3>تكييفات</h3>
-                <button class="btn-service" onclick="openApplianceModal('تكييف')">طلب صيانة</button>
-            </div>
-            <div class="service-card">
-                <i class="fa-solid fa-temperature-arrow-up"></i>
-                <h3>سخانات</h3>
-                <button class="btn-service" onclick="openApplianceModal('سخان')">طلب صيانة</button>
-            </div>
-            <div class="service-card">
-                <i class="fa-solid fa-box-archive"></i>
-                <h3>ثلاجات</h3>
-                <button class="btn-service" onclick="openApplianceModal('ثلاجة')">طلب صيانة</button>
-            </div>
+            <button class="btn-submit" onclick="openApplianceModalFromSelect()"><i class="fa-solid fa-paper-plane"></i> متابعة طلب الصيانة</button>
         </div>
 
         <!-- طلب معاينة موقع -->
@@ -155,7 +106,7 @@
                 </div>
                 <div class="form-group" id="govGroup">
                     <label>المحافظة والمنطقة بالتفصيل:</label>
-                    <input type="text" id="inspGovDetails" placeholder="مثال: القاهرة - نصر سيتي - شارع الطيران">
+                    <input type="text" id="inspGovDetails" placeholder="مثال: القاهرة - مدينة نصر - شارع الطيران">
                 </div>
                 <div class="form-group" id="mapGroup" style="display: none;">
                     <button type="button" onclick="getGPSLocation()" style="padding: 8px 12px; background: #3498db; color: #fff; border: none; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">🗺️ احصل على الموقع</button>
@@ -193,8 +144,36 @@
 
     </main>
 
+    <!-- Modal ارسم بيتك (فيديو + رابط APK) -->
+    <div class="modal" id="drawModal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-btn" onclick="closeDrawModal()">&times;</span>
+            <h3 style="color: var(--accent); margin-bottom: 15px; text-align: center;"><i class="fa-solid fa-compass-drafting"></i> تطبيق ارسم بيتك</h3>
+            
+            <!-- فيديو تعليمي -->
+            <div style="margin-bottom: 20px;">
+                <p style="margin-bottom: 8px; font-size: 14px; color: #ddd;">شاهد الفيديو التعليمي لكيفية رسم مخطط بيتك واستخدامه:</p>
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000;">
+                    <iframe style="position: absolute; top:0; left: 0; width: 100%; height: 100%; border:0;" 
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                            title="فيديو تعليمي" 
+                            allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- زر تحميل التطبيق APK -->
+            <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <p style="margin-bottom: 10px; font-weight: bold; color: #fff;">حمل تطبيق "ارسم بيتك" بصيغة APK للاندرويد:</p>
+                <a href="downloads/SNelectric-draw.apk" download class="btn-submit" style="display: inline-block; text-decoration: none; width: auto; padding: 10px 25px; background: #2ecc71; color: #fff;">
+                    <i class="fa-solid fa-download"></i> تحميل التطبيق (APK)
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal تأسيس -->
-    <div class="modal" id="tasissModal">
+    <div class="modal" id="tasissModal" style="display: none;">
         <div class="modal-content">
             <span class="close-btn" onclick="closeTasissModal()">&times;</span>
             <h3 id="tasissTitle" style="color: var(--accent); margin-bottom: 15px;">طلب تأسيس</h3>
@@ -237,7 +216,7 @@
     </div>
 
     <!-- Modal صيانة أجهزة -->
-    <div class="modal" id="applianceModal">
+    <div class="modal" id="applianceModal" style="display: none;">
         <div class="modal-content">
             <span class="close-btn" onclick="closeApplianceModal()">&times;</span>
             <h3 id="applianceTitle" style="color: var(--accent); margin-bottom: 15px;">طلب صيانة جهاز</h3>
@@ -269,7 +248,7 @@
     </div>
 
     <!-- Modal التقديم كفني -->
-    <div class="modal" id="techModal">
+    <div class="modal" id="techModal" style="display: none;">
         <div class="modal-content">
             <span class="close-btn" onclick="closeTechModal()">&times;</span>
             <h3 style="color: var(--accent); margin-bottom: 15px;">طلب انضمام كفني</h3>
@@ -303,7 +282,7 @@
     <button class="chat-toggle-btn" onclick="toggleChat()"><i class="fa-solid fa-headset"></i></button>
     <div class="chat-widget" id="chatBox" style="display: none;">
         <div style="font-weight: bold; color: var(--accent); margin-bottom: 10px; display: flex; justify-content: space-between;">
-            <span>مساعد SN ELECTRIC</span>
+            <span>مساعد S⚡N ELECTRIC</span>
             <span style="cursor: pointer;" onclick="toggleChat()">&times;</span>
         </div>
         <div id="chatBody" style="height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); padding: 8px; border-radius: 8px;">
@@ -318,9 +297,36 @@
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // دالة الانتقال لتطبيق الرسم
-        function goToDrawingApp() {
-            window.location.href = 'drwing.html';
+        // دالة فتح مودال ارسم بيتك
+        function openDrawModal() {
+            document.getElementById('drawModal').style.display = 'flex';
+        }
+        function closeDrawModal() {
+            document.getElementById('drawModal').style.display = 'none';
+        }
+
+        // دالة فتح مودال التأسيس بناءً على الاختيار من القائمة الموحدة
+        function openTasissModalFromSelect() {
+            const selectedType = document.getElementById('singleTasissTypeSelect').value;
+            if (typeof openTasissModal === 'function') {
+                openTasissModal(selectedType);
+            } else {
+                document.getElementById('tasissType').value = selectedType;
+                document.getElementById('tasissTitle').innerText = 'طلب تأسيس - ' + selectedType;
+                document.getElementById('tasissModal').style.display = 'flex';
+            }
+        }
+
+        // دالة فتح مودال صيانة الأجهزة بناءً على الاختيار من القائمة الموحدة
+        function openApplianceModalFromSelect() {
+            const selectedAppliance = document.getElementById('singleApplianceSelect').value;
+            if (typeof openApplianceModal === 'function') {
+                openApplianceModal(selectedAppliance);
+            } else {
+                document.getElementById('applianceType').value = selectedAppliance;
+                document.getElementById('applianceTitle').innerText = 'طلب صيانة - ' + selectedAppliance;
+                document.getElementById('applianceModal').style.display = 'flex';
+            }
         }
     </script>
 </body>
